@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import re
 from dataclasses import dataclass, field
 from typing import Iterable, Optional, TYPE_CHECKING
@@ -41,10 +42,11 @@ class CodexSecurityConfig:
         args = []
         if self.bypass_sandbox:
             args.append("--dangerously-bypass-approvals-and-sandbox")
-        args.extend(_format_list_args("--allowed-command", self.allowed_commands))
-        args.extend(_format_list_args("--blocked-command", self.blocked_commands))
-        args.extend(_format_list_args("--allowed-path", self.allowed_paths))
-        args.extend(_format_list_args("--blocked-path", self.blocked_paths))
+        if os.environ.get("AUTO_CODEX_CODEXCLI_LEGACY_SECURITY_FLAGS", "").strip():
+            args.extend(_format_list_args("--allowed-command", self.allowed_commands))
+            args.extend(_format_list_args("--blocked-command", self.blocked_commands))
+            args.extend(_format_list_args("--allowed-path", self.allowed_paths))
+            args.extend(_format_list_args("--blocked-path", self.blocked_paths))
         return args
 
     @classmethod

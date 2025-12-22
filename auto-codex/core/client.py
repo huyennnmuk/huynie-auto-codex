@@ -8,6 +8,7 @@ legacy streaming API used across agents.
 
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, AsyncIterator, Optional
@@ -108,6 +109,9 @@ def _event_to_message(event: LLMEvent) -> Any | None:
         )
     if event.type == EventType.ERROR:
         error_text = event.data.get("error") or "Unknown error"
+        stderr = event.data.get("stderr")
+        if stderr:
+            error_text = f"{error_text}\n{stderr}"
         return AssistantMessage(content=[TextBlock(text=str(error_text))])
     return None
 
@@ -155,7 +159,7 @@ def create_client(
         model=model or "gpt-5.2-codex-xhigh",
         workdir=str(resolved_project_dir),
         timeout=600,
-        bypass_sandbox=False,
+        bypass_sandbox=(os.environ.get("AUTO_CODEX_BYPASS_CODEX_SANDBOX", "1") != "0"),
         extra_args=codex_security_args,
     )
     return CodexClientAdapter(client)

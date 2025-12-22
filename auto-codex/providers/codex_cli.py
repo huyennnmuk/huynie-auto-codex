@@ -47,7 +47,10 @@ class CodexCliClient(LLMClientProtocol):
         - CODEX_CODE_OAUTH_TOKEN
         - CODEX_CONFIG_DIR
         """
-        return bool(shutil.which("codex")) and bool(get_auth_token())
+        if not shutil.which("codex"):
+            return False
+
+        return bool(get_auth_token())
 
     async def start_session(self, prompt: str, **kwargs) -> str:
         """Start a new Codex CLI session."""
@@ -66,6 +69,7 @@ class CodexCliClient(LLMClientProtocol):
         if process.stdin:
             process.stdin.write(prompt.encode() + b"\n")
             await process.stdin.drain()
+            process.stdin.close()
 
         self._sessions[session_id] = CodexSession(
             session_id=session_id, process=process, workdir=workdir

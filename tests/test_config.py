@@ -17,6 +17,7 @@ def test_validate_environment_deprecated_token(monkeypatch, tmp_path, capsys):
     spec_dir = tmp_path / "specs" / "001-test"
     _write_spec_file(spec_dir)
 
+    monkeypatch.setenv("AUTO_CODEX_DISABLE_DEFAULT_CODEX_CONFIG_DIR", "1")
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
     monkeypatch.delenv("CODEX_CODE_OAUTH_TOKEN", raising=False)
     monkeypatch.delenv("CODEX_CONFIG_DIR", raising=False)
@@ -35,6 +36,7 @@ def test_validate_environment_invalid_openai_key(monkeypatch, tmp_path, capsys):
     spec_dir = tmp_path / "specs" / "001-test"
     _write_spec_file(spec_dir)
 
+    monkeypatch.setenv("AUTO_CODEX_DISABLE_DEFAULT_CODEX_CONFIG_DIR", "1")
     monkeypatch.setenv("OPENAI_API_KEY", "invalid-key")
     monkeypatch.delenv("CLAUDE_CODE_OAUTH_TOKEN", raising=False)
     monkeypatch.delenv("CODEX_CODE_OAUTH_TOKEN", raising=False)
@@ -105,6 +107,7 @@ def test_validate_environment_invalid_codex_config_dir(monkeypatch, tmp_path, ca
     spec_dir = tmp_path / "specs" / "001-test"
     _write_spec_file(spec_dir)
 
+    monkeypatch.setenv("AUTO_CODEX_DISABLE_DEFAULT_CODEX_CONFIG_DIR", "1")
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
     monkeypatch.delenv("CODEX_CODE_OAUTH_TOKEN", raising=False)
     monkeypatch.setenv("CODEX_CONFIG_DIR", str(tmp_path / "missing"))

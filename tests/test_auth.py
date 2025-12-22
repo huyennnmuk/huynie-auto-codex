@@ -5,6 +5,8 @@ Auth module tests for Codex authentication sources.
 
 import pytest
 
+import core.auth as auth
+
 from core.auth import (
     get_auth_token,
     get_auth_token_source,
@@ -42,7 +44,23 @@ def test_get_auth_token_uses_config_dir(monkeypatch, tmp_path):
     assert get_auth_token_source() == "CODEX_CONFIG_DIR"
 
 
+def test_get_auth_token_uses_default_codex_config_dir(monkeypatch, tmp_path):
+    codex_dir = tmp_path / ".codex"
+    codex_dir.mkdir()
+    (codex_dir / "config.toml").write_text("")
+
+    monkeypatch.setattr(auth, "_DEFAULT_CODEX_CONFIG_DIR", str(codex_dir))
+    monkeypatch.delenv("AUTO_CODEX_DISABLE_DEFAULT_CODEX_CONFIG_DIR", raising=False)
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    monkeypatch.delenv("CODEX_CODE_OAUTH_TOKEN", raising=False)
+    monkeypatch.delenv("CODEX_CONFIG_DIR", raising=False)
+
+    assert get_auth_token() == str(codex_dir)
+    assert get_auth_token_source() == "DEFAULT_CODEX_CONFIG_DIR"
+
+
 def test_require_auth_token_invalid_format(monkeypatch):
+    monkeypatch.setenv("AUTO_CODEX_DISABLE_DEFAULT_CODEX_CONFIG_DIR", "1")
     monkeypatch.setenv("OPENAI_API_KEY", "not-a-key")
     monkeypatch.delenv("CODEX_CODE_OAUTH_TOKEN", raising=False)
     monkeypatch.delenv("CODEX_CONFIG_DIR", raising=False)
@@ -54,6 +72,7 @@ def test_require_auth_token_invalid_format(monkeypatch):
 
 
 def test_require_auth_token_deprecated_oauth(monkeypatch):
+    monkeypatch.setenv("AUTO_CODEX_DISABLE_DEFAULT_CODEX_CONFIG_DIR", "1")
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
     monkeypatch.delenv("CODEX_CODE_OAUTH_TOKEN", raising=False)
     monkeypatch.delenv("CODEX_CONFIG_DIR", raising=False)
@@ -75,6 +94,7 @@ def test_require_auth_token_deprecated_oauth(monkeypatch):
 def test_is_valid_openai_api_key():
     assert is_valid_openai_api_key("sk-test-1234567890abcdef1234") is True
     assert is_valid_openai_api_key("sk-proj-1234567890abcdef1234") is True
+    assert is_valid_openai_api_key("thirdparty-12345678901234567890") is True
     assert is_valid_openai_api_key("sk_123") is False
     assert is_valid_openai_api_key("not-a-key") is False
 

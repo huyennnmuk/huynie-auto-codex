@@ -36,11 +36,30 @@ SDK_ENV_VARS = [
 ]
 
 _OPENAI_KEY_PATTERN = re.compile(r"^sk-[A-Za-z0-9-]{20,}$")
+_DEFAULT_CODEX_CONFIG_DIR = os.path.expanduser("~/.codex")
+
+
+def _looks_like_api_key(token: str) -> bool:
+    """
+    Heuristic for API keys that aren't in the canonical `sk-...` format.
+
+    Some Codex-compatible third-party providers issue keys that do not start with `sk-`
+    (e.g. gateway/proxy keys). We treat these as valid if they are non-empty, contain
+    no whitespace, and have a reasonable minimum length.
+    """
+    t = (token or "").strip()
+    return bool(t) and (len(t) >= 20) and not any(c.isspace() for c in t)
 
 
 def is_valid_openai_api_key(token: str) -> bool:
-    """Return True if the token matches expected OpenAI API key format."""
-    return bool(_OPENAI_KEY_PATTERN.match(token or ""))
+    """
+    Return True if the token looks like an API key.
+
+    Accepts canonical OpenAI keys (`sk-...`) and also non-`sk-` keys used by
+    third-party Codex gateways.
+    """
+    t = (token or "").strip()
+    return bool(_OPENAI_KEY_PATTERN.match(t)) or _looks_like_api_key(t)
 
 
 def is_valid_codex_oauth_token(token: str) -> bool:
@@ -58,6 +77,22 @@ def is_valid_codex_config_dir(config_dir: str) -> bool:
     """Return True if CODEX_CONFIG_DIR points to an existing directory."""
     p = (config_dir or "").strip()
     return bool(p) and os.path.isdir(p)
+
+
+def has_default_codex_config_dir() -> bool:
+    """
+    Return True if the default Codex CLI config dir (~/.codex) looks usable.
+
+    This supports setups where Codex CLI auth is configured via its default
+    on-disk config (e.g. third-party provider profiles) without exporting env vars.
+    """
+    if os.environ.get("AUTO_CODEX_DISABLE_DEFAULT_CODEX_CONFIG_DIR", "").strip():
+        return False
+    if not os.path.isdir(_DEFAULT_CODEX_CONFIG_DIR):
+        return False
+    return os.path.isfile(os.path.join(_DEFAULT_CODEX_CONFIG_DIR, "config.toml")) or os.path.isfile(
+        os.path.join(_DEFAULT_CODEX_CONFIG_DIR, "auth.json")
+    )
 
 
 def get_deprecated_auth_token() -> str | None:
@@ -83,15 +118,18 @@ def get_auth_token() -> str | None:
     """
     openai_token = os.environ.get("OPENAI_API_KEY", "")
     if openai_token and is_valid_openai_api_key(openai_token):
-        return openai_token
+        return openai_token.strip()
 
     oauth_token = os.environ.get("CODEX_CODE_OAUTH_TOKEN", "")
     if oauth_token and is_valid_codex_oauth_token(oauth_token):
-        return oauth_token
+        return oauth_token.strip()
 
     config_dir = os.environ.get("CODEX_CONFIG_DIR", "")
     if config_dir and is_valid_codex_config_dir(config_dir):
-        return config_dir
+        return config_dir.strip()
+
+    if has_default_codex_config_dir():
+        return _DEFAULT_CODEX_CONFIG_DIR
 
     return None
 
@@ -109,6 +147,9 @@ def get_auth_token_source() -> str | None:
     config_dir = os.environ.get("CODEX_CONFIG_DIR", "")
     if config_dir and is_valid_codex_config_dir(config_dir):
         return "CODEX_CONFIG_DIR"
+
+    if has_default_codex_config_dir():
+        return "DEFAULT_CODEX_CONFIG_DIR"
 
     return None
 
@@ -128,7 +169,7 @@ def require_auth_token() -> str:
     if openai_token and not is_valid_openai_api_key(openai_token):
         raise ValueError(
             "Invalid OPENAI_API_KEY format.\n"
-            "Expected a key starting with 'sk-' (e.g., sk-...)."
+            "Expected a non-empty key without whitespace (OpenAI keys often start with 'sk-')."
         )
 
     oauth_token = os.environ.get("CODEX_CODE_OAUTH_TOKEN", "")
@@ -144,6 +185,9 @@ def require_auth_token() -> str:
             "Invalid CODEX_CONFIG_DIR.\n"
             f"Directory does not exist: {config_dir}"
         )
+
+    if has_default_codex_config_dir():
+        return _DEFAULT_CODEX_CONFIG_DIR
 
     deprecated_token = get_deprecated_auth_token()
     if deprecated_token:

@@ -113,7 +113,7 @@ def validate_environment(spec_dir: Path) -> bool:
     if openai_key and not is_valid_openai_api_key(openai_key):
         if not auth_token or source == "OPENAI_API_KEY":
             print("Error: Invalid OPENAI_API_KEY format")
-            print("Expected a key starting with 'sk-' (e.g., sk-...).")
+            print("Expected a non-empty key without whitespace (OpenAI keys often start with 'sk-').")
             valid = False
         else:
             print("Warning: Invalid OPENAI_API_KEY format ignored (another auth source is configured).")

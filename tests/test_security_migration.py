@@ -41,7 +41,8 @@ def test_from_security_profile_maps_allowed_commands() -> None:
     assert config.allowed_paths == ["./**"]
 
 
-def test_to_codex_args_includes_bypass_and_lists() -> None:
+def test_to_codex_args_includes_bypass_and_lists(monkeypatch) -> None:
+    monkeypatch.setenv("AUTO_CODEX_CODEXCLI_LEGACY_SECURITY_FLAGS", "1")
     config = CodexSecurityConfig(
         bypass_sandbox=True,
         allowed_commands=["git", "pytest"],
