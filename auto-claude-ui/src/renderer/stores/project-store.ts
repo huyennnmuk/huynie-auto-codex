@@ -180,7 +180,7 @@ export async function updateProjectSettings(
 }
 
 /**
- * 检查项目的 auto-claude 版本状态
+ * 检查项目的 auto-codex 版本状态
  */
 export async function checkProjectVersion(
   projectId: string
@@ -197,7 +197,7 @@ export async function checkProjectVersion(
 }
 
 /**
- * 在项目中初始化 auto-claude
+ * 在项目中初始化 auto-codex
  */
 export async function initializeProject(
   projectId: string
@@ -213,8 +213,8 @@ export async function initializeProject(
       console.log('[ProjectStore] IPC succeeded, result.data:', result.data);
       // 在本地状态中更新项目的 autoBuildPath
       if (result.data.success) {
-        console.log('[ProjectStore] Updating project autoBuildPath to .auto-claude');
-        store.updateProject(projectId, { autoBuildPath: '.auto-claude' });
+        console.log('[ProjectStore] Updating project autoBuildPath to .auto-codex');
+        store.updateProject(projectId, { autoBuildPath: '.auto-codex' });
       } else {
         console.log('[ProjectStore] result.data.success is false, not updating project');
       }
@@ -231,7 +231,7 @@ export async function initializeProject(
 }
 
 /**
- * 在项目中更新 auto-claude
+ * 在项目中更新 auto-codex
  */
 export async function updateProjectAutoBuild(
   projectId: string
@@ -243,7 +243,7 @@ export async function updateProjectAutoBuild(
     if (result.success && result.data) {
       return result.data;
     }
-    store.setError(result.error || 'Failed to update auto-claude');
+    store.setError(result.error || 'Failed to update auto-codex');
     return null;
   } catch (error) {
     store.setError(error instanceof Error ? error.message : 'Unknown error');

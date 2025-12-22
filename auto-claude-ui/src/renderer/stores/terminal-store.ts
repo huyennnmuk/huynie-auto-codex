@@ -4,7 +4,7 @@ import type { TerminalSession } from '../../shared/types';
 import { terminalBufferManager } from '../lib/terminal-buffer-manager';
 import { debugLog, debugError } from '../../shared/utils/debug-logger';
 
-export type TerminalStatus = 'idle' | 'running' | 'claude-active' | 'exited';
+export type TerminalStatus = 'idle' | 'running' | 'codex-active' | 'exited';
 
 export interface Terminal {
   id: string;
@@ -12,8 +12,8 @@ export interface Terminal {
   status: TerminalStatus;
   cwd: string;
   createdAt: Date;
-  isClaudeMode: boolean;
-  claudeSessionId?: string;  // 用于恢复的 Claude Code 会话 ID
+  isCodexMode: boolean;
+  codexSessionId?: string;  // 用于恢复的 Codex 会话 ID
   // outputBuffer 已移除 - 现在由 terminalBufferManager 单例管理
   isRestored?: boolean;  // 该终端是否从已保存的会话恢复
   associatedTaskId?: string;  // 与此终端关联的任务 ID（用于加载上下文）
@@ -41,8 +41,8 @@ interface TerminalState {
   updateTerminal: (id: string, updates: Partial<Terminal>) => void;
   setActiveTerminal: (id: string | null) => void;
   setTerminalStatus: (id: string, status: TerminalStatus) => void;
-  setClaudeMode: (id: string, isClaudeMode: boolean) => void;
-  setClaudeSessionId: (id: string, sessionId: string) => void;
+  setCodexMode: (id: string, isCodexMode: boolean) => void;
+  setCodexSessionId: (id: string, sessionId: string) => void;
   setAssociatedTask: (id: string, taskId: string | undefined) => void;
   appendOutput: (id: string, data: string) => void;
   clearOutputBuffer: (id: string) => void;
@@ -74,7 +74,7 @@ export const useTerminalStore = create<TerminalState>((set, get) => ({
       status: 'idle',
       cwd: cwd || process.env.HOME || '~',
       createdAt: new Date(),
-      isClaudeMode: false,
+      isCodexMode: false,
       // outputBuffer 已移除 - 由 terminalBufferManager 管理
     };
 
@@ -101,8 +101,8 @@ export const useTerminalStore = create<TerminalState>((set, get) => ({
       status: 'idle',  // 当 PTY 创建后会更新为 'running'
       cwd: session.cwd,
       createdAt: new Date(session.createdAt),
-      isClaudeMode: session.isClaudeMode,
-      claudeSessionId: session.claudeSessionId,
+      isCodexMode: session.isCodexMode,
+      codexSessionId: session.codexSessionId,
       // outputBuffer 现在存储在 terminalBufferManager 中
       isRestored: true,
     };
@@ -157,20 +157,20 @@ export const useTerminalStore = create<TerminalState>((set, get) => ({
     }));
   },
 
-  setClaudeMode: (id: string, isClaudeMode: boolean) => {
+  setCodexMode: (id: string, isCodexMode: boolean) => {
     set((state) => ({
       terminals: state.terminals.map((t) =>
         t.id === id
-          ? { ...t, isClaudeMode, status: isClaudeMode ? 'claude-active' : 'running' }
+          ? { ...t, isCodexMode, status: isCodexMode ? 'codex-active' : 'running' }
           : t
       ),
     }));
   },
 
-  setClaudeSessionId: (id: string, sessionId: string) => {
+  setCodexSessionId: (id: string, sessionId: string) => {
     set((state) => ({
       terminals: state.terminals.map((t) =>
-        t.id === id ? { ...t, claudeSessionId: sessionId } : t
+        t.id === id ? { ...t, codexSessionId: sessionId } : t
       ),
     }));
   },

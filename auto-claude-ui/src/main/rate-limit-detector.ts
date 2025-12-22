@@ -1,12 +1,12 @@
 /**
- * Rate limit detection utility for Claude CLI/SDK calls.
+ * Rate limit detection utility for Codex CLI/SDK calls.
  * Detects rate limit errors in stdout/stderr output and provides context.
  */
 
-import { getClaudeProfileManager } from './claude-profile-manager';
+import { getCodexProfileManager } from './codex-profile-manager';
 
 /**
- * Regex pattern to detect Claude Code rate limit messages
+ * Regex pattern to detect Codex Code rate limit messages
  * Matches: "Limit reached · resets Dec 17 at 6am (Europe/Oslo)"
  */
 const RATE_LIMIT_PATTERN = /Limit reached\s*[·•]\s*resets\s+(.+?)(?:\s*$|\n)/im;
@@ -24,7 +24,7 @@ const RATE_LIMIT_INDICATORS = [
 
 /**
  * Patterns that indicate authentication failures
- * These patterns detect when Claude CLI/SDK fails due to missing or invalid auth
+ * These patterns detect when Codex CLI/SDK fails due to missing or invalid auth
  */
 const AUTH_FAILURE_PATTERNS = [
   /authentication\s*(is\s*)?required/i,
@@ -106,7 +106,7 @@ export function detectRateLimit(
     const limitType = classifyLimitType(resetTime);
 
     // Record the rate limit event in the profile manager
-    const profileManager = getClaudeProfileManager();
+    const profileManager = getCodexProfileManager();
     const effectiveProfileId = profileId || profileManager.getActiveProfile().id;
 
     try {
@@ -134,7 +134,7 @@ export function detectRateLimit(
   // Check for secondary rate limit indicators
   for (const pattern of RATE_LIMIT_INDICATORS) {
     if (pattern.test(output)) {
-      const profileManager = getClaudeProfileManager();
+      const profileManager = getCodexProfileManager();
       const effectiveProfileId = profileId || profileManager.getActiveProfile().id;
       const bestProfile = profileManager.getBestAvailableProfile(effectiveProfileId);
 
@@ -192,14 +192,14 @@ function classifyAuthFailureType(output: string): 'missing' | 'invalid' | 'expir
 function getAuthFailureMessage(failureType: 'missing' | 'invalid' | 'expired' | 'unknown'): string {
   switch (failureType) {
     case 'missing':
-      return 'Claude authentication required. Please go to Settings > Claude Profiles and authenticate your account.';
+      return 'Codex authentication required. Please go to Settings > Codex Profiles and authenticate your account.';
     case 'expired':
-      return 'Your Claude session has expired. Please re-authenticate in Settings > Claude Profiles.';
+      return 'Your Codex session has expired. Please re-authenticate in Settings > Codex Profiles.';
     case 'invalid':
-      return 'Invalid Claude credentials. Please check your OAuth token or re-authenticate in Settings > Claude Profiles.';
+      return 'Invalid Codex credentials. Please check your OAuth token or re-authenticate in Settings > Codex Profiles.';
     case 'unknown':
     default:
-      return 'Claude authentication failed. Please verify your authentication in Settings > Claude Profiles.';
+      return 'Codex authentication failed. Please verify your authentication in Settings > Codex Profiles.';
   }
 }
 
@@ -218,7 +218,7 @@ export function detectAuthFailure(
   // Check for authentication failure patterns
   for (const pattern of AUTH_FAILURE_PATTERNS) {
     if (pattern.test(output)) {
-      const profileManager = getClaudeProfileManager();
+      const profileManager = getCodexProfileManager();
       const effectiveProfileId = profileId || profileManager.getActiveProfile().id;
       const failureType = classifyAuthFailureType(output);
 
@@ -243,13 +243,13 @@ export function isAuthFailureError(output: string): boolean {
 }
 
 /**
- * Get environment variables for a specific Claude profile.
- * Uses OAuth token (CLAUDE_CODE_OAUTH_TOKEN) if available, otherwise falls back to CLAUDE_CONFIG_DIR.
+ * Get environment variables for a specific Codex profile.
+ * Uses OAuth token (CODEX_CODE_OAUTH_TOKEN) if available, otherwise falls back to CODEX_CONFIG_DIR.
  * OAuth tokens are preferred as they provide instant, reliable profile switching.
  * Note: Tokens are decrypted automatically by the profile manager.
  */
 export function getProfileEnv(profileId?: string): Record<string, string> {
-  const profileManager = getClaudeProfileManager();
+  const profileManager = getCodexProfileManager();
   const profile = profileId
     ? profileManager.getProfile(profileId)
     : profileManager.getActiveProfile();
@@ -278,7 +278,7 @@ export function getProfileEnv(profileId?: string): Record<string, string> {
     if (decryptedToken) {
       console.warn('[getProfileEnv] Using OAuth token for profile:', profile.name);
       return {
-        CLAUDE_CODE_OAUTH_TOKEN: decryptedToken
+        CODEX_CODE_OAUTH_TOKEN: decryptedToken
       };
     } else {
       console.warn('[getProfileEnv] Failed to decrypt token for profile:', profile.name);
@@ -294,9 +294,9 @@ export function getProfileEnv(profileId?: string): Record<string, string> {
   // Fallback: Use configDir for profiles without OAuth token (legacy)
   if (profile.configDir) {
     console.warn('[getProfileEnv] Using configDir fallback for profile:', profile.name);
-    console.warn('[getProfileEnv] WARNING: Profile has no OAuth token. Run "claude setup-token" and save the token to enable instant switching.');
+    console.warn('[getProfileEnv] WARNING: Profile has no OAuth token. Run "codex setup-token" and save the token to enable instant switching.');
     return {
-      CLAUDE_CONFIG_DIR: profile.configDir
+      CODEX_CONFIG_DIR: profile.configDir
     };
   }
 
@@ -305,10 +305,10 @@ export function getProfileEnv(profileId?: string): Record<string, string> {
 }
 
 /**
- * Get the active Claude profile ID
+ * Get the active Codex profile ID
  */
 export function getActiveProfileId(): string {
-  return getClaudeProfileManager().getActiveProfile().id;
+  return getCodexProfileManager().getActiveProfile().id;
 }
 
 /**
@@ -362,7 +362,7 @@ export function createSDKRateLimitInfo(
     taskId?: string;
   }
 ): SDKRateLimitInfo {
-  const profileManager = getClaudeProfileManager();
+  const profileManager = getCodexProfileManager();
   const profile = detection.profileId
     ? profileManager.getProfile(detection.profileId)
     : profileManager.getActiveProfile();

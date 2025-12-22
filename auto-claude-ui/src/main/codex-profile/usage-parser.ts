@@ -1,9 +1,9 @@
 /**
  * Usage Parser Module
- * Handles parsing of Claude /usage command output and reset time calculations
+ * Handles parsing of Codex /usage command output and reset time calculations
  */
 
-import type { ClaudeUsageData } from '../../shared/types';
+import type { CodexUsageData } from '../../shared/types';
 
 /**
  * Regex to parse /usage command output
@@ -79,15 +79,15 @@ export function classifyRateLimitType(resetTimeStr: string): 'session' | 'weekly
 }
 
 /**
- * Parse Claude /usage command output into structured data
+ * Parse Codex /usage command output into structured data
  * Expected format sections:
  * "Current session ████▌ 9% used Resets 11:59pm"
  * "Current week (all models) 79% used Resets Nov 1, 10:59am"
  * "Current week (Opus) 0% used"
  */
-export function parseUsageOutput(usageOutput: string): ClaudeUsageData {
+export function parseUsageOutput(usageOutput: string): CodexUsageData {
   const sections = usageOutput.split(/Current\s+/i).filter(Boolean);
-  const usage: ClaudeUsageData = {
+  const usage: CodexUsageData = {
     sessionUsagePercent: 0,
     sessionResetTime: '',
     weeklyUsagePercent: 0,

@@ -23,8 +23,8 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Card, CardContent } from '../ui/card';
 import { cn } from '../../lib/utils';
-import { loadClaudeProfiles as loadGlobalClaudeProfiles } from '../../stores/claude-profile-store';
-import type { ClaudeProfile } from '../../../shared/types';
+import { loadCodexProfiles as loadGlobalCodexProfiles } from '../../stores/codex-profile-store';
+import type { CodexProfile } from '../../../shared/types';
 
 interface OAuthStepProps {
   onNext: () => void;
@@ -34,12 +34,12 @@ interface OAuthStepProps {
 
 /**
  * OAuth step component for the onboarding wizard.
- * Guides users through Claude profile management and OAuth authentication,
+ * Guides users through Codex profile management and OAuth authentication,
  * reusing patterns from IntegrationSettings.tsx.
  */
 export function OAuthStep({ onNext, onBack, onSkip }: OAuthStepProps) {
-  // Claude Profiles state
-  const [claudeProfiles, setClaudeProfiles] = useState<ClaudeProfile[]>([]);
+  // Codex Profiles state
+  const [codexProfiles, setCodexProfiles] = useState<CodexProfile[]>([]);
   const [activeProfileId, setActiveProfileId] = useState<string | null>(null);
   const [isLoadingProfiles, setIsLoadingProfiles] = useState(true);
   const [newProfileName, setNewProfileName] = useState('');
@@ -60,21 +60,21 @@ export function OAuthStep({ onNext, onBack, onSkip }: OAuthStepProps) {
   const [error, setError] = useState<string | null>(null);
 
   // Derived state: check if at least one profile is authenticated
-  const hasAuthenticatedProfile = claudeProfiles.some(
+  const hasAuthenticatedProfile = codexProfiles.some(
     (profile) => profile.oauthToken || (profile.isDefault && profile.configDir)
   );
 
-  // Reusable function to load Claude profiles
-  const loadClaudeProfiles = async () => {
+  // Reusable function to load Codex profiles
+  const loadCodexProfiles = async () => {
     setIsLoadingProfiles(true);
     setError(null);
     try {
-      const result = await window.electronAPI.getClaudeProfiles();
+      const result = await window.electronAPI.getCodexProfiles();
       if (result.success && result.data) {
-        setClaudeProfiles(result.data.profiles);
+        setCodexProfiles(result.data.profiles);
         setActiveProfileId(result.data.activeProfileId);
         // Also update the global store
-        await loadGlobalClaudeProfiles();
+        await loadGlobalCodexProfiles();
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : '加载配置文件失败');
@@ -83,9 +83,9 @@ export function OAuthStep({ onNext, onBack, onSkip }: OAuthStepProps) {
     }
   };
 
-  // Load Claude profiles on mount
+  // Load Codex profiles on mount
   useEffect(() => {
-    loadClaudeProfiles();
+    loadCodexProfiles();
   }, []);
 
   // Listen for OAuth authentication completion
@@ -93,7 +93,7 @@ export function OAuthStep({ onNext, onBack, onSkip }: OAuthStepProps) {
     const unsubscribe = window.electronAPI.onTerminalOAuthToken(async (info) => {
       if (info.success && info.profileId) {
         // Reload profiles to show updated state
-        await loadClaudeProfiles();
+        await loadCodexProfiles();
         // Show simple success notification
         alert(`✅ 配置文件认证成功！\n\n${info.email ? `账户：${info.email}` : '认证完成。'}\n\n现在可以使用该配置文件。`);
       }
@@ -112,29 +112,29 @@ export function OAuthStep({ onNext, onBack, onSkip }: OAuthStepProps) {
       const profileName = newProfileName.trim();
       const profileSlug = profileName.toLowerCase().replace(/\s+/g, '-');
 
-      const result = await window.electronAPI.saveClaudeProfile({
+      const result = await window.electronAPI.saveCodexProfile({
         id: `profile-${Date.now()}`,
         name: profileName,
-        configDir: `~/.claude-profiles/${profileSlug}`,
+        configDir: `~/.codex-profiles/${profileSlug}`,
         isDefault: false,
         createdAt: new Date()
       });
 
       if (result.success && result.data) {
         // Initialize the profile (starts OAuth flow)
-        const initResult = await window.electronAPI.initializeClaudeProfile(result.data.id);
+        const initResult = await window.electronAPI.initializeCodexProfile(result.data.id);
 
         if (initResult.success) {
-          await loadClaudeProfiles();
+          await loadCodexProfiles();
           setNewProfileName('');
 
           alert(
             `正在认证“${profileName}”...\n\n` +
-            `将打开浏览器窗口，使用你的 Claude 账户登录。\n\n` +
+            `将打开浏览器窗口，使用你的 Codex 账户登录。\n\n` +
             `认证完成后会自动保存。`
           );
         } else {
-          await loadClaudeProfiles();
+          await loadCodexProfiles();
           alert(`启动认证失败：${initResult.error || '请重试。'}`);
         }
       }
@@ -150,9 +150,9 @@ export function OAuthStep({ onNext, onBack, onSkip }: OAuthStepProps) {
     setDeletingProfileId(profileId);
     setError(null);
     try {
-      const result = await window.electronAPI.deleteClaudeProfile(profileId);
+      const result = await window.electronAPI.deleteCodexProfile(profileId);
       if (result.success) {
-        await loadClaudeProfiles();
+        await loadCodexProfiles();
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : '删除配置文件失败');
@@ -161,7 +161,7 @@ export function OAuthStep({ onNext, onBack, onSkip }: OAuthStepProps) {
     }
   };
 
-  const startEditingProfile = (profile: ClaudeProfile) => {
+  const startEditingProfile = (profile: CodexProfile) => {
     setEditingProfileId(profile.id);
     setEditingProfileName(profile.name);
   };
@@ -176,9 +176,9 @@ export function OAuthStep({ onNext, onBack, onSkip }: OAuthStepProps) {
 
     setError(null);
     try {
-      const result = await window.electronAPI.renameClaudeProfile(editingProfileId, editingProfileName.trim());
+      const result = await window.electronAPI.renameCodexProfile(editingProfileId, editingProfileName.trim());
       if (result.success) {
-        await loadClaudeProfiles();
+        await loadCodexProfiles();
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : '重命名配置文件失败');
@@ -191,10 +191,10 @@ export function OAuthStep({ onNext, onBack, onSkip }: OAuthStepProps) {
   const handleSetActiveProfile = async (profileId: string) => {
     setError(null);
     try {
-      const result = await window.electronAPI.setActiveClaudeProfile(profileId);
+      const result = await window.electronAPI.setActiveCodexProfile(profileId);
       if (result.success) {
         setActiveProfileId(profileId);
-        await loadGlobalClaudeProfiles();
+        await loadGlobalCodexProfiles();
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : '设置当前配置文件失败');
@@ -205,11 +205,11 @@ export function OAuthStep({ onNext, onBack, onSkip }: OAuthStepProps) {
     setAuthenticatingProfileId(profileId);
     setError(null);
     try {
-      const initResult = await window.electronAPI.initializeClaudeProfile(profileId);
+      const initResult = await window.electronAPI.initializeCodexProfile(profileId);
       if (initResult.success) {
         alert(
           `正在认证配置文件...\n\n` +
-          `将打开浏览器窗口，使用你的 Claude 账户登录。\n\n` +
+          `将打开浏览器窗口，使用你的 Codex 账户登录。\n\n` +
           `认证完成后会自动保存。`
         );
       } else {
@@ -243,13 +243,13 @@ export function OAuthStep({ onNext, onBack, onSkip }: OAuthStepProps) {
     setSavingTokenProfileId(profileId);
     setError(null);
     try {
-      const result = await window.electronAPI.setClaudeProfileToken(
+      const result = await window.electronAPI.setCodexProfileToken(
         profileId,
         manualToken.trim(),
         manualTokenEmail.trim() || undefined
       );
       if (result.success) {
-        await loadClaudeProfiles();
+        await loadCodexProfiles();
         setExpandedTokenProfileId(null);
         setManualToken('');
         setManualTokenEmail('');
@@ -280,10 +280,10 @@ export function OAuthStep({ onNext, onBack, onSkip }: OAuthStepProps) {
             </div>
           </div>
           <h1 className="text-2xl font-bold text-foreground tracking-tight">
-            配置 Claude 认证
+            配置 Codex 认证
           </h1>
           <p className="mt-2 text-muted-foreground">
-            添加 Claude 账户以启用 AI 功能
+            添加 Codex 账户以启用 AI 功能
           </p>
         </div>
 
@@ -316,7 +316,7 @@ export function OAuthStep({ onNext, onBack, onSkip }: OAuthStepProps) {
                   <Info className="h-5 w-5 text-info shrink-0 mt-0.5" />
                   <div className="flex-1">
                     <p className="text-sm text-muted-foreground">
-                      添加多个 Claude 订阅，在达到速率限制时可自动切换。
+                      添加多个 Codex 订阅，在达到速率限制时可自动切换。
                     </p>
                   </div>
                 </div>
@@ -325,13 +325,13 @@ export function OAuthStep({ onNext, onBack, onSkip }: OAuthStepProps) {
 
             {/* Profile list */}
             <div className="rounded-lg bg-muted/30 border border-border p-4">
-              {claudeProfiles.length === 0 ? (
+              {codexProfiles.length === 0 ? (
                 <div className="rounded-lg border border-dashed border-border p-4 text-center mb-4">
                   <p className="text-sm text-muted-foreground">尚未配置任何账户</p>
                 </div>
               ) : (
                 <div className="space-y-2 mb-4">
-                  {claudeProfiles.map((profile) => (
+                  {codexProfiles.map((profile) => (
                     <div
                       key={profile.id}
                       className={cn(
@@ -497,7 +497,7 @@ export function OAuthStep({ onNext, onBack, onSkip }: OAuthStepProps) {
                                 手动输入令牌
                               </Label>
                               <span className="text-xs text-muted-foreground">
-                                运行 <code className="px-1 py-0.5 bg-muted rounded font-mono text-xs">claude setup-token</code> 获取令牌
+                                运行 <code className="px-1 py-0.5 bg-muted rounded font-mono text-xs">codex setup-token</code> 获取令牌
                               </span>
                             </div>
 
@@ -595,7 +595,7 @@ export function OAuthStep({ onNext, onBack, onSkip }: OAuthStepProps) {
                   <div className="flex items-start gap-3">
                     <CheckCircle2 className="h-5 w-5 text-success shrink-0 mt-0.5" />
                     <p className="text-sm text-success">
-                      你至少有一个已认证的 Claude 账户，可以继续下一步。
+                      你至少有一个已认证的 Codex 账户，可以继续下一步。
                     </p>
                   </div>
                 </CardContent>

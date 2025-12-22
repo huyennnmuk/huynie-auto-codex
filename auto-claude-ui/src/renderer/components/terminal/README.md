@@ -46,7 +46,7 @@ Terminal (main component - 196 lines, down from 767)
 
 **TerminalHeader.tsx** (94 lines)
 - Renders terminal header with status indicator
-- Contains Claude invocation button
+- Contains Codex invocation button
 - Integrates title editing and task selection
 - Handles terminal close action
 
@@ -92,14 +92,14 @@ Terminal (main component - 196 lines, down from 767)
 - Handles terminal output streaming
 - Manages exit notifications
 - Tracks title changes from shell
-- Captures Claude session IDs
+- Captures Codex session IDs
 
 **useAutoNaming.ts** (62 lines)
 - Generates intelligent terminal names based on commands
 - Filters out common/short commands
 - Debounces naming requests (1.5s delay)
 - Only runs when auto-naming is enabled
-- Respects Claude mode (no auto-naming during Claude sessions)
+- Respects Codex mode (no auto-naming during Codex sessions)
 
 ## Key Improvements
 

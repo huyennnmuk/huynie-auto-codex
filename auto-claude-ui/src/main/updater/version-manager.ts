@@ -31,15 +31,15 @@ export function getEffectiveVersion(): string {
   if (app.isPackaged) {
     // Production: check userData override path
     metadataPaths.push(
-      path.join(app.getPath('userData'), 'auto-claude-source', '.update-metadata.json')
+      path.join(app.getPath('userData'), 'auto-codex-source', '.update-metadata.json')
     );
   } else {
     // Development: check the actual source paths where updates are written
     const possibleSourcePaths = [
-      path.join(app.getAppPath(), '..', 'auto-claude'),
-      path.join(app.getAppPath(), '..', '..', 'auto-claude'),
-      path.join(process.cwd(), 'auto-claude'),
-      path.join(process.cwd(), '..', 'auto-claude')
+      path.join(app.getAppPath(), '..', 'auto-codex'),
+      path.join(app.getAppPath(), '..', '..', 'auto-codex'),
+      path.join(process.cwd(), 'auto-codex'),
+      path.join(process.cwd(), '..', 'auto-codex')
     ];
 
     for (const sourcePath of possibleSourcePaths) {

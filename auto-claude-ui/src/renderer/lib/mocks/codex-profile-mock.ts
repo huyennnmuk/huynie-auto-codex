@@ -1,9 +1,9 @@
 /**
- * Mock implementation for Claude profile management operations
+ * Mock implementation for Codex profile management operations
  */
 
-export const claudeProfileMock = {
-  getClaudeProfiles: async () => ({
+export const codexProfileMock = {
+  getCodexProfiles: async () => ({
     success: true,
     data: {
       profiles: [],
@@ -11,7 +11,7 @@ export const claudeProfileMock = {
     }
   }),
 
-  saveClaudeProfile: async (profile: { id: string; name: string; oauthToken?: string; email?: string; isDefault?: boolean; createdAt?: Date }) => ({
+  saveCodexProfile: async (profile: { id: string; name: string; oauthToken?: string; email?: string; isDefault?: boolean; createdAt?: Date }) => ({
     success: true,
     data: {
       id: profile.id,
@@ -23,17 +23,17 @@ export const claudeProfileMock = {
     }
   }),
 
-  deleteClaudeProfile: async () => ({ success: true }),
+  deleteCodexProfile: async () => ({ success: true }),
 
-  renameClaudeProfile: async () => ({ success: true }),
+  renameCodexProfile: async () => ({ success: true }),
 
-  setActiveClaudeProfile: async () => ({ success: true }),
+  setActiveCodexProfile: async () => ({ success: true }),
 
-  switchClaudeProfile: async () => ({ success: true }),
+  switchCodexProfile: async () => ({ success: true }),
 
-  initializeClaudeProfile: async () => ({ success: true }),
+  initializeCodexProfile: async () => ({ success: true }),
 
-  setClaudeProfileToken: async () => ({ success: true }),
+  setCodexProfileToken: async () => ({ success: true }),
 
   getAutoSwitchSettings: async () => ({
     success: true,
@@ -49,7 +49,7 @@ export const claudeProfileMock = {
 
   updateAutoSwitchSettings: async () => ({ success: true }),
 
-  fetchClaudeUsage: async () => ({ success: true }),
+  fetchCodexUsage: async () => ({ success: true }),
 
   getBestAvailableProfile: async () => ({
     success: true,

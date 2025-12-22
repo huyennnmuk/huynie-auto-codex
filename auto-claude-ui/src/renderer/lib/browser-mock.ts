@@ -12,7 +12,7 @@ import {
   taskMock,
   workspaceMock,
   terminalMock,
-  claudeProfileMock,
+  codexProfileMock,
   contextMock,
   integrationMock,
   changelogMock,
@@ -41,8 +41,8 @@ const browserMockAPI: ElectronAPI = {
   // Terminal Operations
   ...terminalMock,
 
-  // Claude Profile Management
-  ...claudeProfileMock,
+  // Codex Profile Management
+  ...codexProfileMock,
 
   // Settings
   ...settingsMock,

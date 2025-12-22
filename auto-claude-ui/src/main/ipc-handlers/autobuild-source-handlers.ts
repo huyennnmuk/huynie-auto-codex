@@ -5,7 +5,7 @@ import type { IPCResult } from '../../shared/types';
 import path from 'path';
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import type { AutoBuildSourceUpdateProgress, SourceEnvConfig, SourceEnvCheckResult } from '../../shared/types';
-import { checkForUpdates as checkSourceUpdates, downloadAndApplyUpdate, getBundledVersion, getEffectiveVersion, getEffectiveSourcePath } from '../auto-claude-updater';
+import { checkForUpdates as checkSourceUpdates, downloadAndApplyUpdate, getBundledVersion, getEffectiveVersion, getEffectiveSourcePath } from '../auto-codex-updater';
 import { debugLog } from '../../shared/utils/debug-logger';
 
 
@@ -16,7 +16,7 @@ export function registerAutobuildSourceHandlers(
   getMainWindow: () => BrowserWindow | null
 ): void {
   // ============================================
-  // Auto Claude Source Update Operations
+  // Auto Codex Source Update Operations
   // ============================================
 
   ipcMain.handle(
@@ -118,7 +118,7 @@ export function registerAutobuildSourceHandlers(
   );
 
   // ============================================
-  // Auto Claude Source Environment Operations
+  // Auto Codex Source Environment Operations
   // ============================================
 
   /**
@@ -154,7 +154,7 @@ export function registerAutobuildSourceHandlers(
           return {
             success: true,
             data: {
-              hasClaudeToken: false,
+              hasCodexToken: false,
               envExists: false,
               sourcePath: undefined
             }
@@ -168,7 +168,7 @@ export function registerAutobuildSourceHandlers(
           return {
             success: true,
             data: {
-              hasClaudeToken: false,
+              hasCodexToken: false,
               envExists: false,
               sourcePath
             }
@@ -177,13 +177,13 @@ export function registerAutobuildSourceHandlers(
 
         const content = readFileSync(envPath, 'utf-8');
         const vars = parseSourceEnvFile(content);
-        const hasToken = !!vars['CLAUDE_CODE_OAUTH_TOKEN'];
+        const hasToken = !!vars['CODEX_CODE_OAUTH_TOKEN'];
 
         return {
           success: true,
           data: {
-            hasClaudeToken: hasToken,
-            claudeOAuthToken: hasToken ? vars['CLAUDE_CODE_OAUTH_TOKEN'] : undefined,
+            hasCodexToken: hasToken,
+            codexOAuthToken: hasToken ? vars['CODEX_CODE_OAUTH_TOKEN'] : undefined,
             envExists: true,
             sourcePath
           }
@@ -199,13 +199,13 @@ export function registerAutobuildSourceHandlers(
 
   ipcMain.handle(
     IPC_CHANNELS.AUTOBUILD_SOURCE_ENV_UPDATE,
-    async (_, config: { claudeOAuthToken?: string }): Promise<IPCResult> => {
+    async (_, config: { codexOAuthToken?: string }): Promise<IPCResult> => {
       try {
         const sourcePath = getEffectiveSourcePath();
         if (!sourcePath) {
           return {
             success: false,
-            error: 'Auto-Claude source path not found. Please configure it in App Settings.'
+            error: 'Auto-Codex source path not found. Please configure it in App Settings.'
           };
         }
 
@@ -221,8 +221,8 @@ export function registerAutobuildSourceHandlers(
         }
 
         // Update the token
-        if (config.claudeOAuthToken !== undefined) {
-          existingVars['CLAUDE_CODE_OAUTH_TOKEN'] = config.claudeOAuthToken;
+        if (config.codexOAuthToken !== undefined) {
+          existingVars['CODEX_CODE_OAUTH_TOKEN'] = config.codexOAuthToken;
         }
 
         // Rebuild the .env file preserving comments and structure
@@ -281,7 +281,7 @@ export function registerAutobuildSourceHandlers(
             data: {
               hasToken: false,
               sourcePath: undefined,
-              error: 'Auto-Claude source path not found'
+              error: 'Auto-Codex source path not found'
             }
           };
         }
@@ -300,7 +300,7 @@ export function registerAutobuildSourceHandlers(
 
         const content = readFileSync(envPath, 'utf-8');
         const vars = parseSourceEnvFile(content);
-        const hasToken = !!vars['CLAUDE_CODE_OAUTH_TOKEN'] && vars['CLAUDE_CODE_OAUTH_TOKEN'].length > 0;
+        const hasToken = !!vars['CODEX_CODE_OAUTH_TOKEN'] && vars['CODEX_CODE_OAUTH_TOKEN'].length > 0;
 
         return {
           success: true,

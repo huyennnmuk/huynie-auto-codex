@@ -1,6 +1,6 @@
 /**
  * Session Handler Module
- * Manages terminal session persistence, restoration, and Claude session tracking
+ * Manages terminal session persistence, restoration, and Codex session tracking
  */
 
 import * as fs from 'fs';
@@ -12,67 +12,67 @@ import { IPC_CHANNELS } from '../../shared/constants';
 import { debugLog, debugError } from '../../shared/utils/debug-logger';
 
 /**
- * Get the Claude project slug from a project path.
- * Claude uses the full path with forward slashes replaced by dashes.
+ * Get the Codex project slug from a project path.
+ * Codex uses the full path with forward slashes replaced by dashes.
  */
-function getClaudeProjectSlug(projectPath: string): string {
+function getCodexProjectSlug(projectPath: string): string {
   return projectPath.replace(/[/\\]/g, '-');
 }
 
 /**
- * Find the most recent Claude session file for a project
+ * Find the most recent Codex session file for a project
  */
-export function findMostRecentClaudeSession(projectPath: string): string | null {
-  const slug = getClaudeProjectSlug(projectPath);
-  const claudeProjectDir = path.join(os.homedir(), '.claude', 'projects', slug);
+export function findMostRecentCodexSession(projectPath: string): string | null {
+  const slug = getCodexProjectSlug(projectPath);
+  const codexProjectDir = path.join(os.homedir(), '.codex', 'projects', slug);
 
   try {
-    if (!fs.existsSync(claudeProjectDir)) {
-      debugLog('[SessionHandler] Claude project directory not found:', claudeProjectDir);
+    if (!fs.existsSync(codexProjectDir)) {
+      debugLog('[SessionHandler] Codex project directory not found:', codexProjectDir);
       return null;
     }
 
-    const files = fs.readdirSync(claudeProjectDir)
+    const files = fs.readdirSync(codexProjectDir)
       .filter(f => f.endsWith('.jsonl'))
       .map(f => ({
         name: f,
-        path: path.join(claudeProjectDir, f),
-        mtime: fs.statSync(path.join(claudeProjectDir, f)).mtime.getTime()
+        path: path.join(codexProjectDir, f),
+        mtime: fs.statSync(path.join(codexProjectDir, f)).mtime.getTime()
       }))
       .sort((a, b) => b.mtime - a.mtime);
 
     if (files.length === 0) {
-      debugLog('[SessionHandler] No Claude session files found in:', claudeProjectDir);
+      debugLog('[SessionHandler] No Codex session files found in:', codexProjectDir);
       return null;
     }
 
     const sessionId = files[0].name.replace('.jsonl', '');
-    debugLog('[SessionHandler] Found most recent Claude session:', sessionId);
+    debugLog('[SessionHandler] Found most recent Codex session:', sessionId);
     return sessionId;
   } catch (error) {
-    debugError('[SessionHandler] Error finding Claude session:', error);
+    debugError('[SessionHandler] Error finding Codex session:', error);
     return null;
   }
 }
 
 /**
- * Find a Claude session created/modified after a given timestamp
+ * Find a Codex session created/modified after a given timestamp
  */
-export function findClaudeSessionAfter(projectPath: string, afterTimestamp: number): string | null {
-  const slug = getClaudeProjectSlug(projectPath);
-  const claudeProjectDir = path.join(os.homedir(), '.claude', 'projects', slug);
+export function findCodexSessionAfter(projectPath: string, afterTimestamp: number): string | null {
+  const slug = getCodexProjectSlug(projectPath);
+  const codexProjectDir = path.join(os.homedir(), '.codex', 'projects', slug);
 
   try {
-    if (!fs.existsSync(claudeProjectDir)) {
+    if (!fs.existsSync(codexProjectDir)) {
       return null;
     }
 
-    const files = fs.readdirSync(claudeProjectDir)
+    const files = fs.readdirSync(codexProjectDir)
       .filter(f => f.endsWith('.jsonl'))
       .map(f => ({
         name: f,
-        path: path.join(claudeProjectDir, f),
-        mtime: fs.statSync(path.join(claudeProjectDir, f)).mtime.getTime()
+        path: path.join(codexProjectDir, f),
+        mtime: fs.statSync(path.join(codexProjectDir, f)).mtime.getTime()
       }))
       .filter(f => f.mtime > afterTimestamp)
       .sort((a, b) => b.mtime - a.mtime);
@@ -83,7 +83,7 @@ export function findClaudeSessionAfter(projectPath: string, afterTimestamp: numb
 
     return files[0].name.replace('.jsonl', '');
   } catch (error) {
-    debugError('[SessionHandler] Error finding Claude session:', error);
+    debugError('[SessionHandler] Error finding Codex session:', error);
     return null;
   }
 }
@@ -102,8 +102,8 @@ export function persistSession(terminal: TerminalProcess): void {
     title: terminal.title,
     cwd: terminal.cwd,
     projectPath: terminal.projectPath,
-    isClaudeMode: terminal.isClaudeMode,
-    claudeSessionId: terminal.claudeSessionId,
+    isCodexMode: terminal.isCodexMode,
+    codexSessionId: terminal.codexSessionId,
     outputBuffer: terminal.outputBuffer,
     createdAt: new Date().toISOString(),
     lastActiveAt: new Date().toISOString()
@@ -137,15 +137,15 @@ export function removePersistedSession(terminal: TerminalProcess): void {
 }
 
 /**
- * Update Claude session ID in persistent storage
+ * Update Codex session ID in persistent storage
  */
-export function updateClaudeSessionId(
+export function updateCodexSessionId(
   projectPath: string,
   terminalId: string,
   sessionId: string
 ): void {
   const store = getTerminalSessionStore();
-  store.updateClaudeSessionId(projectPath, terminalId, sessionId);
+  store.updateCodexSessionId(projectPath, terminalId, sessionId);
 }
 
 /**
@@ -183,9 +183,9 @@ export function getSessionsForDate(date: string, projectPath: string): TerminalS
 }
 
 /**
- * Attempt to capture Claude session ID by polling the session directory
+ * Attempt to capture Codex session ID by polling the session directory
  */
-export function captureClaudeSessionId(
+export function captureCodexSessionId(
   terminalId: string,
   projectPath: string,
   startTime: number,
@@ -199,32 +199,32 @@ export function captureClaudeSessionId(
     attempts++;
 
     const terminal = terminals.get(terminalId);
-    if (!terminal || !terminal.isClaudeMode) {
+    if (!terminal || !terminal.isCodexMode) {
       return;
     }
 
-    if (terminal.claudeSessionId) {
+    if (terminal.codexSessionId) {
       return;
     }
 
-    const sessionId = findClaudeSessionAfter(projectPath, startTime);
+    const sessionId = findCodexSessionAfter(projectPath, startTime);
 
     if (sessionId) {
-      terminal.claudeSessionId = sessionId;
-      debugLog('[SessionHandler] Captured Claude session ID from directory:', sessionId);
+      terminal.codexSessionId = sessionId;
+      debugLog('[SessionHandler] Captured Codex session ID from directory:', sessionId);
 
       if (terminal.projectPath) {
-        updateClaudeSessionId(terminal.projectPath, terminalId, sessionId);
+        updateCodexSessionId(terminal.projectPath, terminalId, sessionId);
       }
 
       const win = getWindow();
       if (win) {
-        win.webContents.send(IPC_CHANNELS.TERMINAL_CLAUDE_SESSION, terminalId, sessionId);
+        win.webContents.send(IPC_CHANNELS.TERMINAL_CODEX_SESSION, terminalId, sessionId);
       }
     } else if (attempts < maxAttempts) {
       setTimeout(checkForSession, 1000);
     } else {
-      debugLog('[SessionHandler] Could not capture Claude session ID after', maxAttempts, 'attempts');
+      debugLog('[SessionHandler] Could not capture Codex session ID after', maxAttempts, 'attempts');
     }
   };
 

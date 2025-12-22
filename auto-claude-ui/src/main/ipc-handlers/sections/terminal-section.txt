@@ -31,34 +31,34 @@
   );
 
   ipcMain.on(
-    IPC_CHANNELS.TERMINAL_INVOKE_CLAUDE,
+    IPC_CHANNELS.TERMINAL_INVOKE_CODEX,
     (_, id: string, cwd?: string) => {
-      terminalManager.invokeClaude(id, cwd);
+      terminalManager.invokeCodex(id, cwd);
     }
   );
 
-  // Claude profile management (multi-account support)
+  // Codex profile management (multi-account support)
   ipcMain.handle(
-    IPC_CHANNELS.CLAUDE_PROFILES_GET,
-    async (): Promise<IPCResult<ClaudeProfileSettings>> => {
+    IPC_CHANNELS.CODEX_PROFILES_GET,
+    async (): Promise<IPCResult<CodexProfileSettings>> => {
       try {
-        const profileManager = getClaudeProfileManager();
+        const profileManager = getCodexProfileManager();
         const settings = profileManager.getSettings();
         return { success: true, data: settings };
       } catch (error) {
         return {
           success: false,
-          error: error instanceof Error ? error.message : 'Failed to get Claude profiles'
+          error: error instanceof Error ? error.message : 'Failed to get Codex profiles'
         };
       }
     }
   );
 
   ipcMain.handle(
-    IPC_CHANNELS.CLAUDE_PROFILE_SAVE,
-    async (_, profile: ClaudeProfile): Promise<IPCResult<ClaudeProfile>> => {
+    IPC_CHANNELS.CODEX_PROFILE_SAVE,
+    async (_, profile: CodexProfile): Promise<IPCResult<CodexProfile>> => {
       try {
-        const profileManager = getClaudeProfileManager();
+        const profileManager = getCodexProfileManager();
 
         // If this is a new profile without an ID, generate one
         if (!profile.id) {
@@ -78,17 +78,17 @@
       } catch (error) {
         return {
           success: false,
-          error: error instanceof Error ? error.message : 'Failed to save Claude profile'
+          error: error instanceof Error ? error.message : 'Failed to save Codex profile'
         };
       }
     }
   );
 
   ipcMain.handle(
-    IPC_CHANNELS.CLAUDE_PROFILE_DELETE,
+    IPC_CHANNELS.CODEX_PROFILE_DELETE,
     async (_, profileId: string): Promise<IPCResult> => {
       try {
-        const profileManager = getClaudeProfileManager();
+        const profileManager = getCodexProfileManager();
         const success = profileManager.deleteProfile(profileId);
         if (!success) {
           return { success: false, error: 'Cannot delete default or last profile' };
@@ -97,17 +97,17 @@
       } catch (error) {
         return {
           success: false,
-          error: error instanceof Error ? error.message : 'Failed to delete Claude profile'
+          error: error instanceof Error ? error.message : 'Failed to delete Codex profile'
         };
       }
     }
   );
 
   ipcMain.handle(
-    IPC_CHANNELS.CLAUDE_PROFILE_RENAME,
+    IPC_CHANNELS.CODEX_PROFILE_RENAME,
     async (_, profileId: string, newName: string): Promise<IPCResult> => {
       try {
-        const profileManager = getClaudeProfileManager();
+        const profileManager = getCodexProfileManager();
         const success = profileManager.renameProfile(profileId, newName);
         if (!success) {
           return { success: false, error: 'Profile not found or invalid name' };
@@ -116,17 +116,17 @@
       } catch (error) {
         return {
           success: false,
-          error: error instanceof Error ? error.message : 'Failed to rename Claude profile'
+          error: error instanceof Error ? error.message : 'Failed to rename Codex profile'
         };
       }
     }
   );
 
   ipcMain.handle(
-    IPC_CHANNELS.CLAUDE_PROFILE_SET_ACTIVE,
+    IPC_CHANNELS.CODEX_PROFILE_SET_ACTIVE,
     async (_, profileId: string): Promise<IPCResult> => {
       try {
-        const profileManager = getClaudeProfileManager();
+        const profileManager = getCodexProfileManager();
         const success = profileManager.setActiveProfile(profileId);
         if (!success) {
           return { success: false, error: 'Profile not found' };
@@ -135,32 +135,32 @@
       } catch (error) {
         return {
           success: false,
-          error: error instanceof Error ? error.message : 'Failed to set active Claude profile'
+          error: error instanceof Error ? error.message : 'Failed to set active Codex profile'
         };
       }
     }
   );
 
   ipcMain.handle(
-    IPC_CHANNELS.CLAUDE_PROFILE_SWITCH,
+    IPC_CHANNELS.CODEX_PROFILE_SWITCH,
     async (_, terminalId: string, profileId: string): Promise<IPCResult> => {
       try {
-        const result = await terminalManager.switchClaudeProfile(terminalId, profileId);
+        const result = await terminalManager.switchCodexProfile(terminalId, profileId);
         return result;
       } catch (error) {
         return {
           success: false,
-          error: error instanceof Error ? error.message : 'Failed to switch Claude profile'
+          error: error instanceof Error ? error.message : 'Failed to switch Codex profile'
         };
       }
     }
   );
 
   ipcMain.handle(
-    IPC_CHANNELS.CLAUDE_PROFILE_INITIALIZE,
+    IPC_CHANNELS.CODEX_PROFILE_INITIALIZE,
     async (_, profileId: string): Promise<IPCResult> => {
       try {
-        const profileManager = getClaudeProfileManager();
+        const profileManager = getCodexProfileManager();
         const profile = profileManager.getProfile(profileId);
         if (!profile) {
           return { success: false, error: 'Profile not found' };
@@ -175,12 +175,12 @@
           }
         }
 
-        // Create a terminal and run claude setup-token there
-        // This is needed because claude setup-token requires TTY/raw mode
-        const terminalId = `claude-login-${profileId}-${Date.now()}`;
+        // Create a terminal and run codex setup-token there
+        // This is needed because codex setup-token requires TTY/raw mode
+        const terminalId = `codex-login-${profileId}-${Date.now()}`;
         const homeDir = process.env.HOME || process.env.USERPROFILE || '/tmp';
 
-        console.log('[IPC] Initializing Claude profile:', {
+        console.log('[IPC] Initializing Codex profile:', {
           profileId,
           profileName: profile.name,
           configDir: profile.configDir,
@@ -197,10 +197,10 @@
         // Use export to ensure the variable persists, then run setup-token
         let loginCommand: string;
         if (!profile.isDefault && profile.configDir) {
-          // Use export and run in subshell to ensure CLAUDE_CONFIG_DIR is properly set
-          loginCommand = `export CLAUDE_CONFIG_DIR="${profile.configDir}" && echo "Config dir: $CLAUDE_CONFIG_DIR" && claude setup-token`;
+          // Use export and run in subshell to ensure CODEX_CONFIG_DIR is properly set
+          loginCommand = `export CODEX_CONFIG_DIR="${profile.configDir}" && echo "Config dir: $CODEX_CONFIG_DIR" && codex setup-token`;
         } else {
-          loginCommand = 'claude setup-token';
+          loginCommand = 'codex setup-token';
         }
 
         console.log('[IPC] Sending login command to terminal:', loginCommand);
@@ -211,7 +211,7 @@
         // Notify the renderer that a login terminal was created
         const mainWindow = getMainWindow();
         if (mainWindow) {
-          mainWindow.webContents.send('claude-profile-login-terminal', {
+          mainWindow.webContents.send('codex-profile-login-terminal', {
             terminalId,
             profileId,
             profileName: profile.name
@@ -226,10 +226,10 @@
           } 
         };
       } catch (error) {
-        console.error('[IPC] Failed to initialize Claude profile:', error);
+        console.error('[IPC] Failed to initialize Codex profile:', error);
         return {
           success: false,
-          error: error instanceof Error ? error.message : 'Failed to initialize Claude profile'
+          error: error instanceof Error ? error.message : 'Failed to initialize Codex profile'
         };
       }
     }
@@ -237,10 +237,10 @@
 
   // Set OAuth token for a profile (used when capturing from terminal or manual input)
   ipcMain.handle(
-    IPC_CHANNELS.CLAUDE_PROFILE_SET_TOKEN,
+    IPC_CHANNELS.CODEX_PROFILE_SET_TOKEN,
     async (_, profileId: string, token: string, email?: string): Promise<IPCResult> => {
       try {
-        const profileManager = getClaudeProfileManager();
+        const profileManager = getCodexProfileManager();
         const success = profileManager.setProfileToken(profileId, token, email);
         if (!success) {
           return { success: false, error: 'Profile not found' };
@@ -258,10 +258,10 @@
 
   // Get auto-switch settings
   ipcMain.handle(
-    IPC_CHANNELS.CLAUDE_PROFILE_AUTO_SWITCH_SETTINGS,
-    async (): Promise<IPCResult<import('../shared/types').ClaudeAutoSwitchSettings>> => {
+    IPC_CHANNELS.CODEX_PROFILE_AUTO_SWITCH_SETTINGS,
+    async (): Promise<IPCResult<import('../shared/types').CodexAutoSwitchSettings>> => {
       try {
-        const profileManager = getClaudeProfileManager();
+        const profileManager = getCodexProfileManager();
         const settings = profileManager.getAutoSwitchSettings();
         return { success: true, data: settings };
       } catch (error) {
@@ -275,10 +275,10 @@
 
   // Update auto-switch settings
   ipcMain.handle(
-    IPC_CHANNELS.CLAUDE_PROFILE_UPDATE_AUTO_SWITCH,
-    async (_, settings: Partial<import('../shared/types').ClaudeAutoSwitchSettings>): Promise<IPCResult> => {
+    IPC_CHANNELS.CODEX_PROFILE_UPDATE_AUTO_SWITCH,
+    async (_, settings: Partial<import('../shared/types').CodexAutoSwitchSettings>): Promise<IPCResult> => {
       try {
-        const profileManager = getClaudeProfileManager();
+        const profileManager = getCodexProfileManager();
         profileManager.updateAutoSwitchSettings(settings);
         return { success: true };
       } catch (error) {
@@ -292,7 +292,7 @@
 
   // Fetch usage by sending /usage command to terminal
   ipcMain.handle(
-    IPC_CHANNELS.CLAUDE_PROFILE_FETCH_USAGE,
+    IPC_CHANNELS.CODEX_PROFILE_FETCH_USAGE,
     async (_, terminalId: string): Promise<IPCResult> => {
       try {
         // Send /usage command to the terminal
@@ -309,10 +309,10 @@
 
   // Get best available profile
   ipcMain.handle(
-    IPC_CHANNELS.CLAUDE_PROFILE_GET_BEST_PROFILE,
-    async (_, excludeProfileId?: string): Promise<IPCResult<ClaudeProfile | null>> => {
+    IPC_CHANNELS.CODEX_PROFILE_GET_BEST_PROFILE,
+    async (_, excludeProfileId?: string): Promise<IPCResult<CodexProfile | null>> => {
       try {
-        const profileManager = getClaudeProfileManager();
+        const profileManager = getCodexProfileManager();
         const bestProfile = profileManager.getBestAvailableProfile(excludeProfileId);
         return { success: true, data: bestProfile };
       } catch (error) {
@@ -326,10 +326,10 @@
 
   // Retry rate-limited operation with a different profile
   ipcMain.handle(
-    IPC_CHANNELS.CLAUDE_RETRY_WITH_PROFILE,
+    IPC_CHANNELS.CODEX_RETRY_WITH_PROFILE,
     async (_, request: import('../shared/types').RetryWithProfileRequest): Promise<IPCResult> => {
       try {
-        const profileManager = getClaudeProfileManager();
+        const profileManager = getCodexProfileManager();
 
         // Set the new active profile
         profileManager.setActiveProfile(request.profileId);
@@ -427,9 +427,9 @@
   );
 
   ipcMain.on(
-    IPC_CHANNELS.TERMINAL_RESUME_CLAUDE,
+    IPC_CHANNELS.TERMINAL_RESUME_CODEX,
     (_, id: string, sessionId?: string) => {
-      terminalManager.resumeClaude(id, sessionId);
+      terminalManager.resumeCodex(id, sessionId);
     }
   );
 

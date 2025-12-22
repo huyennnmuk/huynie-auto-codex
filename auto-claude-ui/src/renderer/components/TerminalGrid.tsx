@@ -42,7 +42,7 @@ export function TerminalGrid({ projectPath, onNewTaskClick }: TerminalGridProps)
   const removeTerminal = useTerminalStore((state) => state.removeTerminal);
   const setActiveTerminal = useTerminalStore((state) => state.setActiveTerminal);
   const canAddTerminal = useTerminalStore((state) => state.canAddTerminal);
-  const setClaudeMode = useTerminalStore((state) => state.setClaudeMode);
+  const setCodexMode = useTerminalStore((state) => state.setCodexMode);
 
   // Get tasks from task store for task selection dropdown in terminals
   const tasks = useTaskStore((state) => state.tasks);
@@ -194,14 +194,14 @@ export function TerminalGrid({ projectPath, onNewTaskClick }: TerminalGridProps)
     }
   }, [addTerminal, canAddTerminal, projectPath]);
 
-  const handleInvokeClaudeAll = useCallback(() => {
+  const handleInvokeCodexAll = useCallback(() => {
     terminals.forEach((terminal) => {
-      if (terminal.status === 'running' && !terminal.isClaudeMode) {
-        setClaudeMode(terminal.id, true);
-        window.electronAPI.invokeClaudeInTerminal(terminal.id, projectPath);
+      if (terminal.status === 'running' && !terminal.isCodexMode) {
+        setCodexMode(terminal.id, true);
+        window.electronAPI.invokeCodexInTerminal(terminal.id, projectPath);
       }
     });
-  }, [terminals, setClaudeMode, projectPath]);
+  }, [terminals, setCodexMode, projectPath]);
 
   // Handle drag start - store dragged item data
   const handleDragStart = useCallback((event: DragStartEvent) => {
@@ -279,7 +279,7 @@ export function TerminalGrid({ projectPath, onNewTaskClick }: TerminalGridProps)
           <div>
             <h2 className="text-lg font-semibold text-foreground">代理终端</h2>
             <p className="mt-1 text-sm text-muted-foreground max-w-md">
-              启动多个终端以并行运行 Claude 代理。
+              启动多个终端以并行运行 Codex 代理。
               使用 <kbd className="px-1.5 py-0.5 text-xs bg-card border border-border rounded">Ctrl+T</kbd> 创建新终端。
             </p>
           </div>
@@ -346,15 +346,15 @@ export function TerminalGrid({ projectPath, onNewTaskClick }: TerminalGridProps)
                 </DropdownMenuContent>
               </DropdownMenu>
             )}
-            {terminals.some((t) => t.status === 'running' && !t.isClaudeMode) && (
+            {terminals.some((t) => t.status === 'running' && !t.isCodexMode) && (
               <Button
                 variant="outline"
                 size="sm"
                 className="h-7 text-xs gap-1.5"
-                onClick={handleInvokeClaudeAll}
+                onClick={handleInvokeCodexAll}
               >
                 <Sparkles className="h-3 w-3" />
-                全部调用 Claude
+                全部调用 Codex
               </Button>
             )}
             <Button

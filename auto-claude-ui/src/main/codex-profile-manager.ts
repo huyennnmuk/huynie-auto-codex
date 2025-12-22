@@ -1,5 +1,5 @@
 /**
- * Claude Profile Manager
+ * Codex Profile Manager
  * Main coordinator for multi-account profile management
  *
  * This class delegates to specialized modules:
@@ -15,53 +15,53 @@ import { app } from 'electron';
 import { join } from 'path';
 import { existsSync, mkdirSync } from 'fs';
 import type {
-  ClaudeProfile,
-  ClaudeProfileSettings,
-  ClaudeUsageData,
-  ClaudeRateLimitEvent,
-  ClaudeAutoSwitchSettings
+  CodexProfile,
+  CodexProfileSettings,
+  CodexUsageData,
+  CodexRateLimitEvent,
+  CodexAutoSwitchSettings
 } from '../shared/types';
 
 // Module imports
-import { encryptToken, decryptToken } from './claude-profile/token-encryption';
-import { parseUsageOutput } from './claude-profile/usage-parser';
+import { encryptToken, decryptToken } from './codex-profile/token-encryption';
+import { parseUsageOutput } from './codex-profile/usage-parser';
 import {
   recordRateLimitEvent as recordRateLimitEventImpl,
   isProfileRateLimited as isProfileRateLimitedImpl,
   clearRateLimitEvents as clearRateLimitEventsImpl
-} from './claude-profile/rate-limit-manager';
+} from './codex-profile/rate-limit-manager';
 import {
   loadProfileStore,
   saveProfileStore,
   ProfileStoreData,
   DEFAULT_AUTO_SWITCH_SETTINGS
-} from './claude-profile/profile-storage';
+} from './codex-profile/profile-storage';
 import {
   getBestAvailableProfile,
   shouldProactivelySwitch as shouldProactivelySwitchImpl,
   getProfilesSortedByAvailability as getProfilesSortedByAvailabilityImpl
-} from './claude-profile/profile-scorer';
+} from './codex-profile/profile-scorer';
 import {
-  DEFAULT_CLAUDE_CONFIG_DIR,
+  DEFAULT_CODEX_CONFIG_DIR,
   generateProfileId as generateProfileIdImpl,
   createProfileDirectory as createProfileDirectoryImpl,
   isProfileAuthenticated as isProfileAuthenticatedImpl,
   hasValidToken,
   expandHomePath
-} from './claude-profile/profile-utils';
+} from './codex-profile/profile-utils';
 
 /**
- * Manages Claude Code profiles for multi-account support.
+ * Manages Codex Code profiles for multi-account support.
  * Profiles are stored in the app's userData directory.
- * Each profile points to a separate Claude config directory.
+ * Each profile points to a separate Codex config directory.
  */
-export class ClaudeProfileManager {
+export class CodexProfileManager {
   private storePath: string;
   private data: ProfileStoreData;
 
   constructor() {
     const configDir = join(app.getPath('userData'), 'config');
-    this.storePath = join(configDir, 'claude-profiles.json');
+    this.storePath = join(configDir, 'codex-profiles.json');
 
     // Ensure directory exists
     if (!existsSync(configDir)) {
@@ -89,12 +89,12 @@ export class ClaudeProfileManager {
    * Create default profile data
    */
   private createDefaultData(): ProfileStoreData {
-    const defaultProfile: ClaudeProfile = {
+    const defaultProfile: CodexProfile = {
       id: 'default',
       name: 'Default',
-      configDir: DEFAULT_CLAUDE_CONFIG_DIR,
+      configDir: DEFAULT_CODEX_CONFIG_DIR,
       isDefault: true,
-      description: 'Default Claude configuration (~/.claude)',
+      description: 'Default Codex configuration (~/.codex)',
       createdAt: new Date()
     };
 
@@ -116,7 +116,7 @@ export class ClaudeProfileManager {
   /**
    * Get all profiles and settings
    */
-  getSettings(): ClaudeProfileSettings {
+  getSettings(): CodexProfileSettings {
     return {
       profiles: this.data.profiles,
       activeProfileId: this.data.activeProfileId,
@@ -127,14 +127,14 @@ export class ClaudeProfileManager {
   /**
    * Get auto-switch settings
    */
-  getAutoSwitchSettings(): ClaudeAutoSwitchSettings {
+  getAutoSwitchSettings(): CodexAutoSwitchSettings {
     return this.data.autoSwitch || DEFAULT_AUTO_SWITCH_SETTINGS;
   }
 
   /**
    * Update auto-switch settings
    */
-  updateAutoSwitchSettings(settings: Partial<ClaudeAutoSwitchSettings>): void {
+  updateAutoSwitchSettings(settings: Partial<CodexAutoSwitchSettings>): void {
     this.data.autoSwitch = {
       ...(this.data.autoSwitch || DEFAULT_AUTO_SWITCH_SETTINGS),
       ...settings
@@ -145,14 +145,14 @@ export class ClaudeProfileManager {
   /**
    * Get a specific profile by ID
    */
-  getProfile(profileId: string): ClaudeProfile | undefined {
+  getProfile(profileId: string): CodexProfile | undefined {
     return this.data.profiles.find(p => p.id === profileId);
   }
 
   /**
    * Get the active profile
    */
-  getActiveProfile(): ClaudeProfile {
+  getActiveProfile(): CodexProfile {
     const active = this.data.profiles.find(p => p.id === this.data.activeProfileId);
     if (!active) {
       // Fallback to default
@@ -169,7 +169,7 @@ export class ClaudeProfileManager {
   /**
    * Save or update a profile
    */
-  saveProfile(profile: ClaudeProfile): ClaudeProfile {
+  saveProfile(profile: CodexProfile): CodexProfile {
     // Expand ~ in configDir path
     if (profile.configDir) {
       profile.configDir = expandHomePath(profile.configDir);
@@ -200,13 +200,13 @@ export class ClaudeProfileManager {
 
     // Cannot delete default profile
     if (profile.isDefault) {
-      console.warn('[ClaudeProfileManager] Cannot delete default profile');
+      console.warn('[CodexProfileManager] Cannot delete default profile');
       return false;
     }
 
     // Cannot delete if it's the only profile
     if (this.data.profiles.length <= 1) {
-      console.warn('[ClaudeProfileManager] Cannot delete last profile');
+      console.warn('[CodexProfileManager] Cannot delete last profile');
       return false;
     }
 
@@ -234,13 +234,13 @@ export class ClaudeProfileManager {
 
     // Cannot rename to empty name
     if (!newName.trim()) {
-      console.warn('[ClaudeProfileManager] Cannot rename to empty name');
+      console.warn('[CodexProfileManager] Cannot rename to empty name');
       return false;
     }
 
     profile.name = newName.trim();
     this.save();
-    console.warn('[ClaudeProfileManager] Renamed profile:', profileId, 'to:', newName);
+    console.warn('[CodexProfileManager] Renamed profile:', profileId, 'to:', newName);
     return true;
   }
 
@@ -296,7 +296,7 @@ export class ClaudeProfileManager {
 
   /**
    * Set the OAuth token for a profile (encrypted storage).
-   * Used when capturing token from `claude setup-token` output.
+   * Used when capturing token from `codex setup-token` output.
    */
   setProfileToken(profileId: string, token: string, email?: string): boolean {
     const profile = this.getProfile(profileId);
@@ -317,7 +317,7 @@ export class ClaudeProfileManager {
     this.save();
 
     const isEncrypted = profile.oauthToken.startsWith('enc:');
-    console.warn('[ClaudeProfileManager] Set OAuth token for profile:', profile.name, {
+    console.warn('[CodexProfileManager] Set OAuth token for profile:', profile.name, {
       email: email || '(not captured)',
       encrypted: isEncrypted,
       tokenLength: token.length
@@ -339,7 +339,7 @@ export class ClaudeProfileManager {
 
   /**
    * Get environment variables for spawning processes with the active profile.
-   * Returns { CLAUDE_CODE_OAUTH_TOKEN: token } if token is available (decrypted).
+   * Returns { CODEX_CODE_OAUTH_TOKEN: token } if token is available (decrypted).
    */
   getActiveProfileEnv(): Record<string, string> {
     const profile = this.getActiveProfile();
@@ -349,15 +349,15 @@ export class ClaudeProfileManager {
       // Decrypt the token before putting in environment
       const decryptedToken = decryptToken(profile.oauthToken);
       if (decryptedToken) {
-        env.CLAUDE_CODE_OAUTH_TOKEN = decryptedToken;
-        console.warn('[ClaudeProfileManager] Using OAuth token for profile:', profile.name);
+        env.CODEX_CODE_OAUTH_TOKEN = decryptedToken;
+        console.warn('[CodexProfileManager] Using OAuth token for profile:', profile.name);
       } else {
-        console.warn('[ClaudeProfileManager] Failed to decrypt token for profile:', profile.name);
+        console.warn('[CodexProfileManager] Failed to decrypt token for profile:', profile.name);
       }
     } else if (profile?.configDir && !profile.isDefault) {
       // Fallback to configDir for backward compatibility
-      env.CLAUDE_CONFIG_DIR = profile.configDir;
-      console.warn('[ClaudeProfileManager] Using configDir for profile:', profile.name);
+      env.CODEX_CONFIG_DIR = profile.configDir;
+      console.warn('[CodexProfileManager] Using configDir for profile:', profile.name);
     }
 
     return env;
@@ -366,7 +366,7 @@ export class ClaudeProfileManager {
   /**
    * Update usage data for a profile (parsed from /usage output)
    */
-  updateProfileUsage(profileId: string, usageOutput: string): ClaudeUsageData | null {
+  updateProfileUsage(profileId: string, usageOutput: string): CodexUsageData | null {
     const profile = this.getProfile(profileId);
     if (!profile) {
       return null;
@@ -376,14 +376,14 @@ export class ClaudeProfileManager {
     profile.usage = usage;
     this.save();
 
-    console.warn('[ClaudeProfileManager] Updated usage for', profile.name, ':', usage);
+    console.warn('[CodexProfileManager] Updated usage for', profile.name, ':', usage);
     return usage;
   }
 
   /**
    * Record a rate limit event for a profile
    */
-  recordRateLimitEvent(profileId: string, resetTimeStr: string): ClaudeRateLimitEvent {
+  recordRateLimitEvent(profileId: string, resetTimeStr: string): CodexRateLimitEvent {
     const profile = this.getProfile(profileId);
     if (!profile) {
       throw new Error('Profile not found');
@@ -392,7 +392,7 @@ export class ClaudeProfileManager {
     const event = recordRateLimitEventImpl(profile, resetTimeStr);
     this.save();
 
-    console.warn('[ClaudeProfileManager] Recorded rate limit event for', profile.name, ':', event);
+    console.warn('[CodexProfileManager] Recorded rate limit event for', profile.name, ':', event);
     return event;
   }
 
@@ -411,7 +411,7 @@ export class ClaudeProfileManager {
    * Get the best profile to switch to based on usage and rate limit status
    * Returns null if no good alternative is available
    */
-  getBestAvailableProfile(excludeProfileId?: string): ClaudeProfile | null {
+  getBestAvailableProfile(excludeProfileId?: string): CodexProfile | null {
     const settings = this.getAutoSwitchSettings();
     return getBestAvailableProfile(this.data.profiles, settings, excludeProfileId);
   }
@@ -419,7 +419,7 @@ export class ClaudeProfileManager {
   /**
    * Determine if we should proactively switch profiles based on current usage
    */
-  shouldProactivelySwitch(profileId: string): { shouldSwitch: boolean; reason?: string; suggestedProfile?: ClaudeProfile } {
+  shouldProactivelySwitch(profileId: string): { shouldSwitch: boolean; reason?: string; suggestedProfile?: CodexProfile } {
     const profile = this.getProfile(profileId);
     if (!profile) {
       return { shouldSwitch: false };
@@ -447,7 +447,7 @@ export class ClaudeProfileManager {
    * Check if a profile has valid authentication
    * (checks if the config directory has credential files)
    */
-  isProfileAuthenticated(profile: ClaudeProfile): boolean {
+  isProfileAuthenticated(profile: CodexProfile): boolean {
     return isProfileAuthenticatedImpl(profile);
   }
 
@@ -480,7 +480,7 @@ export class ClaudeProfileManager {
   }
 
   /**
-   * Get environment variables for invoking Claude with a specific profile
+   * Get environment variables for invoking Codex with a specific profile
    */
   getProfileEnv(profileId: string): Record<string, string> {
     const profile = this.getProfile(profileId);
@@ -488,18 +488,18 @@ export class ClaudeProfileManager {
       return {};
     }
 
-    // Only set CLAUDE_CONFIG_DIR if not using default
+    // Only set CODEX_CONFIG_DIR if not using default
     if (profile.isDefault) {
       return {};
     }
 
-    // Only set CLAUDE_CONFIG_DIR if configDir is defined
+    // Only set CODEX_CONFIG_DIR if configDir is defined
     if (!profile.configDir) {
       return {};
     }
 
     return {
-      CLAUDE_CONFIG_DIR: profile.configDir
+      CODEX_CONFIG_DIR: profile.configDir
     };
   }
 
@@ -517,20 +517,20 @@ export class ClaudeProfileManager {
   /**
    * Get profiles sorted by availability (best first)
    */
-  getProfilesSortedByAvailability(): ClaudeProfile[] {
+  getProfilesSortedByAvailability(): CodexProfile[] {
     return getProfilesSortedByAvailabilityImpl(this.data.profiles);
   }
 }
 
 // Singleton instance
-let profileManager: ClaudeProfileManager | null = null;
+let profileManager: CodexProfileManager | null = null;
 
 /**
- * Get the singleton Claude profile manager instance
+ * Get the singleton Codex profile manager instance
  */
-export function getClaudeProfileManager(): ClaudeProfileManager {
+export function getCodexProfileManager(): CodexProfileManager {
   if (!profileManager) {
-    profileManager = new ClaudeProfileManager();
+    profileManager = new CodexProfileManager();
   }
   return profileManager;
 }

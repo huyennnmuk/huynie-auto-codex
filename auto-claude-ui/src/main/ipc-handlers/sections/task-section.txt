@@ -26,10 +26,10 @@
         return { success: false, error: 'Project not found' };
       }
 
-      // Auto-generate title if empty using Claude AI
+      // Auto-generate title if empty using Codex AI
       let finalTitle = title;
       if (!title || !title.trim()) {
-        console.log('[TASK_CREATE] Title is empty, generating with Claude AI...');
+        console.log('[TASK_CREATE] Title is empty, generating with Codex AI...');
         try {
           const generatedTitle = await titleGenerator.generateTitle(description);
           if (generatedTitle) {
@@ -258,7 +258,7 @@
           return { success: false, error: 'Task not found' };
         }
 
-        const autoBuildDir = project.autoBuildPath || '.auto-claude';
+        const autoBuildDir = project.autoBuildPath || '.auto-codex';
         const specDir = path.join(project.path, autoBuildDir, 'specs', task.specId);
 
         if (!existsSync(specDir)) {
@@ -270,7 +270,7 @@
         if (updates.title !== undefined && !updates.title.trim()) {
           // Get description to use for title generation
           const descriptionToUse = updates.description ?? task.description;
-          console.log('[TASK_UPDATE] Title is empty, generating with Claude AI...');
+          console.log('[TASK_UPDATE] Title is empty, generating with Codex AI...');
           try {
             const generatedTitle = await titleGenerator.generateTitle(descriptionToUse);
             if (generatedTitle) {
@@ -775,7 +775,7 @@
       }
 
       // Get the spec directory
-      const autoBuildDir = project.autoBuildPath || '.auto-claude';
+      const autoBuildDir = project.autoBuildPath || '.auto-codex';
       const specDir = path.join(
         project.path,
         autoBuildDir,
@@ -1191,7 +1191,7 @@
               return { success: false, error: `Python environment not ready: ${status.error || 'Unknown error'}` };
             }
           } else {
-            return { success: false, error: 'Python environment not ready and Auto Claude source not found' };
+            return { success: false, error: 'Python environment not ready and Auto Codex source not found' };
           }
         }
 
@@ -1203,11 +1203,11 @@
         // Use run.py --merge to handle the merge
         const sourcePath = getEffectiveSourcePath();
         if (!sourcePath) {
-          return { success: false, error: 'Auto Claude source not found' };
+          return { success: false, error: 'Auto Codex source not found' };
         }
 
         const runScript = path.join(sourcePath, 'run.py');
-        const specDir = path.join(project.path, project.autoBuildPath || '.auto-claude', 'specs', task.specId);
+        const specDir = path.join(project.path, project.autoBuildPath || '.auto-codex', 'specs', task.specId);
 
         if (!existsSync(specDir)) {
           return { success: false, error: 'Spec directory not found' };

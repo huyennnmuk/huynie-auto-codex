@@ -1,6 +1,6 @@
 /**
  * Terminal Module
- * Modular terminal management system with Claude integration
+ * Modular terminal management system with Codex integration
  */
 
 // Main manager
@@ -25,8 +25,8 @@ export * as PtyManager from './pty-manager';
 // Session management utilities
 export * as SessionHandler from './session-handler';
 
-// Claude integration utilities
-export * as ClaudeIntegration from './claude-integration-handler';
+// Codex integration utilities
+export * as CodexIntegration from './codex-integration-handler';
 
 // Terminal lifecycle utilities
 export * as TerminalLifecycle from './terminal-lifecycle';

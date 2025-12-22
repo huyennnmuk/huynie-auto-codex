@@ -20,8 +20,8 @@ interface SectionRouterProps {
   isLoadingEnv: boolean;
   envError: string | null;
   updateEnvConfig: (updates: Partial<ProjectEnvConfig>) => void;
-  showClaudeToken: boolean;
-  setShowClaudeToken: React.Dispatch<React.SetStateAction<boolean>>;
+  showCodexToken: boolean;
+  setShowCodexToken: React.Dispatch<React.SetStateAction<boolean>>;
   showLinearKey: boolean;
   setShowLinearKey: React.Dispatch<React.SetStateAction<boolean>>;
   showOpenAIKey: boolean;
@@ -32,13 +32,13 @@ interface SectionRouterProps {
   setShowGitHubToken: React.Dispatch<React.SetStateAction<boolean>>;
   gitHubConnectionStatus: GitHubSyncStatus | null;
   isCheckingGitHub: boolean;
-  isCheckingClaudeAuth: boolean;
-  claudeAuthStatus: 'checking' | 'authenticated' | 'not_authenticated' | 'error';
+  isCheckingCodexAuth: boolean;
+  codexAuthStatus: 'checking' | 'authenticated' | 'not_authenticated' | 'error';
   linearConnectionStatus: LinearSyncStatus | null;
   isCheckingLinear: boolean;
   handleInitialize: () => Promise<void>;
   handleUpdate: () => Promise<void>;
-  handleClaudeSetup: () => Promise<void>;
+  handleCodexSetup: () => Promise<void>;
   onOpenLinearImport: () => void;
 }
 
@@ -58,8 +58,8 @@ export function SectionRouter({
   isLoadingEnv,
   envError,
   updateEnvConfig,
-  showClaudeToken,
-  setShowClaudeToken,
+  showCodexToken,
+  setShowCodexToken,
   showLinearKey,
   setShowLinearKey,
   showOpenAIKey,
@@ -70,13 +70,13 @@ export function SectionRouter({
   setShowGitHubToken,
   gitHubConnectionStatus,
   isCheckingGitHub,
-  isCheckingClaudeAuth,
-  claudeAuthStatus,
+  isCheckingCodexAuth,
+  codexAuthStatus,
   linearConnectionStatus,
   isCheckingLinear,
   handleInitialize,
   handleUpdate,
-  handleClaudeSetup,
+  handleCodexSetup,
   onOpenLinearImport
 }: SectionRouterProps) {
   switch (activeSection) {
@@ -99,27 +99,27 @@ export function SectionRouter({
         </SettingsSection>
       );
 
-    case 'claude':
+    case 'codex':
       return (
         <SettingsSection
-          title="Claude 认证"
-          description="配置此项目的 Claude CLI 认证"
+          title="Codex 认证"
+          description="配置此项目的 Codex CLI 认证"
         >
           <InitializationGuard
             initialized={!!project.autoBuildPath}
-            title="Claude 认证"
-            description="配置 Claude CLI 认证"
+            title="Codex 认证"
+            description="配置 Codex CLI 认证"
           >
             <EnvironmentSettings
               envConfig={envConfig}
               isLoadingEnv={isLoadingEnv}
               envError={envError}
               updateEnvConfig={updateEnvConfig}
-              isCheckingClaudeAuth={isCheckingClaudeAuth}
-              claudeAuthStatus={claudeAuthStatus}
-              handleClaudeSetup={handleClaudeSetup}
-              showClaudeToken={showClaudeToken}
-              setShowClaudeToken={setShowClaudeToken}
+              isCheckingCodexAuth={isCheckingCodexAuth}
+              codexAuthStatus={codexAuthStatus}
+              handleCodexSetup={handleCodexSetup}
+              showCodexToken={showCodexToken}
+              setShowCodexToken={setShowCodexToken}
               expanded={true}
               onToggle={() => {}}
             />

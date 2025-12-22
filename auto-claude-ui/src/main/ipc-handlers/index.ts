@@ -53,7 +53,7 @@ export function setupIpcHandlers(
   // Task handlers
   registerTaskHandlers(agentManager, pythonEnvManager, getMainWindow);
 
-  // Terminal and Claude profile handlers
+  // Terminal and Codex profile handlers
   registerTerminalHandlers(terminalManager, getMainWindow);
 
   // Agent event handlers (event forwarding from agent manager to renderer)

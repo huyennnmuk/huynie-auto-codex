@@ -8,7 +8,7 @@ import { SectionRouter } from './sections/SectionRouter';
 import { createHookProxy } from './utils/hookProxyFactory';
 import type { Project } from '../../../shared/types';
 
-export type ProjectSettingsSection = 'general' | 'claude' | 'linear' | 'github' | 'memory';
+export type ProjectSettingsSection = 'general' | 'codex' | 'linear' | 'github' | 'memory';
 
 interface ProjectSettingsContentProps {
   project: Project | undefined;
@@ -80,8 +80,8 @@ function ProjectSettingsContentInner({
     isLoadingEnv,
     envError,
     updateEnvConfig,
-    showClaudeToken,
-    setShowClaudeToken,
+    showCodexToken,
+    setShowCodexToken,
     showLinearKey,
     setShowLinearKey,
     showOpenAIKey,
@@ -94,15 +94,15 @@ function ProjectSettingsContentInner({
     toggleSection: _toggleSection,
     gitHubConnectionStatus,
     isCheckingGitHub,
-    isCheckingClaudeAuth,
-    claudeAuthStatus,
+    isCheckingCodexAuth,
+    codexAuthStatus,
     showLinearImportModal,
     setShowLinearImportModal,
     linearConnectionStatus,
     isCheckingLinear,
     handleInitialize,
     handleUpdate,
-    handleClaudeSetup,
+    handleCodexSetup,
     error
   } = hook;
 
@@ -132,8 +132,8 @@ function ProjectSettingsContentInner({
         isLoadingEnv={isLoadingEnv}
         envError={envError}
         updateEnvConfig={updateEnvConfig}
-        showClaudeToken={showClaudeToken}
-        setShowClaudeToken={setShowClaudeToken}
+        showCodexToken={showCodexToken}
+        setShowCodexToken={setShowCodexToken}
         showLinearKey={showLinearKey}
         setShowLinearKey={setShowLinearKey}
         showOpenAIKey={showOpenAIKey}
@@ -144,13 +144,13 @@ function ProjectSettingsContentInner({
         setShowGitHubToken={setShowGitHubToken}
         gitHubConnectionStatus={gitHubConnectionStatus}
         isCheckingGitHub={isCheckingGitHub}
-        isCheckingClaudeAuth={isCheckingClaudeAuth}
-        claudeAuthStatus={claudeAuthStatus}
+        isCheckingCodexAuth={isCheckingCodexAuth}
+        codexAuthStatus={codexAuthStatus}
         linearConnectionStatus={linearConnectionStatus}
         isCheckingLinear={isCheckingLinear}
         handleInitialize={handleInitialize}
         handleUpdate={handleUpdate}
-        handleClaudeSetup={handleClaudeSetup}
+        handleCodexSetup={handleCodexSetup}
         onOpenLinearImport={() => setShowLinearImportModal(true)}
       />
 

@@ -142,7 +142,7 @@ export function getGraphitiConnectionDetails(projectEnvVars: EnvironmentVars): G
 
   const database = projectEnvVars['GRAPHITI_DATABASE'] ||
                    process.env.GRAPHITI_DATABASE ||
-                   'auto_claude_memory';
+                   'auto_codex_memory';
 
   return { host, port, database };
 }

@@ -1,13 +1,13 @@
-# Claude Profile Module
+# Codex Profile Module
 
-This directory contains the refactored Claude profile management system, broken down into logical, maintainable modules.
+This directory contains the refactored Codex profile management system, broken down into logical, maintainable modules.
 
 ## Architecture
 
 The profile management system is organized using separation of concerns, with each module handling a specific responsibility:
 
 ```
-claude-profile/
+codex-profile/
 ├── index.ts                 # Central export point
 ├── types.ts                 # Type definitions
 ├── token-encryption.ts      # OAuth token encryption/decryption
@@ -29,10 +29,10 @@ Handles OAuth token encryption and decryption using the OS keychain (Electron's 
 - `isTokenEncrypted(storedToken: string): boolean` - Checks if token is encrypted
 
 ### 2. **usage-parser.ts**
-Parses Claude `/usage` command output and calculates reset times.
+Parses Codex `/usage` command output and calculates reset times.
 
 **Key Functions:**
-- `parseUsageOutput(usageOutput: string): ClaudeUsageData` - Parses full usage output
+- `parseUsageOutput(usageOutput: string): CodexUsageData` - Parses full usage output
 - `parseResetTime(resetTimeStr: string): Date` - Converts reset time strings to Date objects
 - `classifyRateLimitType(resetTimeStr: string): 'session' | 'weekly'` - Determines rate limit type
 
@@ -40,7 +40,7 @@ Parses Claude `/usage` command output and calculates reset times.
 Manages rate limit events and status tracking.
 
 **Key Functions:**
-- `recordRateLimitEvent(profile, resetTimeStr): ClaudeRateLimitEvent` - Records a rate limit hit
+- `recordRateLimitEvent(profile, resetTimeStr): CodexRateLimitEvent` - Records a rate limit hit
 - `isProfileRateLimited(profile): {limited, type?, resetAt?}` - Checks current rate limit status
 - `clearRateLimitEvents(profile): void` - Clears rate limit history
 
@@ -59,9 +59,9 @@ Handles persistence of profile data to disk with version migration.
 Implements intelligent profile scoring and auto-switch logic.
 
 **Key Functions:**
-- `getBestAvailableProfile(profiles, settings, excludeProfileId?): ClaudeProfile | null` - Finds best profile based on usage/limits
+- `getBestAvailableProfile(profiles, settings, excludeProfileId?): CodexProfile | null` - Finds best profile based on usage/limits
 - `shouldProactivelySwitch(profile, allProfiles, settings): {shouldSwitch, reason?, suggestedProfile?}` - Determines if proactive switch is needed
-- `getProfilesSortedByAvailability(profiles): ClaudeProfile[]` - Sorts profiles by availability
+- `getProfilesSortedByAvailability(profiles): CodexProfile[]` - Sorts profiles by availability
 
 **Scoring Criteria:**
 1. Not rate-limited (highest priority)
@@ -80,8 +80,8 @@ Helper utilities for profile operations.
 - `expandHomePath(path): string` - Expands ~ in paths
 
 **Constants:**
-- `DEFAULT_CLAUDE_CONFIG_DIR` - Default Claude config location (~/.claude)
-- `CLAUDE_PROFILES_DIR` - Additional profiles directory (~/.claude-profiles)
+- `DEFAULT_CODEX_CONFIG_DIR` - Default Codex config location (~/.codex)
+- `CODEX_PROFILES_DIR` - Additional profiles directory (~/.codex-profiles)
 
 ### 7. **types.ts**
 Re-exports shared types for convenience and future extensibility.
@@ -91,7 +91,7 @@ Central export point providing a clean public API for all profile functionality.
 
 ## Main Manager
 
-The `claude-profile-manager.ts` (parent directory) serves as the high-level coordinator that:
+The `codex-profile-manager.ts` (parent directory) serves as the high-level coordinator that:
 - Delegates to specialized modules
 - Manages the overall profile lifecycle
 - Coordinates between different subsystems
@@ -105,16 +105,16 @@ The `claude-profile-manager.ts` (parent directory) serves as the high-level coor
 
 ### Using the Main Manager
 ```typescript
-import { getClaudeProfileManager } from './claude-profile-manager';
+import { getCodexProfileManager } from './codex-profile-manager';
 
-const manager = getClaudeProfileManager();
+const manager = getCodexProfileManager();
 const profile = manager.getActiveProfile();
 const usage = manager.updateProfileUsage(profileId, usageOutput);
 ```
 
 ### Using Individual Modules (Advanced)
 ```typescript
-import { parseUsageOutput, isProfileRateLimited } from './claude-profile';
+import { parseUsageOutput, isProfileRateLimited } from './codex-profile';
 
 const usage = parseUsageOutput(output);
 const status = isProfileRateLimited(profile);
@@ -133,10 +133,10 @@ const status = isProfileRateLimited(profile);
 
 All existing imports continue to work without modification:
 ```typescript
-import { getClaudeProfileManager } from './claude-profile-manager';
+import { getCodexProfileManager } from './codex-profile-manager';
 ```
 
-The public API of `ClaudeProfileManager` remains unchanged, ensuring zero breaking changes for existing code.
+The public API of `CodexProfileManager` remains unchanged, ensuring zero breaking changes for existing code.
 
 ## Future Enhancements
 

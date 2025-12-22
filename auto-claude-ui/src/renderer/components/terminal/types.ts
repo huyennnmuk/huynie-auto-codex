@@ -16,7 +16,7 @@ export interface TerminalProps {
 export const STATUS_COLORS: Record<TerminalStatus, string> = {
   idle: 'bg-warning',
   running: 'bg-success',
-  'claude-active': 'bg-primary',
+  'codex-active': 'bg-primary',
   exited: 'bg-destructive',
 };
 

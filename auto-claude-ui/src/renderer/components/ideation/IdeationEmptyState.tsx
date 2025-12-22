@@ -84,7 +84,7 @@ export function IdeationEmptyState({
         {hasToken === false && !isCheckingToken && (
           <p className="mt-3 text-sm text-muted-foreground">
             <AlertCircle className="h-4 w-4 inline-block mr-1 text-warning" />
-            Claude token 尚未配置。生成时会提示你输入。
+            Codex token 尚未配置。生成时会提示你输入。
           </p>
         )}
       </Card>

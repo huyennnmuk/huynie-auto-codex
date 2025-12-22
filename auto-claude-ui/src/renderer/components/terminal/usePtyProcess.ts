@@ -30,7 +30,7 @@ export function usePtyProcess({
     if (isCreatingRef.current || isCreatedRef.current) return;
 
     const terminalState = useTerminalStore.getState().terminals.find((t) => t.id === terminalId);
-    const alreadyRunning = terminalState?.status === 'running' || terminalState?.status === 'claude-active';
+    const alreadyRunning = terminalState?.status === 'running' || terminalState?.status === 'codex-active';
     const isRestored = terminalState?.isRestored;
 
     isCreatingRef.current = true;
@@ -43,8 +43,8 @@ export function usePtyProcess({
           title: terminalState.title,
           cwd: terminalState.cwd,
           projectPath: projectPath || '',
-          isClaudeMode: terminalState.isClaudeMode,
-          claudeSessionId: terminalState.claudeSessionId,
+          isCodexMode: terminalState.isCodexMode,
+          codexSessionId: terminalState.codexSessionId,
           outputBuffer: '',
           createdAt: terminalState.createdAt.toISOString(),
           lastActiveAt: new Date().toISOString()
@@ -54,7 +54,7 @@ export function usePtyProcess({
       ).then((result) => {
         if (result.success && result.data?.success) {
           isCreatedRef.current = true;
-          setTerminalStatus(terminalId, terminalState.isClaudeMode ? 'claude-active' : 'running');
+          setTerminalStatus(terminalId, terminalState.isCodexMode ? 'codex-active' : 'running');
           updateTerminal(terminalId, { isRestored: false });
           onCreated?.();
         } else {

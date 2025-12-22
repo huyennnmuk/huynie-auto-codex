@@ -174,7 +174,7 @@ export function SecuritySettings({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="openai">OpenAI (GPT-4o-mini)</SelectItem>
-                    <SelectItem value="anthropic">Anthropic (Claude)</SelectItem>
+                    <SelectItem value="anthropic">Anthropic (Codex)</SelectItem>
                     <SelectItem value="google">Google AI (Gemini)</SelectItem>
                     <SelectItem value="azure_openai">Azure OpenAI</SelectItem>
                     <SelectItem value="ollama">Ollama（本地）</SelectItem>
@@ -300,7 +300,7 @@ export function SecuritySettings({
               <div className="space-y-2">
                 <Label className="text-sm font-medium text-foreground">数据库名称</Label>
                 <Input
-                  placeholder="auto_claude_memory"
+                  placeholder="auto_codex_memory"
                   value={envConfig.graphitiDatabase || ''}
                   onChange={(e) => updateEnvConfig({ graphitiDatabase: e.target.value })}
                 />

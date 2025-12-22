@@ -15,7 +15,7 @@ export const infrastructureMock = {
       falkordb: {
         containerExists: true,
         containerRunning: true,
-        containerName: 'auto-claude-falkordb',
+        containerName: 'auto-codex-falkordb',
         port: 6380,
         healthy: true
       },

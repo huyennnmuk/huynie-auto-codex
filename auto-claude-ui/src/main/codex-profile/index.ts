@@ -1,15 +1,15 @@
 /**
- * Claude Profile Module
+ * Codex Profile Module
  * Central export point for all profile management functionality
  */
 
 // Core types
 export type {
-  ClaudeProfile,
-  ClaudeProfileSettings,
-  ClaudeUsageData,
-  ClaudeRateLimitEvent,
-  ClaudeAutoSwitchSettings
+  CodexProfile,
+  CodexProfileSettings,
+  CodexUsageData,
+  CodexRateLimitEvent,
+  CodexAutoSwitchSettings
 } from './types';
 
 // Token encryption utilities
@@ -43,8 +43,8 @@ export {
 
 // Profile utilities
 export {
-  DEFAULT_CLAUDE_CONFIG_DIR,
-  CLAUDE_PROFILES_DIR,
+  DEFAULT_CODEX_CONFIG_DIR,
+  CODEX_PROFILES_DIR,
   generateProfileId,
   createProfileDirectory,
   isProfileAuthenticated,

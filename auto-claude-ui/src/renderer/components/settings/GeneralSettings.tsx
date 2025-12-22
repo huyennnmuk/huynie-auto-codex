@@ -46,7 +46,7 @@ export function GeneralSettings({ settings, onSettingsChange, section }: General
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="auto-claude">Auto Claude</SelectItem>
+                  <SelectItem value="auto-codex">Auto Codex</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -166,11 +166,11 @@ export function GeneralSettings({ settings, onSettingsChange, section }: General
           />
         </div>
         <div className="space-y-3">
-          <Label htmlFor="autoBuildPath" className="text-sm font-medium text-foreground">Auto Claude 路径</Label>
-          <p className="text-sm text-muted-foreground">项目中 auto-claude 目录的相对路径</p>
+          <Label htmlFor="autoBuildPath" className="text-sm font-medium text-foreground">Auto Codex 路径</Label>
+          <p className="text-sm text-muted-foreground">项目中 auto-codex 目录的相对路径</p>
           <Input
             id="autoBuildPath"
-            placeholder="auto-claude（默认）"
+            placeholder="auto-codex（默认）"
             className="w-full max-w-lg"
             value={settings.autoBuildPath || ''}
             onChange={(e) => onSettingsChange({ ...settings, autoBuildPath: e.target.value })}

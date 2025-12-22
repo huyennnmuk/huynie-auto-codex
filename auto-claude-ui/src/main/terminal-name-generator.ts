@@ -18,7 +18,7 @@ function debug(...args: unknown[]): void {
 }
 
 /**
- * Service for generating terminal names from commands using Claude AI
+ * Service for generating terminal names from commands using Codex AI
  */
 export class TerminalNameGenerator extends EventEmitter {
   // Auto-detect Python command on initialization
@@ -31,7 +31,7 @@ export class TerminalNameGenerator extends EventEmitter {
   }
 
   /**
-   * Configure paths for Python and auto-claude source
+   * Configure paths for Python and auto-codex source
    */
   configure(pythonPath?: string, autoBuildSourcePath?: string): void {
     if (pythonPath) {
@@ -43,7 +43,7 @@ export class TerminalNameGenerator extends EventEmitter {
   }
 
   /**
-   * Get the auto-claude source path (detects automatically if not configured)
+   * Get the auto-codex source path (detects automatically if not configured)
    */
   private getAutoBuildSourcePath(): string | null {
     if (this.autoBuildSourcePath && existsSync(this.autoBuildSourcePath)) {
@@ -51,13 +51,13 @@ export class TerminalNameGenerator extends EventEmitter {
     }
 
     const possiblePaths = [
-      path.resolve(__dirname, '..', '..', '..', 'auto-claude'),
-      path.resolve(app.getAppPath(), '..', 'auto-claude'),
-      path.resolve(process.cwd(), 'auto-claude')
+      path.resolve(__dirname, '..', '..', '..', 'auto-codex'),
+      path.resolve(app.getAppPath(), '..', 'auto-codex'),
+      path.resolve(process.cwd(), 'auto-codex')
     ];
 
     for (const p of possiblePaths) {
-      // Use requirements.txt as marker - it always exists in auto-claude source
+      // Use requirements.txt as marker - it always exists in auto-codex source
       if (existsSync(p) && existsSync(path.join(p, 'requirements.txt'))) {
         return p;
       }
@@ -66,7 +66,7 @@ export class TerminalNameGenerator extends EventEmitter {
   }
 
   /**
-   * Load environment variables from auto-claude .env file
+   * Load environment variables from auto-codex .env file
    */
   private loadAutoBuildEnv(): Record<string, string> {
     const autoBuildSource = this.getAutoBuildSourcePath();
@@ -105,7 +105,7 @@ export class TerminalNameGenerator extends EventEmitter {
   }
 
   /**
-   * Generate a terminal name from a command using Claude AI
+   * Generate a terminal name from a command using Codex AI
    * @param command - The command or recent output to generate a name from
    * @param cwd - Current working directory for context
    * @returns Promise resolving to the generated name (2-3 words) or null on failure
@@ -114,7 +114,7 @@ export class TerminalNameGenerator extends EventEmitter {
     const autoBuildSource = this.getAutoBuildSourcePath();
 
     if (!autoBuildSource) {
-      debug('Auto-claude source path not found');
+      debug('Auto-codex source path not found');
       return null;
     }
 
@@ -125,10 +125,10 @@ export class TerminalNameGenerator extends EventEmitter {
 
     const autoBuildEnv = this.loadAutoBuildEnv();
     debug('Environment loaded', {
-      hasOAuthToken: !!autoBuildEnv.CLAUDE_CODE_OAUTH_TOKEN
+      hasOAuthToken: !!autoBuildEnv.CODEX_CODE_OAUTH_TOKEN
     });
 
-    // Get active Claude profile environment (CLAUDE_CONFIG_DIR if not default)
+    // Get active Codex profile environment (CODEX_CONFIG_DIR if not default)
     const profileEnv = getProfileEnv();
 
     return new Promise((resolve) => {
@@ -139,7 +139,7 @@ export class TerminalNameGenerator extends EventEmitter {
         env: {
           ...process.env,
           ...autoBuildEnv,
-          ...profileEnv, // Include active Claude profile config
+          ...profileEnv, // Include active Codex profile config
           PYTHONUNBUFFERED: '1',
           PYTHONIOENCODING: 'utf-8',
           PYTHONUTF8: '1'
@@ -220,13 +220,13 @@ ${cwd}`;
 
     prompt += `
 
-Output ONLY the name (2-3 words), nothing else. Examples: "npm build", "git logs", "python tests", "claude dev"`;
+Output ONLY the name (2-3 words), nothing else. Examples: "npm build", "git logs", "python tests", "codex dev"`;
 
     return prompt;
   }
 
   /**
-   * Create the Python script to generate terminal name using Claude Agent SDK
+   * Create the Python script to generate terminal name using Codex Agent SDK
    */
   private createGenerationScript(prompt: string): string {
     // Escape the prompt for Python string - use JSON.stringify for safe escaping
@@ -238,14 +238,14 @@ import sys
 
 async def generate_name():
     try:
-        from claude_agent_sdk import ClaudeAgentOptions, ClaudeSDKClient
+        from codex_agent_sdk import CodexAgentOptions, CodexSDKClient
 
         prompt = ${escapedPrompt}
 
         # Create a minimal client for simple text generation (no tools needed)
-        client = ClaudeSDKClient(
-            options=ClaudeAgentOptions(
-                model="claude-haiku-4-5",
+        client = CodexSDKClient(
+            options=CodexAgentOptions(
+                model="codex-haiku-4-5",
                 system_prompt="You generate very short, concise terminal names (2-3 words MAX). Output ONLY the name, nothing else. No quotes, no explanation, no preamble. Keep it as short as possible while being descriptive.",
                 max_turns=1,
             )

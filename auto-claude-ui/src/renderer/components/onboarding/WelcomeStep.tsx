@@ -40,12 +40,12 @@ export function WelcomeStep({ onGetStarted, onSkip }: WelcomeStepProps) {
     {
       icon: <Sparkles className="h-5 w-5" />,
       title: 'AI 驱动开发',
-      description: '使用 Claude Code 智能体生成代码并构建功能'
+      description: '使用 Codex Code 智能体生成代码并构建功能'
     },
     {
       icon: <FileCode className="h-5 w-5" />,
       title: '规格驱动的工作流',
-      description: '通过清晰规格定义任务，让 Auto Claude 负责实现'
+      description: '通过清晰规格定义任务，让 Auto Codex 负责实现'
     },
     {
       icon: <Brain className="h-5 w-5" />,
@@ -65,7 +65,7 @@ export function WelcomeStep({ onGetStarted, onSkip }: WelcomeStepProps) {
         {/* Hero Section */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-foreground tracking-tight">
-            欢迎使用 Auto Claude
+            欢迎使用 Auto Codex
           </h1>
           <p className="mt-3 text-muted-foreground text-lg">
             使用 AI 智能体自主构建软件
@@ -88,7 +88,7 @@ export function WelcomeStep({ onGetStarted, onSkip }: WelcomeStepProps) {
         <div className="text-center mb-8">
           <p className="text-muted-foreground">
             本向导将帮助你用几步完成环境设置。
-            你可以配置 Claude OAuth 认证令牌，选择性启用记忆功能，
+            你可以配置 Codex OAuth 认证令牌，选择性启用记忆功能，
             并创建你的第一个任务。
           </p>
         </div>

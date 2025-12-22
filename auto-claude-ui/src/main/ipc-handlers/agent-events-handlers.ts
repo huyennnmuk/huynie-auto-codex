@@ -46,7 +46,7 @@ export function registerAgenteventsHandlers(
   agentManager.on('sdk-rate-limit', (rateLimitInfo: SDKRateLimitInfo) => {
     const mainWindow = getMainWindow();
     if (mainWindow) {
-      mainWindow.webContents.send(IPC_CHANNELS.CLAUDE_SDK_RATE_LIMIT, rateLimitInfo);
+      mainWindow.webContents.send(IPC_CHANNELS.CODEX_SDK_RATE_LIMIT, rateLimitInfo);
     }
   });
 
@@ -54,7 +54,7 @@ export function registerAgenteventsHandlers(
   titleGenerator.on('sdk-rate-limit', (rateLimitInfo: SDKRateLimitInfo) => {
     const mainWindow = getMainWindow();
     if (mainWindow) {
-      mainWindow.webContents.send(IPC_CHANNELS.CLAUDE_SDK_RATE_LIMIT, rateLimitInfo);
+      mainWindow.webContents.send(IPC_CHANNELS.CODEX_SDK_RATE_LIMIT, rateLimitInfo);
     }
   });
 

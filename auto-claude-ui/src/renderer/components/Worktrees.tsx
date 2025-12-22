@@ -189,7 +189,7 @@ export function Worktrees({ projectId }: WorktreesProps) {
             工作树
           </h2>
           <p className="text-sm text-muted-foreground mt-1">
-            管理 Auto Claude 任务的独立工作区
+            管理 Auto Codex 任务的独立工作区
           </p>
         </div>
         <Button
@@ -231,7 +231,7 @@ export function Worktrees({ projectId }: WorktreesProps) {
           </div>
           <h3 className="text-lg font-semibold text-foreground">No Worktrees</h3>
           <p className="text-sm text-muted-foreground mt-2 max-w-md">
-            Auto Claude 构建功能时会自动创建工作树。
+            Auto Codex 构建功能时会自动创建工作树。
             它们为每个任务提供独立的工作区。
           </p>
         </div>

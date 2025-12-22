@@ -78,7 +78,7 @@ export function MemoriesTab({
             {memoryStatus?.available ? (
               <>
                 <div className="grid gap-3 sm:grid-cols-3 text-sm">
-                  <InfoItem label="数据库" value={memoryStatus.database || 'auto_claude_memory'} />
+                  <InfoItem label="数据库" value={memoryStatus.database || 'auto_codex_memory'} />
                   <InfoItem label="主机" value={`${memoryStatus.host}:${memoryStatus.port}`} />
                   {memoryState && (
                     <InfoItem label="片段数" value={memoryState.episode_count.toString()} />

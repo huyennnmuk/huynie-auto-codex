@@ -20,13 +20,13 @@ import { Switch } from './ui/switch';
 import { Label } from './ui/label';
 import { Input } from './ui/input';
 import { useRateLimitStore } from '../stores/rate-limit-store';
-import { useClaudeProfileStore, loadClaudeProfiles, switchTerminalToProfile } from '../stores/claude-profile-store';
+import { useCodexProfileStore, loadCodexProfiles, switchTerminalToProfile } from '../stores/codex-profile-store';
 
-const CLAUDE_UPGRADE_URL = 'https://claude.ai/upgrade';
+const CODEX_UPGRADE_URL = 'https://codex.ai/upgrade';
 
 export function RateLimitModal() {
   const { isModalOpen, rateLimitInfo, hideRateLimitModal, clearPendingRateLimit } = useRateLimitStore();
-  const { profiles, activeProfileId, isSwitching } = useClaudeProfileStore();
+  const { profiles, activeProfileId, isSwitching } = useCodexProfileStore();
   const [selectedProfileId, setSelectedProfileId] = useState<string | null>(null);
   const [autoSwitchEnabled, setAutoSwitchEnabled] = useState(false);
   const [isLoadingSettings, setIsLoadingSettings] = useState(false);
@@ -36,7 +36,7 @@ export function RateLimitModal() {
   // 模态框打开时加载配置文件和自动切换设置
   useEffect(() => {
     if (isModalOpen) {
-      loadClaudeProfiles();
+      loadCodexProfiles();
       loadAutoSwitchSettings();
 
       // 若有建议的配置文件则预选
@@ -82,7 +82,7 @@ export function RateLimitModal() {
   };
 
   const handleUpgrade = () => {
-    window.open(CLAUDE_UPGRADE_URL, '_blank');
+    window.open(CODEX_UPGRADE_URL, '_blank');
   };
 
   const handleAddProfile = async () => {
@@ -94,22 +94,22 @@ export function RateLimitModal() {
       const profileName = newProfileName.trim();
       const profileSlug = profileName.toLowerCase().replace(/\s+/g, '-');
       
-      const result = await window.electronAPI.saveClaudeProfile({
+      const result = await window.electronAPI.saveCodexProfile({
         id: `profile-${Date.now()}`,
         name: profileName,
         // 使用占位路径 - 后端会解析实际路径
-        configDir: `~/.claude-profiles/${profileSlug}`,
+        configDir: `~/.codex-profiles/${profileSlug}`,
         isDefault: false,
         createdAt: new Date()
       });
 
       if (result.success && result.data) {
-        // 初始化配置文件（创建终端并运行 claude setup-token）
-        const initResult = await window.electronAPI.initializeClaudeProfile(result.data.id);
+        // 初始化配置文件（创建终端并运行 codex setup-token）
+        const initResult = await window.electronAPI.initializeCodexProfile(result.data.id);
         
         if (initResult.success) {
           // 重新加载配置文件
-          loadClaudeProfiles();
+          loadCodexProfiles();
           setNewProfileName('');
           // 关闭模态框以便用户查看终端
           hideRateLimitModal();
@@ -168,10 +168,10 @@ export function RateLimitModal() {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-warning">
             <AlertCircle className="h-5 w-5" />
-            已达到 Claude Code 使用上限
+            已达到 Codex Code 使用上限
           </DialogTitle>
           <DialogDescription>
-            您已达到本周期的 Claude Code 使用上限。
+            您已达到本周期的 Codex Code 使用上限。
             {currentProfile && !currentProfile.isDefault && (
               <span className="text-muted-foreground">（账号：{currentProfile.name}）</span>
             )}
@@ -188,7 +188,7 @@ export function RateLimitModal() {
                   正在自动切换到 {suggestedProfile?.name}
                 </p>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Claude 将自动使用其他账号重启
+                  Codex 将自动使用其他账号重启
                 </p>
               </div>
             </div>
@@ -214,7 +214,7 @@ export function RateLimitModal() {
             <div className="rounded-lg border border-accent/50 bg-accent/10 p-4">
               <h4 className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
                 <User className="h-4 w-4" />
-                {hasMultipleProfiles ? '切换 Claude 账号' : '使用其他账号'}
+                {hasMultipleProfiles ? '切换 Codex 账号' : '使用其他账号'}
               </h4>
               
               {hasMultipleProfiles ? (
@@ -223,7 +223,7 @@ export function RateLimitModal() {
                     {suggestedProfile ? (
                       <>推荐：<strong>{suggestedProfile.name}</strong> 还有更多可用额度。</>
                     ) : (
-                      '您已配置其他 Claude 订阅，切换后可继续工作：'
+                      '您已配置其他 Codex 订阅，切换后可继续工作：'
                     )}
                   </p>
 
@@ -317,14 +317,14 @@ export function RateLimitModal() {
                 </>
               ) : (
                 <p className="text-sm text-muted-foreground mb-3">
-                  添加另一个 Claude 订阅，以便在触发速率限制时自动切换。
+                  添加另一个 Codex 订阅，以便在触发速率限制时自动切换。
                 </p>
               )}
 
               {/* 添加新账号区域 */}
               <div className={hasMultipleProfiles ? "mt-4 pt-3 border-t border-border/50" : ""}>
                 <p className="text-xs text-muted-foreground mb-2">
-                  {hasMultipleProfiles ? '添加另一个账号：' : '连接 Claude 账号：'}
+                  {hasMultipleProfiles ? '添加另一个账号：' : '连接 Codex 账号：'}
                 </p>
                 <div className="flex items-center gap-2">
                   <Input
@@ -354,7 +354,7 @@ export function RateLimitModal() {
                   </Button>
                 </div>
                 <p className="text-xs text-muted-foreground mt-2">
-                  将打开 Claude 登录以认证新账号。
+                  将打开 Codex 登录以认证新账号。
                 </p>
               </div>
             </div>
@@ -366,7 +366,7 @@ export function RateLimitModal() {
               升级以获得更多使用额度
             </h4>
             <p className="text-sm text-muted-foreground mb-3">
-              升级 Claude 订阅以获得更高的使用上限。
+              升级 Codex 订阅以获得更高的使用上限。
             </p>
             <Button
               variant="outline"

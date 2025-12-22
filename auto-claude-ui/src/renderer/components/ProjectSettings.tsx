@@ -10,14 +10,14 @@ import type { Project } from '../../shared/types';
 // Import custom hooks
 import { useProjectSettings } from '../hooks/useProjectSettings';
 import { useEnvironmentConfig } from '../hooks/useEnvironmentConfig';
-import { useClaudeAuth } from '../hooks/useClaudeAuth';
+import { useCodexAuth } from '../hooks/useCodexAuth';
 import { useLinearConnection } from '../hooks/useLinearConnection';
 import { useGitHubConnection } from '../hooks/useGitHubConnection';
 import { useInfrastructureStatus } from '../hooks/useInfrastructureStatus';
 
 // Import section components
 import { AutoBuildIntegration } from './project-settings/AutoBuildIntegration';
-import { ClaudeAuthSection } from './project-settings/ClaudeAuthSection';
+import { CodexAuthSection } from './project-settings/CodexAuthSection';
 import { LinearIntegrationSection } from './project-settings/LinearIntegrationSection';
 import { GitHubIntegrationSection } from './project-settings/GitHubIntegrationSection';
 import { MemoryBackendSection } from './project-settings/MemoryBackendSection';
@@ -38,7 +38,7 @@ export function ProjectSettings({ project, open, onOpenChange }: ProjectSettings
 
   // Collapsible sections state
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
-    claude: true,
+    codex: true,
     linear: false,
     github: false,
     graphiti: false
@@ -57,7 +57,7 @@ export function ProjectSettings({ project, open, onOpenChange }: ProjectSettings
     isSavingEnv,
   } = useEnvironmentConfig(project.id, project.autoBuildPath, open);
 
-  const { isCheckingClaudeAuth, claudeAuthStatus, handleClaudeSetup } = useClaudeAuth(
+  const { isCheckingCodexAuth, codexAuthStatus, handleCodexSetup } = useCodexAuth(
     project.id,
     project.autoBuildPath,
     open
@@ -166,8 +166,8 @@ export function ProjectSettings({ project, open, onOpenChange }: ProjectSettings
     }
   };
 
-  const handleClaudeSetupWithCallback = () => {
-    handleClaudeSetup((newEnvConfig) => {
+  const handleCodexSetupWithCallback = () => {
+    handleCodexSetup((newEnvConfig) => {
       setEnvConfig(newEnvConfig);
     });
   };
@@ -202,16 +202,16 @@ export function ProjectSettings({ project, open, onOpenChange }: ProjectSettings
               <>
                 <Separator />
 
-                {/* Claude Authentication Section */}
-                <ClaudeAuthSection
-                  isExpanded={expandedSections.claude}
-                  onToggle={() => toggleSection('claude')}
+                {/* Codex Authentication Section */}
+                <CodexAuthSection
+                  isExpanded={expandedSections.codex}
+                  onToggle={() => toggleSection('codex')}
                   envConfig={envConfig}
                   isLoadingEnv={isLoadingEnv}
                   envError={envError}
-                  isCheckingAuth={isCheckingClaudeAuth}
-                  authStatus={claudeAuthStatus}
-                  onClaudeSetup={handleClaudeSetupWithCallback}
+                  isCheckingAuth={isCheckingCodexAuth}
+                  authStatus={codexAuthStatus}
+                  onCodexSetup={handleCodexSetupWithCallback}
                   onUpdateConfig={updateEnvConfig}
                 />
 

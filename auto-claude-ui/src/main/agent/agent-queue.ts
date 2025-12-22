@@ -200,14 +200,14 @@ export class AgentQueueManager {
     const spawnId = this.state.generateSpawnId();
     debugLog('[Agent Queue] Generated spawn ID:', spawnId);
 
-    // Run from auto-claude source directory so imports work correctly
+    // Run from auto-codex source directory so imports work correctly
     const autoBuildSource = this.processManager.getAutoBuildSourcePath();
     const cwd = autoBuildSource || process.cwd();
 
     // Get combined environment variables
     const combinedEnv = this.processManager.getCombinedEnv(projectPath);
 
-    // Get active Claude profile environment (CLAUDE_CODE_OAUTH_TOKEN if not default)
+    // Get active Codex profile environment (CODEX_CODE_OAUTH_TOKEN if not default)
     const profileEnv = getProfileEnv();
 
     // Get Python path from process manager (uses venv if configured)
@@ -215,24 +215,24 @@ export class AgentQueueManager {
 
     // Build final environment with proper precedence:
     // 1. process.env (system)
-    // 2. combinedEnv (auto-claude/.env for CLI usage)
+    // 2. combinedEnv (auto-codex/.env for CLI usage)
     // 3. profileEnv (Electron app OAuth token - highest priority)
     // 4. Our specific overrides
     const finalEnv = {
       ...process.env,
       ...combinedEnv,
       ...profileEnv,
-      PYTHONPATH: autoBuildSource || '', // Allow imports from auto-claude directory
+      PYTHONPATH: autoBuildSource || '', // Allow imports from auto-codex directory
       PYTHONUNBUFFERED: '1',
       PYTHONIOENCODING: 'utf-8',
       PYTHONUTF8: '1'
     };
 
     // Debug: Show OAuth token source
-    const tokenSource = profileEnv['CLAUDE_CODE_OAUTH_TOKEN']
+    const tokenSource = profileEnv['CODEX_CODE_OAUTH_TOKEN']
       ? 'Electron app profile'
-      : (combinedEnv['CLAUDE_CODE_OAUTH_TOKEN'] ? 'auto-claude/.env' : 'not found');
-    const oauthToken = (finalEnv as Record<string, string | undefined>)['CLAUDE_CODE_OAUTH_TOKEN'];
+      : (combinedEnv['CODEX_CODE_OAUTH_TOKEN'] ? 'auto-codex/.env' : 'not found');
+    const oauthToken = (finalEnv as Record<string, string | undefined>)['CODEX_CODE_OAUTH_TOKEN'];
     const hasToken = !!oauthToken;
     debugLog('[Agent Queue] OAuth token status:', {
       source: tokenSource,
@@ -391,7 +391,7 @@ export class AgentQueueManager {
           try {
             const ideationFilePath = path.join(
               storedProjectPath,
-              '.auto-claude',
+              '.auto-codex',
               'ideation',
               'ideation.json'
             );
@@ -446,14 +446,14 @@ export class AgentQueueManager {
     const spawnId = this.state.generateSpawnId();
     debugLog('[Agent Queue] Generated roadmap spawn ID:', spawnId);
 
-    // Run from auto-claude source directory so imports work correctly
+    // Run from auto-codex source directory so imports work correctly
     const autoBuildSource = this.processManager.getAutoBuildSourcePath();
     const cwd = autoBuildSource || process.cwd();
 
     // Get combined environment variables
     const combinedEnv = this.processManager.getCombinedEnv(projectPath);
 
-    // Get active Claude profile environment (CLAUDE_CODE_OAUTH_TOKEN if not default)
+    // Get active Codex profile environment (CODEX_CODE_OAUTH_TOKEN if not default)
     const profileEnv = getProfileEnv();
 
     // Get Python path from process manager (uses venv if configured)
@@ -461,24 +461,24 @@ export class AgentQueueManager {
 
     // Build final environment with proper precedence:
     // 1. process.env (system)
-    // 2. combinedEnv (auto-claude/.env for CLI usage)
+    // 2. combinedEnv (auto-codex/.env for CLI usage)
     // 3. profileEnv (Electron app OAuth token - highest priority)
     // 4. Our specific overrides
     const finalEnv = {
       ...process.env,
       ...combinedEnv,
       ...profileEnv,
-      PYTHONPATH: autoBuildSource || '', // Allow imports from auto-claude directory
+      PYTHONPATH: autoBuildSource || '', // Allow imports from auto-codex directory
       PYTHONUNBUFFERED: '1',
       PYTHONIOENCODING: 'utf-8',
       PYTHONUTF8: '1'
     };
 
     // Debug: Show OAuth token source
-    const tokenSource = profileEnv['CLAUDE_CODE_OAUTH_TOKEN']
+    const tokenSource = profileEnv['CODEX_CODE_OAUTH_TOKEN']
       ? 'Electron app profile'
-      : (combinedEnv['CLAUDE_CODE_OAUTH_TOKEN'] ? 'auto-claude/.env' : 'not found');
-    const oauthToken = (finalEnv as Record<string, string | undefined>)['CLAUDE_CODE_OAUTH_TOKEN'];
+      : (combinedEnv['CODEX_CODE_OAUTH_TOKEN'] ? 'auto-codex/.env' : 'not found');
+    const oauthToken = (finalEnv as Record<string, string | undefined>)['CODEX_CODE_OAUTH_TOKEN'];
     const hasToken = !!oauthToken;
     debugLog('[Agent Queue] OAuth token status:', {
       source: tokenSource,
@@ -599,7 +599,7 @@ export class AgentQueueManager {
           try {
             const roadmapFilePath = path.join(
               storedProjectPath,
-              '.auto-claude',
+              '.auto-codex',
               'roadmap',
               'roadmap.json'
             );

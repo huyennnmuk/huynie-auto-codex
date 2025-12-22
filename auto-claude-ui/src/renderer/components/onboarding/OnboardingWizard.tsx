@@ -37,7 +37,7 @@ const WIZARD_STEPS: { id: WizardStepId; label: string }[] = [
 /**
  * Main onboarding wizard component.
  * Provides a full-screen, multi-step wizard experience for new users
- * to configure their Auto Claude environment.
+ * to configure their Auto Codex environment.
  *
  * Features:
  * - Step progress indicator
@@ -193,7 +193,7 @@ export function OnboardingWizard({
             设置向导
           </FullScreenDialogTitle>
           <FullScreenDialogDescription>
-            通过几步简单设置配置你的 Auto Claude 环境
+            通过几步简单设置配置你的 Auto Codex 环境
           </FullScreenDialogDescription>
 
           {/* Progress indicator - show for all steps except welcome and completion */}

@@ -22,7 +22,7 @@ export interface ColorThemeDefinition {
   previewColors: ThemePreviewColors;
 }
 
-// Thinking level for Claude model (budget token allocation)
+// Thinking level for Codex model (budget token allocation)
 export type ThinkingLevel = 'none' | 'low' | 'medium' | 'high' | 'ultrathink';
 
 // Model type shorthand
@@ -84,7 +84,7 @@ export interface AppSettings {
   autoNameTerminals: boolean;
   notifications: NotificationSettings;
   // Global API keys (used as defaults for all projects)
-  globalClaudeOAuthToken?: string;
+  globalCodexOAuthToken?: string;
   globalOpenAIApiKey?: string;
   globalAnthropicApiKey?: string;
   globalGoogleApiKey?: string;
@@ -110,11 +110,11 @@ export interface AppSettings {
   _migratedAgentProfileToAuto?: boolean;
 }
 
-// Auto-Claude Source Environment Configuration (for auto-claude repo .env)
+// Auto-Codex Source Environment Configuration (for auto-codex repo .env)
 export interface SourceEnvConfig {
-  // Claude Authentication (required for ideation, roadmap generation, etc.)
-  hasClaudeToken: boolean;
-  claudeOAuthToken?: string;
+  // Codex Authentication (required for ideation, roadmap generation, etc.)
+  hasCodexToken: boolean;
+  codexOAuthToken?: string;
 
   // Source path info
   sourcePath?: string;
@@ -127,7 +127,7 @@ export interface SourceEnvCheckResult {
   error?: string;
 }
 
-// Auto Claude Source Update Types
+// Auto Codex Source Update Types
 export interface AutoBuildSourceUpdateCheck {
   updateAvailable: boolean;
   currentVersion: string;

@@ -299,7 +299,7 @@ export function Sidebar({
       <div className="flex h-full w-64 flex-col bg-sidebar border-r border-border">
         {/* 带拖拽区域的头部 - 为 macOS 交通灯预留额外顶部内边距 */}
         <div className="electron-drag flex h-14 items-center px-4 pt-6">
-          <span className="electron-no-drag text-lg font-bold text-primary">Auto Claude</span>
+          <span className="electron-no-drag text-lg font-bold text-primary">Auto Codex</span>
         </div>
 
         <Separator className="mt-2" />
@@ -395,7 +395,7 @@ export function Sidebar({
 
         <Separator />
 
-        {/* 速率限制指示器 - Claude 触发限流时显示 */}
+        {/* 速率限制指示器 - Codex 触发限流时显示 */}
         <RateLimitIndicator />
 
         {/* 底部区域，包含设置、帮助和新建任务 */}
@@ -421,7 +421,7 @@ export function Sidebar({
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => window.open('https://github.com/AndyMik90/Auto-Claude/issues', '_blank')}
+                  onClick={() => window.open('https://github.com/AndyMik90/Auto-Codex/issues', '_blank')}
                 >
                   <HelpCircle className="h-4 w-4" />
                 </Button>
@@ -441,13 +441,13 @@ export function Sidebar({
           </Button>
           {selectedProject && !selectedProject.autoBuildPath && (
             <p className="mt-2 text-xs text-muted-foreground text-center">
-              初始化 Auto Claude 以创建任务
+              初始化 Auto Codex 以创建任务
             </p>
           )}
         </div>
       </div>
 
-      {/* 初始化 Auto Claude 对话框 */}
+      {/* 初始化 Auto Codex 对话框 */}
       <Dialog open={showInitDialog} onOpenChange={(open) => {
         // 仅允许用户手动关闭（初始化期间不允许）
         if (!open && !isInitializing) {
@@ -458,18 +458,18 @@ export function Sidebar({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Download className="h-5 w-5" />
-              初始化 Auto Claude
+              初始化 Auto Codex
             </DialogTitle>
             <DialogDescription>
-              此项目尚未初始化 Auto Claude。是否现在设置？
+              此项目尚未初始化 Auto Codex。是否现在设置？
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
             <div className="rounded-lg bg-muted p-4 text-sm">
               <p className="font-medium mb-2">这将：</p>
               <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                <li>在项目中创建 <code className="text-xs bg-background px-1 py-0.5 rounded">.auto-claude</code> 文件夹</li>
-                <li>复制 Auto Claude 框架文件</li>
+                <li>在项目中创建 <code className="text-xs bg-background px-1 py-0.5 rounded">.auto-codex</code> 文件夹</li>
+                <li>复制 Auto Codex 框架文件</li>
                 <li>设置任务规格目录</li>
               </ul>
             </div>
@@ -480,7 +480,7 @@ export function Sidebar({
                   <div>
                     <p className="font-medium text-warning">源路径未配置</p>
                     <p className="text-muted-foreground mt-1">
-                      请在应用设置中设置 Auto Claude 源路径后再初始化。
+                      请在应用设置中设置 Auto Codex 源路径后再初始化。
                     </p>
                   </div>
                 </div>
@@ -511,13 +511,13 @@ export function Sidebar({
         </DialogContent>
       </Dialog>
 
-      {/* 更新 Auto Claude 对话框 - 已弃用，updateAvailable 现在始终为 false */}
+      {/* 更新 Auto Codex 对话框 - 已弃用，updateAvailable 现在始终为 false */}
       <Dialog open={showUpdateDialog} onOpenChange={setShowUpdateDialog}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <RefreshCw className="h-5 w-5" />
-              Auto Claude
+              Auto Codex
             </DialogTitle>
             <DialogDescription>
               项目已初始化。

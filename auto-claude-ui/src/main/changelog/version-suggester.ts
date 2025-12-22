@@ -12,7 +12,7 @@ interface VersionSuggestion {
 }
 
 /**
- * AI-powered version bump suggester using Claude SDK with haiku model
+ * AI-powered version bump suggester using Codex SDK with haiku model
  * Analyzes commits to intelligently suggest semantic version bumps
  */
 export class VersionSuggester {
@@ -20,7 +20,7 @@ export class VersionSuggester {
 
   constructor(
     private pythonPath: string,
-    private claudePath: string,
+    private codexPath: string,
     private autoBuildSourcePath: string,
     debugEnabled: boolean
   ) {
@@ -45,7 +45,7 @@ export class VersionSuggester {
       currentVersion
     });
 
-    // Build prompt for Claude to analyze commits
+    // Build prompt for Codex to analyze commits
     const prompt = this.buildPrompt(commits, currentVersion);
     const script = this.createAnalysisScript(prompt);
 
@@ -97,7 +97,7 @@ export class VersionSuggester {
   }
 
   /**
-   * Build prompt for Claude to analyze commits and suggest version bump
+   * Build prompt for Codex to analyze commits and suggest version bump
    */
   private buildPrompt(commits: GitCommit[], currentVersion: string): string {
     const commitSummary = commits
@@ -125,7 +125,7 @@ Respond with ONLY a JSON object in this exact format (no markdown, no extra text
   }
 
   /**
-   * Create Python script to run Claude analysis
+   * Create Python script to run Codex analysis
    */
   private createAnalysisScript(prompt: string): string {
     // Escape the prompt for Python string literal
@@ -143,7 +143,7 @@ prompt = "${escapedPrompt}"
 
 try:
     result = subprocess.run(
-        ["${this.claudePath}", "chat", "--model", "haiku", "--prompt", prompt],
+        ["${this.codexPath}", "chat", "--model", "haiku", "--prompt", prompt],
         capture_output=True,
         text=True,
         check=True
@@ -162,7 +162,7 @@ except Exception as e:
    * Parse AI response to extract version suggestion
    */
   private parseAIResponse(output: string, currentVersion: string): VersionSuggestion {
-    // Extract JSON from output (Claude might wrap it in markdown or other text)
+    // Extract JSON from output (Codex might wrap it in markdown or other text)
     const jsonMatch = output.match(/\{[\s\S]*"bumpType"[\s\S]*"reason"[\s\S]*\}/);
     if (!jsonMatch) {
       throw new Error('No JSON found in AI response');
@@ -218,11 +218,11 @@ except Exception as e:
     // Build PATH with platform-appropriate separator and locations
     const pathAdditions = isWindows
       ? [
-          path.join(homeDir, 'AppData', 'Local', 'Programs', 'claude'),
+          path.join(homeDir, 'AppData', 'Local', 'Programs', 'codex'),
           path.join(homeDir, 'AppData', 'Roaming', 'npm'),
           path.join(homeDir, '.local', 'bin'),
-          'C:\\Program Files\\Claude',
-          'C:\\Program Files (x86)\\Claude'
+          'C:\\Program Files\\Codex',
+          'C:\\Program Files (x86)\\Codex'
         ]
       : [
           '/usr/local/bin',
@@ -231,7 +231,7 @@ except Exception as e:
           path.join(homeDir, 'bin')
         ];
 
-    // Get active Claude profile environment
+    // Get active Codex profile environment
     const profileEnv = getProfileEnv();
 
     const spawnEnv: Record<string, string> = {

@@ -38,8 +38,8 @@ export interface UseProjectSettingsReturn {
   updateEnvConfig: (updates: Partial<ProjectEnvConfig>) => Promise<void>;
 
   // Password visibility toggles
-  showClaudeToken: boolean;
-  setShowClaudeToken: React.Dispatch<React.SetStateAction<boolean>>;
+  showCodexToken: boolean;
+  setShowCodexToken: React.Dispatch<React.SetStateAction<boolean>>;
   showLinearKey: boolean;
   setShowLinearKey: React.Dispatch<React.SetStateAction<boolean>>;
   showOpenAIKey: boolean;
@@ -57,10 +57,10 @@ export interface UseProjectSettingsReturn {
   gitHubConnectionStatus: GitHubSyncStatus | null;
   isCheckingGitHub: boolean;
 
-  // Claude auth state
-  isCheckingClaudeAuth: boolean;
-  claudeAuthStatus: 'checking' | 'authenticated' | 'not_authenticated' | 'error';
-  setClaudeAuthStatus: React.Dispatch<React.SetStateAction<'checking' | 'authenticated' | 'not_authenticated' | 'error'>>;
+  // Codex auth state
+  isCheckingCodexAuth: boolean;
+  codexAuthStatus: 'checking' | 'authenticated' | 'not_authenticated' | 'error';
+  setCodexAuthStatus: React.Dispatch<React.SetStateAction<'checking' | 'authenticated' | 'not_authenticated' | 'error'>>;
 
   // Linear state
   showLinearImportModal: boolean;
@@ -72,7 +72,7 @@ export interface UseProjectSettingsReturn {
   handleInitialize: () => Promise<void>;
   handleUpdate: () => Promise<void>;
   handleSaveEnv: () => Promise<void>;
-  handleClaudeSetup: () => Promise<void>;
+  handleCodexSetup: () => Promise<void>;
   handleSave: (onClose: () => void) => Promise<void>;
 }
 
@@ -94,14 +94,14 @@ export function useProjectSettings(
   const [isSavingEnv, setIsSavingEnv] = useState(false);
 
   // Password visibility toggles
-  const [showClaudeToken, setShowClaudeToken] = useState(false);
+  const [showCodexToken, setShowCodexToken] = useState(false);
   const [showLinearKey, setShowLinearKey] = useState(false);
   const [showOpenAIKey, setShowOpenAIKey] = useState(false);
   const [showFalkorPassword, setShowFalkorPassword] = useState(false);
 
   // Collapsible sections
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
-    claude: true,
+    codex: true,
     linear: false,
     github: false,
     graphiti: false
@@ -112,9 +112,9 @@ export function useProjectSettings(
   const [gitHubConnectionStatus, setGitHubConnectionStatus] = useState<GitHubSyncStatus | null>(null);
   const [isCheckingGitHub, setIsCheckingGitHub] = useState(false);
 
-  // Claude auth state
-  const [isCheckingClaudeAuth, setIsCheckingClaudeAuth] = useState(false);
-  const [claudeAuthStatus, setClaudeAuthStatus] = useState<'checking' | 'authenticated' | 'not_authenticated' | 'error'>('checking');
+  // Codex auth state
+  const [isCheckingCodexAuth, setIsCheckingCodexAuth] = useState(false);
+  const [codexAuthStatus, setCodexAuthStatus] = useState<'checking' | 'authenticated' | 'not_authenticated' | 'error'>('checking');
 
   // Linear import state
   const [showLinearImportModal, setShowLinearImportModal] = useState(false);
@@ -162,22 +162,22 @@ export function useProjectSettings(
     loadEnvConfig();
   }, [open, project.id, project.autoBuildPath]);
 
-  // Check Claude authentication status
+  // Check Codex authentication status
   useEffect(() => {
     const checkAuth = async () => {
       if (open && project.autoBuildPath) {
-        setIsCheckingClaudeAuth(true);
+        setIsCheckingCodexAuth(true);
         try {
-          const result = await window.electronAPI.checkClaudeAuth(project.id);
+          const result = await window.electronAPI.checkCodexAuth(project.id);
           if (result.success && result.data) {
-            setClaudeAuthStatus(result.data.authenticated ? 'authenticated' : 'not_authenticated');
+            setCodexAuthStatus(result.data.authenticated ? 'authenticated' : 'not_authenticated');
           } else {
-            setClaudeAuthStatus('error');
+            setCodexAuthStatus('error');
           }
         } catch {
-          setClaudeAuthStatus('error');
+          setCodexAuthStatus('error');
         } finally {
-          setIsCheckingClaudeAuth(false);
+          setIsCheckingCodexAuth(false);
         }
       }
     };
@@ -300,21 +300,21 @@ export function useProjectSettings(
     }
   };
 
-  const handleClaudeSetup = async () => {
-    setIsCheckingClaudeAuth(true);
+  const handleCodexSetup = async () => {
+    setIsCheckingCodexAuth(true);
     try {
-      const result = await window.electronAPI.invokeClaudeSetup(project.id);
+      const result = await window.electronAPI.invokeCodexSetup(project.id);
       if (result.success && result.data?.authenticated) {
-        setClaudeAuthStatus('authenticated');
+        setCodexAuthStatus('authenticated');
         const envResult = await window.electronAPI.getProjectEnv(project.id);
         if (envResult.success && envResult.data) {
           setEnvConfig(envResult.data);
         }
       }
     } catch {
-      setClaudeAuthStatus('error');
+      setCodexAuthStatus('error');
     } finally {
-      setIsCheckingClaudeAuth(false);
+      setIsCheckingCodexAuth(false);
     }
   };
 
@@ -380,8 +380,8 @@ export function useProjectSettings(
     setEnvError,
     isSavingEnv,
     updateEnvConfig,
-    showClaudeToken,
-    setShowClaudeToken,
+    showCodexToken,
+    setShowCodexToken,
     showLinearKey,
     setShowLinearKey,
     showOpenAIKey,
@@ -394,9 +394,9 @@ export function useProjectSettings(
     toggleSection,
     gitHubConnectionStatus,
     isCheckingGitHub,
-    isCheckingClaudeAuth,
-    claudeAuthStatus,
-    setClaudeAuthStatus,
+    isCheckingCodexAuth,
+    codexAuthStatus,
+    setCodexAuthStatus,
     showLinearImportModal,
     setShowLinearImportModal,
     linearConnectionStatus,
@@ -404,7 +404,7 @@ export function useProjectSettings(
     handleInitialize,
     handleUpdate,
     handleSaveEnv,
-    handleClaudeSetup,
+    handleCodexSetup,
     handleSave
   };
 }

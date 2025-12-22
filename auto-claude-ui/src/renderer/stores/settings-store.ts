@@ -43,12 +43,12 @@ function migrateOnboardingCompleted(settings: AppSettings): AppSettings {
   }
 
   // 检查现有用户的迹象：
-  // - 已配置 Claude OAuth 令牌
+  // - 已配置 OpenAI API
   // - 已配置 auto-build 源路径
-  const hasOAuthToken = Boolean(settings.globalClaudeOAuthToken);
+  const hasOpenAIApiKey = Boolean(settings.globalOpenAIApiKey);
   const hasAutoBuildPath = Boolean(settings.autoBuildPath);
 
-  const isExistingUser = hasOAuthToken || hasAutoBuildPath;
+  const isExistingUser = hasOpenAIApiKey || hasAutoBuildPath;
 
   if (isExistingUser) {
     // 为现有用户标记 onboarding 已完成

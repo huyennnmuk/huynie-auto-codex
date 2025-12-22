@@ -7,7 +7,7 @@ import type {
   InitializationResult,
   AutoBuildVersionInfo,
   ProjectEnvConfig,
-  ClaudeAuthResult,
+  CodexAuthResult,
   InfrastructureStatus,
   GraphitiValidationResult,
   GraphitiConnectionTestResult,
@@ -37,8 +37,8 @@ export interface ProjectAPI {
   // Environment Configuration
   getProjectEnv: (projectId: string) => Promise<IPCResult<ProjectEnvConfig>>;
   updateProjectEnv: (projectId: string, config: Partial<ProjectEnvConfig>) => Promise<IPCResult>;
-  checkClaudeAuth: (projectId: string) => Promise<IPCResult<ClaudeAuthResult>>;
-  invokeClaudeSetup: (projectId: string) => Promise<IPCResult<ClaudeAuthResult>>;
+  checkCodexAuth: (projectId: string) => Promise<IPCResult<CodexAuthResult>>;
+  invokeCodexSetup: (projectId: string) => Promise<IPCResult<CodexAuthResult>>;
 
   // Dialog Operations
   selectDirectory: () => Promise<string | null>;
@@ -121,11 +121,11 @@ export const createProjectAPI = (): ProjectAPI => ({
   updateProjectEnv: (projectId: string, config: Partial<ProjectEnvConfig>): Promise<IPCResult> =>
     ipcRenderer.invoke(IPC_CHANNELS.ENV_UPDATE, projectId, config),
 
-  checkClaudeAuth: (projectId: string): Promise<IPCResult<ClaudeAuthResult>> =>
-    ipcRenderer.invoke(IPC_CHANNELS.ENV_CHECK_CLAUDE_AUTH, projectId),
+  checkCodexAuth: (projectId: string): Promise<IPCResult<CodexAuthResult>> =>
+    ipcRenderer.invoke(IPC_CHANNELS.ENV_CHECK_CODEX_AUTH, projectId),
 
-  invokeClaudeSetup: (projectId: string): Promise<IPCResult<ClaudeAuthResult>> =>
-    ipcRenderer.invoke(IPC_CHANNELS.ENV_INVOKE_CLAUDE_SETUP, projectId),
+  invokeCodexSetup: (projectId: string): Promise<IPCResult<CodexAuthResult>> =>
+    ipcRenderer.invoke(IPC_CHANNELS.ENV_INVOKE_CODEX_SETUP, projectId),
 
   // Dialog Operations
   selectDirectory: (): Promise<string | null> =>

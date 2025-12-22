@@ -1,6 +1,6 @@
 /**
  * Terminal Manager
- * Main orchestrator for terminal lifecycle, Claude integration, and profile management
+ * Main orchestrator for terminal lifecycle, Codex integration, and profile management
  */
 
 import type { TerminalCreateOptions } from '../../shared/types';
@@ -16,7 +16,7 @@ import * as PtyManager from './pty-manager';
 import * as SessionHandler from './session-handler';
 import * as TerminalLifecycle from './terminal-lifecycle';
 import * as TerminalEventHandler from './terminal-event-handler';
-import * as ClaudeIntegration from './claude-integration-handler';
+import * as CodexIntegration from './codex-integration-handler';
 
 export class TerminalManager {
   private terminals: Map<string, TerminalProcess> = new Map();
@@ -33,7 +33,7 @@ export class TerminalManager {
       this.getWindow,
       this.lastNotifiedRateLimitReset,
       async (terminalId, profileId) => {
-        await this.switchClaudeProfile(terminalId, profileId);
+        await this.switchCodexProfile(terminalId, profileId);
       }
     );
 
@@ -71,9 +71,9 @@ export class TerminalManager {
       this.getWindow,
       (terminal, data) => this.handleTerminalData(terminal, data),
       {
-        resumeClaudeSession: true,
+        resumeCodexSession: true,
         captureSessionId: (terminalId, projectPath, startTime) => {
-          SessionHandler.captureClaudeSessionId(
+          SessionHandler.captureCodexSessionId(
             terminalId,
             projectPath,
             startTime,
@@ -131,21 +131,21 @@ export class TerminalManager {
   }
 
   /**
-   * Invoke Claude in a terminal with optional profile override
+   * Invoke Codex in a terminal with optional profile override
    */
-  invokeClaude(id: string, cwd?: string, profileId?: string): void {
+  invokeCodex(id: string, cwd?: string, profileId?: string): void {
     const terminal = this.terminals.get(id);
     if (!terminal) {
       return;
     }
 
-    ClaudeIntegration.invokeClaude(
+    CodexIntegration.invokeCodex(
       terminal,
       cwd,
       profileId,
       this.getWindow,
       (terminalId, projectPath, startTime) => {
-        SessionHandler.captureClaudeSessionId(
+        SessionHandler.captureCodexSessionId(
           terminalId,
           projectPath,
           startTime,
@@ -157,33 +157,33 @@ export class TerminalManager {
   }
 
   /**
-   * Switch a terminal to a different Claude profile
+   * Switch a terminal to a different Codex profile
    */
-  async switchClaudeProfile(id: string, profileId: string): Promise<TerminalOperationResult> {
+  async switchCodexProfile(id: string, profileId: string): Promise<TerminalOperationResult> {
     const terminal = this.terminals.get(id);
     if (!terminal) {
       return { success: false, error: 'Terminal not found' };
     }
 
-    return ClaudeIntegration.switchClaudeProfile(
+    return CodexIntegration.switchCodexProfile(
       terminal,
       profileId,
       this.getWindow,
-      (terminalId, cwd, profileId) => this.invokeClaude(terminalId, cwd, profileId),
+      (terminalId, cwd, profileId) => this.invokeCodex(terminalId, cwd, profileId),
       (terminalId) => this.lastNotifiedRateLimitReset.delete(terminalId)
     );
   }
 
   /**
-   * Resume Claude in a terminal with a specific session ID
+   * Resume Codex in a terminal with a specific session ID
    */
-  resumeClaude(id: string, sessionId?: string): void {
+  resumeCodex(id: string, sessionId?: string): void {
     const terminal = this.terminals.get(id);
     if (!terminal) {
       return;
     }
 
-    ClaudeIntegration.resumeClaude(terminal, sessionId, this.getWindow);
+    CodexIntegration.resumeCodex(terminal, sessionId, this.getWindow);
   }
 
   /**
@@ -230,9 +230,9 @@ export class TerminalManager {
       this.getWindow,
       (terminal, data) => this.handleTerminalData(terminal, data),
       {
-        resumeClaudeSession: true,
+        resumeCodexSession: true,
         captureSessionId: (terminalId, projectPath, startTime) => {
-          SessionHandler.captureClaudeSessionId(
+          SessionHandler.captureCodexSessionId(
             terminalId,
             projectPath,
             startTime,
@@ -254,19 +254,19 @@ export class TerminalManager {
   }
 
   /**
-   * Check if a terminal is in Claude mode
+   * Check if a terminal is in Codex mode
    */
-  isClaudeMode(id: string): boolean {
+  isCodexMode(id: string): boolean {
     const terminal = this.terminals.get(id);
-    return terminal?.isClaudeMode ?? false;
+    return terminal?.isCodexMode ?? false;
   }
 
   /**
-   * Get Claude session ID for a terminal
+   * Get Codex session ID for a terminal
    */
-  getClaudeSessionId(id: string): string | undefined {
+  getCodexSessionId(id: string): string | undefined {
     const terminal = this.terminals.get(id);
-    return terminal?.claudeSessionId;
+    return terminal?.codexSessionId;
   }
 
   /**

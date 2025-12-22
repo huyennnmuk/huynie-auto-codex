@@ -27,7 +27,7 @@ import {
   SelectValue
 } from './ui/select';
 import { GitHubOAuthFlow } from './project-settings/GitHubOAuthFlow';
-import { ClaudeOAuthFlow } from './project-settings/ClaudeOAuthFlow';
+import { CodexOAuthFlow } from './project-settings/CodexOAuthFlow';
 import type { Project, ProjectSettings } from '../../shared/types';
 
 interface GitHubSetupModalProps {
@@ -38,14 +38,14 @@ interface GitHubSetupModalProps {
   onSkip?: () => void;
 }
 
-type SetupStep = 'github-auth' | 'claude-auth' | 'repo' | 'branch' | 'complete';
+type SetupStep = 'github-auth' | 'codex-auth' | 'repo' | 'branch' | 'complete';
 
 /**
- * 设置模态框 - Auto Claude 初始化后的必需设置流程
+ * 设置模态框 - Auto Codex 初始化后的必需设置流程
  *
  * 流程：
  * 1. 使用 GitHub 认证（通过 gh CLI OAuth）- 用于仓库操作
- * 2. 使用 Claude 认证（通过 claude CLI OAuth）- 用于 AI 功能
+ * 2. 使用 Codex 认证（通过 codex CLI OAuth）- 用于 AI 功能
  * 3. 检测/确认仓库
  * 4. 选择任务的基础分支（带推荐默认值）
  */
@@ -146,13 +146,13 @@ export function GitHubSetupModal({
   // 处理 GitHub OAuth 成功
   const handleGitHubAuthSuccess = async (token: string) => {
     setGithubToken(token);
-    // 进入 Claude 认证步骤
-    setStep('claude-auth');
+    // 进入 Codex 认证步骤
+    setStep('codex-auth');
   };
 
-  // 处理 Claude OAuth 成功
-  const handleClaudeAuthSuccess = async () => {
-    // Claude 令牌已在 OAuth 流程中保存到当前配置文件
+  // 处理 Codex OAuth 成功
+  const handleCodexAuthSuccess = async () => {
+    // Codex 令牌已在 OAuth 流程中保存到当前配置文件
     // 进入仓库检测
     await detectRepository();
   };
@@ -180,7 +180,7 @@ export function GitHubSetupModal({
                 连接 GitHub
               </DialogTitle>
               <DialogDescription>
-                Auto Claude 需要 GitHub 来管理代码分支并保持任务最新。
+                Auto Codex 需要 GitHub 来管理代码分支并保持任务最新。
               </DialogDescription>
             </DialogHeader>
 
@@ -193,22 +193,22 @@ export function GitHubSetupModal({
           </>
         );
 
-      case 'claude-auth':
+      case 'codex-auth':
         return (
           <>
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <Key className="h-5 w-5" />
-                连接 Claude AI
+                连接 Codex AI
               </DialogTitle>
               <DialogDescription>
-                Auto Claude 使用 Claude AI 提供路线图生成、任务自动化和构思等智能功能。
+                Auto Codex 使用 Codex AI 提供路线图生成、任务自动化和构思等智能功能。
               </DialogDescription>
             </DialogHeader>
 
             <div className="py-4">
-              <ClaudeOAuthFlow
-                onSuccess={handleClaudeAuthSuccess}
+              <CodexOAuthFlow
+                onSuccess={handleCodexAuthSuccess}
                 onCancel={onSkip}
               />
             </div>
@@ -235,7 +235,7 @@ export function GitHubSetupModal({
                   <div className="space-y-2">
                     <p className="text-sm font-medium">未找到 GitHub 远程仓库</p>
                     <p className="text-xs text-muted-foreground">
-                      要使用 Auto Claude，项目需要连接到 GitHub 仓库。
+                      要使用 Auto Codex，项目需要连接到 GitHub 仓库。
                     </p>
                     <div className="text-xs font-mono bg-muted p-2 rounded mt-2">
                       git remote add origin https://github.com/owner/repo.git
@@ -280,7 +280,7 @@ export function GitHubSetupModal({
                 选择基础分支
               </DialogTitle>
               <DialogDescription>
-                选择 Auto Claude 用于创建任务分支的基础分支。
+                选择 Auto Codex 用于创建任务分支的基础分支。
               </DialogDescription>
             </DialogHeader>
 
@@ -333,7 +333,7 @@ export function GitHubSetupModal({
                 </Select>
                 <p className="text-xs text-muted-foreground">
                   所有任务将从类似{' '}
-                  <code className="px-1 bg-muted rounded">auto-claude/task-name</code>
+                  <code className="px-1 bg-muted rounded">auto-codex/task-name</code>
                   {selectedBranch && (
                     <>，基于 <code className="px-1 bg-muted rounded">{selectedBranch}</code></>
                   )}
@@ -347,7 +347,7 @@ export function GitHubSetupModal({
                   <div className="text-xs text-muted-foreground">
                     <p className="font-medium text-foreground">为什么选择分支？</p>
                     <p className="mt-1">
-                      Auto Claude 为每个任务创建隔离工作区。选择合适的基础分支可确保
+                      Auto Codex 为每个任务创建隔离工作区。选择合适的基础分支可确保
                       任务从主开发线的最新代码开始。
                     </p>
                   </div>
@@ -393,7 +393,7 @@ export function GitHubSetupModal({
                 <CheckCircle2 className="h-8 w-8 text-success" />
               </div>
               <p className="text-sm text-muted-foreground text-center">
-                Auto Claude 已准备就绪！你现在可以创建任务，这些任务将基于
+                Auto Codex 已准备就绪！你现在可以创建任务，这些任务将基于
                 <code className="px-1 bg-muted rounded">{selectedBranch}</code> 自动创建。
               </p>
             </div>
@@ -413,11 +413,11 @@ export function GitHubSetupModal({
     if (step === 'complete') return null;
 
     // 将步骤映射到进度索引
-    // 认证步骤（github-auth、claude-auth、repo）= 0
+    // 认证步骤（github-auth、codex-auth、repo）= 0
     // 配置步骤（branch）= 1
     const currentIndex =
       step === 'github-auth' ? 0 :
-      step === 'claude-auth' ? 0 :
+      step === 'codex-auth' ? 0 :
       step === 'repo' ? 0 :
       1;
 

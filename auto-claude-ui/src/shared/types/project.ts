@@ -292,11 +292,11 @@ export interface ProjectContextData {
 
 // Environment Configuration for project .env files
 export interface ProjectEnvConfig {
-  // Claude Authentication
-  claudeOAuthToken?: string;
-  claudeAuthStatus: 'authenticated' | 'token_set' | 'not_configured';
-  // Indicates if the Claude token is from global settings (not project-specific)
-  claudeTokenIsGlobal?: boolean;
+  // Codex Authentication
+  codexOAuthToken?: string;
+  codexAuthStatus: 'authenticated' | 'token_set' | 'not_configured';
+  // Indicates if the Codex token is from global settings (not project-specific)
+  codexTokenIsGlobal?: boolean;
 
   // Model Override
   autoBuildModel?: string;
@@ -333,10 +333,10 @@ export interface ProjectEnvConfig {
   enableFancyUi: boolean;
 }
 
-// Auto Claude Initialization Types
+// Auto Codex Initialization Types
 export interface AutoBuildVersionInfo {
   isInitialized: boolean;
-  updateAvailable: boolean; // Always false - .auto-claude only contains data, no code to update
+  updateAvailable: boolean; // Always false - .auto-codex only contains data, no code to update
 }
 
 export interface InitializationResult {

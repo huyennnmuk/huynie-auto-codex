@@ -2,7 +2,7 @@
  * Flow Controller
  *
  * Implements high/low watermark flow control to prevent terminal overwhelm
- * during high-velocity streaming (e.g., Claude Code output).
+ * during high-velocity streaming (e.g., Codex Code output).
  *
  * Inspired by:
  * - Tabby's 128KB threshold approach

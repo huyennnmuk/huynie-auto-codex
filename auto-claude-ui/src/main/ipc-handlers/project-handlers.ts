@@ -103,7 +103,7 @@ function detectMainBranch(projectPath: string): string | null {
 const settingsPath = path.join(app.getPath('userData'), 'settings.json');
 
 /**
- * Auto-detect the auto-claude source path relative to the app location.
+ * Auto-detect the auto-codex source path relative to the app location.
  * Works across platforms (macOS, Windows, Linux) in both dev and production modes.
  */
 const detectAutoBuildSourcePath = (): string | null => {
@@ -111,13 +111,13 @@ const detectAutoBuildSourcePath = (): string | null => {
 
   // Development mode paths
   if (is.dev) {
-    // In dev, __dirname is typically auto-claude-ui/out/main
-    // We need to go up to the project root to find auto-claude/
+    // In dev, __dirname is typically __AUTO_CODEX_UI__/out/main
+    // We need to go up to the project root to find auto-codex/
     possiblePaths.push(
-      path.resolve(__dirname, '..', '..', '..', 'auto-claude'),  // From out/main up 3 levels
-      path.resolve(__dirname, '..', '..', 'auto-claude'),        // From out/main up 2 levels
-      path.resolve(process.cwd(), 'auto-claude'),                // From cwd (project root)
-      path.resolve(process.cwd(), '..', 'auto-claude')           // From cwd parent (if running from auto-claude-ui/)
+      path.resolve(__dirname, '..', '..', '..', 'auto-codex'),  // From out/main up 3 levels
+      path.resolve(__dirname, '..', '..', 'auto-codex'),        // From out/main up 2 levels
+      path.resolve(process.cwd(), 'auto-codex'),                // From cwd (project root)
+      path.resolve(process.cwd(), '..', 'auto-codex')           // From cwd parent (if running from __AUTO_CODEX_UI__/)
     );
   } else {
     // Production mode paths (packaged app)
@@ -125,16 +125,16 @@ const detectAutoBuildSourcePath = (): string | null => {
     // We check common locations relative to the app bundle
     const appPath = app.getAppPath();
     possiblePaths.push(
-      path.resolve(appPath, '..', 'auto-claude'),               // Sibling to app
-      path.resolve(appPath, '..', '..', 'auto-claude'),         // Up 2 from app
-      path.resolve(appPath, '..', '..', '..', 'auto-claude'),   // Up 3 from app
-      path.resolve(process.resourcesPath, '..', 'auto-claude'), // Relative to resources
-      path.resolve(process.resourcesPath, '..', '..', 'auto-claude')
+      path.resolve(appPath, '..', 'auto-codex'),               // Sibling to app
+      path.resolve(appPath, '..', '..', 'auto-codex'),         // Up 2 from app
+      path.resolve(appPath, '..', '..', '..', 'auto-codex'),   // Up 3 from app
+      path.resolve(process.resourcesPath, '..', 'auto-codex'), // Relative to resources
+      path.resolve(process.resourcesPath, '..', '..', 'auto-codex')
     );
   }
 
   // Add process.cwd() as last resort on all platforms
-  possiblePaths.push(path.resolve(process.cwd(), 'auto-claude'));
+  possiblePaths.push(path.resolve(process.cwd(), 'auto-codex'));
 
   // Enable debug logging with DEBUG=1
   const debug = process.env.DEBUG === '1' || process.env.DEBUG === 'true';
@@ -149,7 +149,7 @@ const detectAutoBuildSourcePath = (): string | null => {
   }
 
   for (const p of possiblePaths) {
-    // Use requirements.txt as marker - it always exists in auto-claude source
+    // Use requirements.txt as marker - it always exists in auto-codex source
     const markerPath = path.join(p, 'requirements.txt');
     const exists = existsSync(p) && existsSync(markerPath);
 
@@ -163,13 +163,13 @@ const detectAutoBuildSourcePath = (): string | null => {
     }
   }
 
-  console.warn('[project-handlers:detectAutoBuildSourcePath] Could not auto-detect Auto Claude source path.');
+  console.warn('[project-handlers:detectAutoBuildSourcePath] Could not auto-detect Auto Codex source path.');
   console.warn('[project-handlers:detectAutoBuildSourcePath] Set DEBUG=1 environment variable for detailed path checking.');
   return null;
 };
 
 /**
- * Get the configured auto-claude source path from settings, or auto-detect
+ * Get the configured auto-codex source path from settings, or auto-detect
  */
 const getAutoBuildSourcePath = (): string | null => {
   // First check if manually configured
@@ -276,11 +276,11 @@ export function registerProjectHandlers(
   ipcMain.handle(
     IPC_CHANNELS.PROJECT_LIST,
     async (): Promise<IPCResult<Project[]>> => {
-      // Validate that .auto-claude folders still exist for all projects
+      // Validate that .auto-codex folders still exist for all projects
       // If a folder was deleted, reset autoBuildPath so UI prompts for reinitialization
       const resetIds = projectStore.validateProjects();
       if (resetIds.length > 0) {
-        console.warn('[IPC] PROJECT_LIST: Detected missing .auto-claude folders for', resetIds.length, 'project(s)');
+        console.warn('[IPC] PROJECT_LIST: Detected missing .auto-codex folders for', resetIds.length, 'project(s)');
       }
 
       const projects = projectStore.getProjects();
@@ -366,7 +366,7 @@ export function registerProjectHandlers(
 
         if (result.success) {
           // Update project's autoBuildPath
-          projectStore.updateAutoBuildPath(projectId, '.auto-claude');
+          projectStore.updateAutoBuildPath(projectId, '.auto-codex');
         }
 
         return { success: result.success, data: result, error: result.error };
@@ -379,7 +379,7 @@ export function registerProjectHandlers(
     }
   );
 
-  // PROJECT_UPDATE_AUTOBUILD is deprecated - .auto-claude only contains data, no code to update
+  // PROJECT_UPDATE_AUTOBUILD is deprecated - .auto-codex only contains data, no code to update
   // Kept for API compatibility, returns success immediately
   ipcMain.handle(
     IPC_CHANNELS.PROJECT_UPDATE_AUTOBUILD,
@@ -390,7 +390,7 @@ export function registerProjectHandlers(
           return { success: false, error: 'Project not found' };
         }
 
-        // Nothing to update - .auto-claude only contains data directories
+        // Nothing to update - .auto-codex only contains data directories
         // The framework runs from the source repo
         return { success: true, data: { success: true } };
       } catch (error) {
@@ -403,7 +403,7 @@ export function registerProjectHandlers(
   );
 
   // PROJECT_CHECK_VERSION now just checks if project is initialized
-  // Version tracking for .auto-claude is removed since it only contains data
+  // Version tracking for .auto-codex is removed since it only contains data
   ipcMain.handle(
     IPC_CHANNELS.PROJECT_CHECK_VERSION,
     async (_, projectId: string): Promise<IPCResult<AutoBuildVersionInfo>> => {
@@ -417,7 +417,7 @@ export function registerProjectHandlers(
           success: true,
           data: {
             isInitialized: isInitialized(project.path),
-            updateAvailable: false // No updates for .auto-claude - it's just data
+            updateAvailable: false // No updates for .auto-codex - it's just data
           }
         };
       } catch (error) {
@@ -429,7 +429,7 @@ export function registerProjectHandlers(
     }
   );
 
-  // Check if project has local auto-claude source (is dev project)
+  // Check if project has local auto-codex source (is dev project)
   ipcMain.handle(
     'project:has-local-source',
     async (_, projectId: string): Promise<IPCResult<boolean>> => {

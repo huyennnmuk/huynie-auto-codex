@@ -317,14 +317,14 @@ CRITICAL: Output ONLY the raw changelog content. Do NOT include ANY introductory
 }
 
 /**
- * Create Python script for Claude generation
+ * Create Python script for Codex generation
  */
-export function createGenerationScript(prompt: string, claudePath: string): string {
+export function createGenerationScript(prompt: string, codexPath: string): string {
   // Convert prompt to base64 to avoid any string escaping issues in Python
   const base64Prompt = Buffer.from(prompt, 'utf-8').toString('base64');
 
-  // Escape the claude path for Python string
-  const escapedClaudePath = claudePath.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+  // Escape the codex path for Python string
+  const escapedCodexPath = codexPath.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 
   return `
 import subprocess
@@ -335,10 +335,10 @@ try:
     # Decode the base64 prompt to avoid string escaping issues
     prompt = base64.b64decode('${base64Prompt}').decode('utf-8')
 
-    # Use Claude Code CLI to generate
-    # stdin=DEVNULL prevents hanging when claude checks for interactive input
+    # Use Codex Code CLI to generate
+    # stdin=DEVNULL prevents hanging when codex checks for interactive input
     result = subprocess.run(
-        ['${escapedClaudePath}', '-p', prompt, '--output-format', 'text', '--model', 'haiku'],
+        ['${escapedCodexPath}', '-p', prompt, '--output-format', 'text', '--model', 'haiku'],
         capture_output=True,
         text=True,
         stdin=subprocess.DEVNULL,
@@ -349,7 +349,7 @@ try:
         print(result.stdout)
     else:
         # Print more detailed error info
-        print(f"Claude CLI error (code {result.returncode}):", file=sys.stderr)
+        print(f"Codex CLI error (code {result.returncode}):", file=sys.stderr)
         if result.stderr:
             print(result.stderr, file=sys.stderr)
         if result.stdout:

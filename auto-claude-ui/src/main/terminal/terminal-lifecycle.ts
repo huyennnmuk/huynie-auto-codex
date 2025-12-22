@@ -20,7 +20,7 @@ import { debugLog, debugError } from '../../shared/utils/debug-logger';
  * Options for terminal restoration
  */
 export interface RestoreOptions {
-  resumeClaudeSession: boolean;
+  resumeCodexSession: boolean;
   captureSessionId: (terminalId: string, projectPath: string, startTime: number) => void;
 }
 
@@ -50,7 +50,7 @@ export async function createTerminal(
   try {
     const profileEnv = PtyManager.getActiveProfileEnv();
 
-    if (profileEnv.CLAUDE_CODE_OAUTH_TOKEN) {
+    if (profileEnv.CODEX_CODE_OAUTH_TOKEN) {
       debugLog('[TerminalLifecycle] Injecting OAuth token from active profile');
     }
 
@@ -67,7 +67,7 @@ export async function createTerminal(
     const terminal: TerminalProcess = {
       id,
       pty: ptyProcess,
-      isClaudeMode: false,
+      isCodexMode: false,
       projectPath,
       cwd: terminalCwd,
       outputBuffer: '',
@@ -111,7 +111,7 @@ export async function restoreTerminal(
   cols = 80,
   rows = 24
 ): Promise<TerminalOperationResult> {
-  debugLog('[TerminalLifecycle] Restoring terminal session:', session.id, 'Claude mode:', session.isClaudeMode);
+  debugLog('[TerminalLifecycle] Restoring terminal session:', session.id, 'Codex mode:', session.isCodexMode);
 
   const result = await createTerminal(
     {
@@ -137,13 +137,13 @@ export async function restoreTerminal(
 
   terminal.title = session.title;
 
-  // Restore Claude mode state without sending resume commands
+  // Restore Codex mode state without sending resume commands
   // The PTY daemon keeps processes alive, so we just need to reconnect to the existing session
-  if (session.isClaudeMode) {
-    terminal.isClaudeMode = true;
-    terminal.claudeSessionId = session.claudeSessionId;
+  if (session.isCodexMode) {
+    terminal.isCodexMode = true;
+    terminal.codexSessionId = session.codexSessionId;
 
-    debugLog('[TerminalLifecycle] Restored Claude mode state for session:', session.id, 'sessionId:', session.claudeSessionId);
+    debugLog('[TerminalLifecycle] Restored Codex mode state for session:', session.id, 'sessionId:', session.codexSessionId);
 
     const win = getWindow();
     if (win) {

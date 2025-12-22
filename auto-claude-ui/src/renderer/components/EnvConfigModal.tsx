@@ -30,7 +30,7 @@ import {
   TooltipTrigger
 } from './ui/tooltip';
 import { cn } from '../lib/utils';
-import type { ClaudeProfile } from '../../shared/types';
+import type { CodexProfile } from '../../shared/types';
 
 interface EnvConfigModalProps {
   open: boolean;
@@ -45,8 +45,8 @@ export function EnvConfigModal({
   open,
   onOpenChange,
   onConfigured,
-  title = '需要 Claude 身份验证',
-  description = '使用构思和路线图生成等 AI 功能需要 Claude Code OAuth 令牌。',
+  title = '需要 Codex 身份验证',
+  description = '使用构思和路线图生成等 AI 功能需要 Codex Code OAuth 令牌。',
   projectId
 }: EnvConfigModalProps) {
   const [token, setToken] = useState('');
@@ -59,7 +59,7 @@ export function EnvConfigModal({
   const [success, setSuccess] = useState(false);
   const [sourcePath, setSourcePath] = useState<string | null>(null);
   const [hasExistingToken, setHasExistingToken] = useState(false);
-  const [claudeProfiles, setClaudeProfiles] = useState<Array<{
+  const [codexProfiles, setCodexProfiles] = useState<Array<{
     id: string;
     name: string;
     oauthToken?: string;
@@ -69,7 +69,7 @@ export function EnvConfigModal({
   const [selectedProfileId, setSelectedProfileId] = useState<string | null>(null);
   const [isLoadingProfiles, setIsLoadingProfiles] = useState(true);
 
-  // 模态框打开时加载 Claude 配置文件并检查令牌状态
+  // 模态框打开时加载 Codex 配置文件并检查令牌状态
   useEffect(() => {
     const loadData = async () => {
       if (!open) return;
@@ -80,10 +80,10 @@ export function EnvConfigModal({
       setSuccess(false);
 
       try {
-        // 并行加载令牌状态和 Claude 配置文件
+        // 并行加载令牌状态和 Codex 配置文件
         const [tokenResult, profilesResult] = await Promise.all([
           window.electronAPI.checkSourceToken(),
-          window.electronAPI.getClaudeProfiles()
+          window.electronAPI.getCodexProfiles()
         ]);
 
         // 处理令牌状态
@@ -99,12 +99,12 @@ export function EnvConfigModal({
           setError(tokenResult.error || '检查令牌状态失败');
         }
 
-        // 处理 Claude 配置文件
+        // 处理 Codex 配置文件
         if (profilesResult.success && profilesResult.data) {
           const authenticatedProfiles = profilesResult.data.profiles.filter(
-            (p: ClaudeProfile) => p.oauthToken || (p.isDefault && p.configDir)
+            (p: CodexProfile) => p.oauthToken || (p.isDefault && p.configDir)
           );
-          setClaudeProfiles(authenticatedProfiles);
+          setCodexProfiles(authenticatedProfiles);
 
           // 自动选择首个已认证的配置文件
           if (authenticatedProfiles.length > 0 && !selectedProfileId) {
@@ -153,16 +153,16 @@ export function EnvConfigModal({
 
     try {
       // 获取选中配置文件的令牌
-      const profile = claudeProfiles.find(p => p.id === selectedProfileId);
+      const profile = codexProfiles.find(p => p.id === selectedProfileId);
       if (!profile?.oauthToken) {
         setError('选中的账号没有有效令牌');
         setIsSaving(false);
         return;
       }
 
-      // 将令牌保存到 auto-claude .env
+      // 将令牌保存到 auto-codex .env
       const result = await window.electronAPI.updateSourceEnv({
-        claudeOAuthToken: profile.oauthToken
+        codexOAuthToken: profile.oauthToken
       });
 
       if (result.success) {
@@ -194,8 +194,8 @@ export function EnvConfigModal({
     setError(null);
 
     try {
-      // 在终端中触发 Claude setup-token 流程
-      const result = await window.electronAPI.invokeClaudeSetup(projectId);
+      // 在终端中触发 Codex setup-token 流程
+      const result = await window.electronAPI.invokeCodexSetup(projectId);
 
       if (!result.success) {
         setError(result.error || '启动认证失败');
@@ -219,7 +219,7 @@ export function EnvConfigModal({
 
     try {
       const result = await window.electronAPI.updateSourceEnv({
-        claudeOAuthToken: token.trim()
+        codexOAuthToken: token.trim()
       });
 
       if (result.success) {
@@ -243,12 +243,12 @@ export function EnvConfigModal({
   };
 
   const handleCopyCommand = () => {
-    navigator.clipboard.writeText('claude setup-token');
+    navigator.clipboard.writeText('codex setup-token');
   };
 
   const handleOpenDocs = () => {
-    // 打开 Claude Code 文档以获取令牌
-    window.open('https://docs.anthropic.com/en/docs/claude-code', '_blank');
+    // 打开 Codex Code 文档以获取令牌
+    window.open('https://docs.anthropic.com/en/docs/codex-code', '_blank');
   };
 
   const handleClose = () => {
@@ -307,7 +307,7 @@ export function EnvConfigModal({
             )}
 
             {/* 选项 1：使用已有已认证配置文件 */}
-            {!isLoadingProfiles && claudeProfiles.length > 0 && (
+            {!isLoadingProfiles && codexProfiles.length > 0 && (
               <div className="space-y-3">
                 <div className="rounded-lg bg-success/10 border border-success/30 p-4">
                   <div className="flex items-start gap-3">
@@ -317,7 +317,7 @@ export function EnvConfigModal({
                         使用已有账号
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        你有 {claudeProfiles.length} 个已认证的 Claude 账号。请选择一个使用：
+                        你有 {codexProfiles.length} 个已认证的 Codex 账号。请选择一个使用：
                       </p>
                     </div>
                   </div>
@@ -329,7 +329,7 @@ export function EnvConfigModal({
                     选择账号
                   </Label>
                   <div className="space-y-2">
-                    {claudeProfiles.map((profile) => (
+                    {codexProfiles.map((profile) => (
                       <button
                         key={profile.id}
                         onClick={() => setSelectedProfileId(profile.id)}
@@ -411,12 +411,12 @@ export function EnvConfigModal({
                     <Info className="h-5 w-5 text-info shrink-0 mt-0.5" />
                     <div className="flex-1">
                       <p className="text-sm text-foreground font-medium mb-1">
-                        {claudeProfiles.length > 0 ? '或认证新账号' : '使用浏览器认证'}
+                        {codexProfiles.length > 0 ? '或认证新账号' : '使用浏览器认证'}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {claudeProfiles.length > 0
-                          ? '通过浏览器登录添加新的 Claude 账号。'
-                          : '点击下方打开浏览器并登录 Claude 账号。'
+                        {codexProfiles.length > 0
+                          ? '通过浏览器登录添加新的 Codex 账号。'
+                          : '点击下方打开浏览器并登录 Codex 账号。'
                         }
                       </p>
                     </div>
@@ -428,7 +428,7 @@ export function EnvConfigModal({
                   disabled={isAuthenticating}
                   className="w-full"
                   size="lg"
-                  variant={claudeProfiles.length > 0 ? "outline" : "default"}
+                  variant={codexProfiles.length > 0 ? "outline" : "default"}
                 >
                   {isAuthenticating ? (
                     <>
@@ -438,7 +438,7 @@ export function EnvConfigModal({
                   ) : (
                     <>
                       <LogIn className="mr-2 h-5 w-5" />
-                      {claudeProfiles.length > 0 ? '认证新账号' : '使用浏览器认证'}
+                      {codexProfiles.length > 0 ? '认证新账号' : '使用浏览器认证'}
                     </>
                   )}
                 </Button>
@@ -483,11 +483,11 @@ export function EnvConfigModal({
                   <div className="text-xs text-muted-foreground space-y-1">
                     <p className="font-medium text-foreground">步骤：</p>
                     <ol className="list-decimal list-inside space-y-1">
-                      <li>如果尚未安装，请先安装 Claude Code CLI</li>
+                      <li>如果尚未安装，请先安装 Codex Code CLI</li>
                       <li>
                         运行{' '}
                         <code className="px-1 py-0.5 bg-muted rounded font-mono">
-                          claude setup-token
+                          codex setup-token
                         </code>
                         {' '}
                         <button
@@ -511,7 +511,7 @@ export function EnvConfigModal({
                   {/* 令牌输入 */}
                   <div className="space-y-2">
                     <Label htmlFor="token" className="text-sm font-medium text-foreground">
-                      Claude Code OAuth 令牌
+                      Codex Code OAuth 令牌
                     </Label>
                     <div className="relative">
                       <Input
@@ -545,7 +545,7 @@ export function EnvConfigModal({
                     <p className="text-xs text-muted-foreground">
                       令牌将保存到{' '}
                       <code className="px-1 py-0.5 bg-muted rounded font-mono">
-                        {sourcePath ? `${sourcePath}/.env` : 'auto-claude/.env'}
+                        {sourcePath ? `${sourcePath}/.env` : 'auto-codex/.env'}
                       </code>
                     </p>
                   </div>
@@ -590,10 +590,10 @@ export function EnvConfigModal({
 }
 
 /**
- * 检查 Claude 令牌是否已配置的 Hook
+ * 检查 Codex 令牌是否已配置的 Hook
  * 返回 { hasToken, isLoading, checkToken }
  */
-export function useClaudeTokenCheck() {
+export function useCodexTokenCheck() {
   const [hasToken, setHasToken] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

@@ -151,7 +151,7 @@ export function initializeGit(projectPath: string): InitializationResult {
 /**
  * Entries to add to .gitignore when initializing a project
  */
-const GITIGNORE_ENTRIES = ['.auto-claude/'];
+const GITIGNORE_ENTRIES = ['.auto-codex/'];
 
 /**
  * Ensure entries exist in the project's .gitignore file.
@@ -195,7 +195,7 @@ function ensureGitignoreEntries(projectPath: string, entries: string[]): void {
     appendContent += '\n';
   }
 
-  appendContent += '\n# Auto Claude data directory\n';
+  appendContent += '\n# Auto Codex data directory\n';
   for (const entry of entriesToAdd) {
     appendContent += entry + '\n';
   }
@@ -203,14 +203,14 @@ function ensureGitignoreEntries(projectPath: string, entries: string[]): void {
   if (existsSync(gitignorePath)) {
     appendFileSync(gitignorePath, appendContent);
   } else {
-    writeFileSync(gitignorePath, '# Auto Claude data directory\n' + entriesToAdd.join('\n') + '\n');
+    writeFileSync(gitignorePath, '# Auto Codex data directory\n' + entriesToAdd.join('\n') + '\n');
   }
 
   debug('Added entries to .gitignore', { entries: entriesToAdd });
 }
 
 /**
- * Data directories created in .auto-claude for each project
+ * Data directories created in .auto-codex for each project
  */
 const DATA_DIRECTORIES = [
   'specs',
@@ -228,12 +228,12 @@ export interface InitializationResult {
 }
 
 /**
- * Check if the project has a local auto-claude source directory
- * This indicates it's the auto-claude development project itself
+ * Check if the project has a local auto-codex source directory
+ * This indicates it's the auto-codex development project itself
  */
 export function hasLocalSource(projectPath: string): boolean {
-  const localSourcePath = path.join(projectPath, 'auto-claude');
-  // Use requirements.txt as marker - it always exists in auto-claude source
+  const localSourcePath = path.join(projectPath, 'auto-codex');
+  // Use requirements.txt as marker - it always exists in auto-codex source
   const markerFile = path.join(localSourcePath, 'requirements.txt');
   return existsSync(localSourcePath) && existsSync(markerFile);
 }
@@ -242,7 +242,7 @@ export function hasLocalSource(projectPath: string): boolean {
  * Get the local source path for a project (if it exists)
  */
 export function getLocalSourcePath(projectPath: string): string | null {
-  const localSourcePath = path.join(projectPath, 'auto-claude');
+  const localSourcePath = path.join(projectPath, 'auto-codex');
   if (hasLocalSource(projectPath)) {
     return localSourcePath;
   }
@@ -250,17 +250,17 @@ export function getLocalSourcePath(projectPath: string): string | null {
 }
 
 /**
- * Check if project is initialized (has .auto-claude directory)
+ * Check if project is initialized (has .auto-codex directory)
  */
 export function isInitialized(projectPath: string): boolean {
-  const dotAutoBuildPath = path.join(projectPath, '.auto-claude');
+  const dotAutoBuildPath = path.join(projectPath, '.auto-codex');
   return existsSync(dotAutoBuildPath);
 }
 
 /**
- * Initialize auto-claude data directory in a project.
+ * Initialize auto-codex data directory in a project.
  *
- * Creates .auto-claude/ with data directories (specs, ideation, insights, roadmap).
+ * Creates .auto-codex/ with data directories (specs, ideation, insights, roadmap).
  * The framework code runs from the source repo - only data is stored here.
  *
  * Requires:
@@ -279,31 +279,31 @@ export function initializeProject(projectPath: string): InitializationResult {
     };
   }
 
-  // Check git status - Auto Claude requires git for worktree-based builds
+  // Check git status - Auto Codex requires git for worktree-based builds
   const gitStatus = checkGitStatus(projectPath);
   if (!gitStatus.isGitRepo || !gitStatus.hasCommits) {
     debug('Git check failed', { gitStatus });
     return {
       success: false,
-      error: gitStatus.error || 'Git repository required. Auto Claude uses git worktrees for isolated builds.'
+      error: gitStatus.error || 'Git repository required. Auto Codex uses git worktrees for isolated builds.'
     };
   }
 
   // Check if already initialized
-  const dotAutoBuildPath = path.join(projectPath, '.auto-claude');
+  const dotAutoBuildPath = path.join(projectPath, '.auto-codex');
 
   if (existsSync(dotAutoBuildPath)) {
-    debug('Already initialized - .auto-claude exists');
+    debug('Already initialized - .auto-codex exists');
     return {
       success: false,
-      error: 'Project already has auto-claude initialized (.auto-claude exists)'
+      error: 'Project already has auto-codex initialized (.auto-codex exists)'
     };
   }
 
   try {
-    debug('Creating .auto-claude data directory', { dotAutoBuildPath });
+    debug('Creating .auto-codex data directory', { dotAutoBuildPath });
 
-    // Create the .auto-claude directory
+    // Create the .auto-codex directory
     mkdirSync(dotAutoBuildPath, { recursive: true });
 
     // Create data directories
@@ -314,7 +314,7 @@ export function initializeProject(projectPath: string): InitializationResult {
       writeFileSync(path.join(dirPath, '.gitkeep'), '');
     }
 
-    // Update .gitignore to exclude .auto-claude/
+    // Update .gitignore to exclude .auto-codex/
     ensureGitignoreEntries(projectPath, GITIGNORE_ENTRIES);
 
     debug('Initialization complete');
@@ -330,11 +330,11 @@ export function initializeProject(projectPath: string): InitializationResult {
 }
 
 /**
- * Ensure all data directories exist in .auto-claude.
+ * Ensure all data directories exist in .auto-codex.
  * Useful if new directories are added in future versions.
  */
 export function ensureDataDirectories(projectPath: string): InitializationResult {
-  const dotAutoBuildPath = path.join(projectPath, '.auto-claude');
+  const dotAutoBuildPath = path.join(projectPath, '.auto-codex');
 
   if (!existsSync(dotAutoBuildPath)) {
     return {
@@ -362,22 +362,22 @@ export function ensureDataDirectories(projectPath: string): InitializationResult
 }
 
 /**
- * Get the auto-claude folder path for a project.
+ * Get the auto-codex folder path for a project.
  *
- * IMPORTANT: Only .auto-claude/ is considered a valid "installed" auto-claude.
- * The auto-claude/ folder (if it exists) is the SOURCE CODE being developed,
- * not an installation. This allows Auto Claude to be used to develop itself.
+ * IMPORTANT: Only .auto-codex/ is considered a valid "installed" auto-codex.
+ * The auto-codex/ folder (if it exists) is the SOURCE CODE being developed,
+ * not an installation. This allows Auto Codex to be used to develop itself.
  */
 export function getAutoBuildPath(projectPath: string): string | null {
-  const dotAutoBuildPath = path.join(projectPath, '.auto-claude');
+  const dotAutoBuildPath = path.join(projectPath, '.auto-codex');
 
   debug('getAutoBuildPath called', { projectPath, dotAutoBuildPath });
 
   if (existsSync(dotAutoBuildPath)) {
-    debug('Returning .auto-claude (installed version)');
-    return '.auto-claude';
+    debug('Returning .auto-codex (installed version)');
+    return '.auto-codex';
   }
 
-  debug('No .auto-claude folder found - project not initialized');
+  debug('No .auto-codex folder found - project not initialized');
   return null;
 }

@@ -6,7 +6,7 @@ interface UseTerminalEventsOptions {
   onOutput?: (data: string) => void;
   onExit?: (exitCode: number) => void;
   onTitleChange?: (title: string) => void;
-  onClaudeSession?: (sessionId: string) => void;
+  onCodexSession?: (sessionId: string) => void;
 }
 
 export function useTerminalEvents({
@@ -14,7 +14,7 @@ export function useTerminalEvents({
   onOutput,
   onExit,
   onTitleChange,
-  onClaudeSession,
+  onCodexSession,
 }: UseTerminalEventsOptions) {
   // Handle terminal output from main process
   useEffect(() => {
@@ -52,16 +52,16 @@ export function useTerminalEvents({
     return cleanup;
   }, [terminalId, onTitleChange]);
 
-  // Handle Claude session ID capture
+  // Handle Codex session ID capture
   useEffect(() => {
-    const cleanup = window.electronAPI.onTerminalClaudeSession((id, sessionId) => {
+    const cleanup = window.electronAPI.onTerminalCodexSession((id, sessionId) => {
       if (id === terminalId) {
-        useTerminalStore.getState().setClaudeSessionId(terminalId, sessionId);
-        console.warn('[Terminal] Captured Claude session ID:', sessionId);
-        onClaudeSession?.(sessionId);
+        useTerminalStore.getState().setCodexSessionId(terminalId, sessionId);
+        console.warn('[Terminal] Captured Codex session ID:', sessionId);
+        onCodexSession?.(sessionId);
       }
     });
 
     return cleanup;
-  }, [terminalId, onClaudeSession]);
+  }, [terminalId, onCodexSession]);
 }

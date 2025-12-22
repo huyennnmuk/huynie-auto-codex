@@ -18,7 +18,7 @@ function debug(...args: unknown[]): void {
 }
 
 /**
- * Service for generating task titles from descriptions using Claude AI
+ * Service for generating task titles from descriptions using Codex AI
  */
 export class TitleGenerator extends EventEmitter {
   // Auto-detect Python command on initialization
@@ -31,7 +31,7 @@ export class TitleGenerator extends EventEmitter {
   }
 
   /**
-   * Configure paths for Python and auto-claude source
+   * Configure paths for Python and auto-codex source
    */
   configure(pythonPath?: string, autoBuildSourcePath?: string): void {
     if (pythonPath) {
@@ -43,7 +43,7 @@ export class TitleGenerator extends EventEmitter {
   }
 
   /**
-   * Get the auto-claude source path (detects automatically if not configured)
+   * Get the auto-codex source path (detects automatically if not configured)
    */
   private getAutoBuildSourcePath(): string | null {
     if (this.autoBuildSourcePath && existsSync(this.autoBuildSourcePath)) {
@@ -51,13 +51,13 @@ export class TitleGenerator extends EventEmitter {
     }
 
     const possiblePaths = [
-      path.resolve(__dirname, '..', '..', '..', 'auto-claude'),
-      path.resolve(app.getAppPath(), '..', 'auto-claude'),
-      path.resolve(process.cwd(), 'auto-claude')
+      path.resolve(__dirname, '..', '..', '..', 'auto-codex'),
+      path.resolve(app.getAppPath(), '..', 'auto-codex'),
+      path.resolve(process.cwd(), 'auto-codex')
     ];
 
     for (const p of possiblePaths) {
-      // Use requirements.txt as marker - it always exists in auto-claude source
+      // Use requirements.txt as marker - it always exists in auto-codex source
       if (existsSync(p) && existsSync(path.join(p, 'requirements.txt'))) {
         return p;
       }
@@ -66,7 +66,7 @@ export class TitleGenerator extends EventEmitter {
   }
 
   /**
-   * Load environment variables from auto-claude .env file
+   * Load environment variables from auto-codex .env file
    */
   private loadAutoBuildEnv(): Record<string, string> {
     const autoBuildSource = this.getAutoBuildSourcePath();
@@ -105,7 +105,7 @@ export class TitleGenerator extends EventEmitter {
   }
 
   /**
-   * Generate a task title from a description using Claude AI
+   * Generate a task title from a description using Codex AI
    * @param description - The task description to generate a title from
    * @returns Promise resolving to the generated title or null on failure
    */
@@ -113,7 +113,7 @@ export class TitleGenerator extends EventEmitter {
     const autoBuildSource = this.getAutoBuildSourcePath();
 
     if (!autoBuildSource) {
-      debug('Auto-claude source path not found');
+      debug('Auto-codex source path not found');
       return null;
     }
 
@@ -124,10 +124,10 @@ export class TitleGenerator extends EventEmitter {
 
     const autoBuildEnv = this.loadAutoBuildEnv();
     debug('Environment loaded', {
-      hasOAuthToken: !!autoBuildEnv.CLAUDE_CODE_OAUTH_TOKEN
+      hasOAuthToken: !!autoBuildEnv.CODEX_CODE_OAUTH_TOKEN
     });
 
-    // Get active Claude profile environment (CLAUDE_CONFIG_DIR if not default)
+    // Get active Codex profile environment (CODEX_CONFIG_DIR if not default)
     const profileEnv = getProfileEnv();
 
     return new Promise((resolve) => {
@@ -138,7 +138,7 @@ export class TitleGenerator extends EventEmitter {
         env: {
           ...process.env,
           ...autoBuildEnv,
-          ...profileEnv, // Include active Claude profile config
+          ...profileEnv, // Include active Codex profile config
           PYTHONUNBUFFERED: '1',
           PYTHONIOENCODING: 'utf-8',
           PYTHONUTF8: '1'
@@ -215,7 +215,7 @@ Title:`;
   }
 
   /**
-   * Create the Python script to generate title using Claude Agent SDK
+   * Create the Python script to generate title using Codex Agent SDK
    */
   private createGenerationScript(prompt: string): string {
     // Escape the prompt for Python string - use JSON.stringify for safe escaping
@@ -227,14 +227,14 @@ import sys
 
 async def generate_title():
     try:
-        from claude_agent_sdk import ClaudeAgentOptions, ClaudeSDKClient
+        from codex_agent_sdk import CodexAgentOptions, CodexSDKClient
 
         prompt = ${escapedPrompt}
 
         # Create a minimal client for simple text generation (no tools needed)
-        client = ClaudeSDKClient(
-            options=ClaudeAgentOptions(
-                model="claude-haiku-4-5",
+        client = CodexSDKClient(
+            options=CodexAgentOptions(
+                model="codex-haiku-4-5",
                 system_prompt="You generate short, concise task titles (3-7 words). Output ONLY the title, nothing else. No quotes, no explanation, no preamble.",
                 max_turns=1,
             )

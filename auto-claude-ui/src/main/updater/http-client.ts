@@ -12,7 +12,7 @@ import { TIMEOUTS } from './config';
 export function fetchJson<T>(url: string): Promise<T> {
   return new Promise((resolve, reject) => {
     const headers = {
-      'User-Agent': 'Auto-Claude-UI',
+      'User-Agent': 'Auto-Codex-UI',
       'Accept': 'application/vnd.github+json'
     };
 
@@ -78,7 +78,7 @@ export function downloadFile(
     // Non-API URLs (CDN, direct downloads) use octet-stream
     const isGitHubApi = url.includes('api.github.com');
     const headers = {
-      'User-Agent': 'Auto-Claude-UI',
+      'User-Agent': 'Auto-Codex-UI',
       'Accept': isGitHubApi ? 'application/vnd.github+json' : 'application/octet-stream'
     };
 

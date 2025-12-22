@@ -1,6 +1,6 @@
 # IPC Handlers - Modular Architecture
 
-This directory contains the refactored IPC (Inter-Process Communication) handlers for Auto Claude UI, organized into domain-specific modules for better maintainability and code organization.
+This directory contains the refactored IPC (Inter-Process Communication) handlers for Auto Codex UI, organized into domain-specific modules for better maintainability and code organization.
 
 ## Overview
 
@@ -16,9 +16,9 @@ Handles project lifecycle and Python environment management:
 - `PROJECT_REMOVE` - Remove project
 - `PROJECT_LIST` - List all projects
 - `PROJECT_UPDATE_SETTINGS` - Update project settings
-- `PROJECT_INITIALIZE` - Initialize .auto-claude directory
+- `PROJECT_INITIALIZE` - Initialize .auto-codex directory
 - `PROJECT_CHECK_VERSION` - Check initialization status
-- `project:has-local-source` - Check if project has local auto-claude source
+- `project:has-local-source` - Check if project has local auto-codex source
 - Python environment initialization and status events
 
 #### `task-handlers.ts` (52KB) - Largest module
@@ -38,13 +38,13 @@ Manages task lifecycle and execution:
 - Task logs (get, watch, unwatch)
 
 #### `terminal-handlers.ts` (16KB)
-Terminal and Claude profile management:
+Terminal and Codex profile management:
 - `TERMINAL_CREATE` - Create terminal session
 - `TERMINAL_DESTROY` - Destroy terminal
 - `TERMINAL_INPUT` - Send input to terminal
 - `TERMINAL_RESIZE` - Resize terminal
-- `TERMINAL_INVOKE_CLAUDE` - Invoke Claude in terminal
-- Claude profile management (CRUD operations)
+- `TERMINAL_INVOKE_CODEX` - Invoke Codex in terminal
+- Codex profile management (CRUD operations)
 - Profile auto-switching and usage tracking
 - Terminal session persistence and restoration
 
@@ -131,8 +131,8 @@ Linear integration:
 Environment configuration:
 - `ENV_GET` - Get project environment
 - `ENV_UPDATE` - Update environment variables
-- `ENV_CHECK_CLAUDE_AUTH` - Check Claude authentication
-- `ENV_INVOKE_CLAUDE_SETUP` - Run Claude setup
+- `ENV_CHECK_CODEX_AUTH` - Check Codex authentication
+- `ENV_INVOKE_CODEX_SETUP` - Run Codex setup
 
 #### `autobuild-source-handlers.ts` (8.9KB)
 Auto-build source updates:

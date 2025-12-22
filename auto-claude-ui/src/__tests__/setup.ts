@@ -6,7 +6,7 @@ import { mkdirSync, rmSync, existsSync } from 'fs';
 import path from 'path';
 
 // Test data directory for isolated file operations
-export const TEST_DATA_DIR = '/tmp/auto-claude-ui-tests';
+export const TEST_DATA_DIR = '/tmp/__AUTO_CODEX_UI__-tests';
 
 // Create fresh test directory before each test
 beforeEach(() => {

@@ -4,9 +4,9 @@
  */
 
 /**
- * Regex patterns to capture Claude session ID from output
+ * Regex patterns to capture Codex session ID from output
  */
-const CLAUDE_SESSION_PATTERNS = [
+const CODEX_SESSION_PATTERNS = [
   /Session(?:\s+ID)?:\s*([a-zA-Z0-9_-]+)/i,
   /session[_-]?id["\s:=]+([a-zA-Z0-9_-]+)/i,
   /Resuming session:\s*([a-zA-Z0-9_-]+)/i,
@@ -14,26 +14,26 @@ const CLAUDE_SESSION_PATTERNS = [
 ];
 
 /**
- * Regex pattern to detect Claude Code rate limit messages
+ * Regex pattern to detect Codex Code rate limit messages
  * Matches: "Limit reached · resets Dec 17 at 6am (Europe/Oslo)"
  */
 const RATE_LIMIT_PATTERN = /Limit reached\s*[·•]\s*resets\s+(.+?)$/m;
 
 /**
- * Regex pattern to capture OAuth token from `claude setup-token` output
+ * Regex pattern to capture OAuth token from `codex setup-token` output
  */
 const OAUTH_TOKEN_PATTERN = /(sk-ant-oat01-[A-Za-z0-9_-]+)/;
 
 /**
- * Pattern to detect email in Claude output
+ * Pattern to detect email in Codex output
  */
 const EMAIL_PATTERN = /(?:Authenticated as|Logged in as|email[:\s]+)([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/i;
 
 /**
- * Extract Claude session ID from output
+ * Extract Codex session ID from output
  */
-export function extractClaudeSessionId(data: string): string | null {
-  for (const pattern of CLAUDE_SESSION_PATTERNS) {
+export function extractCodexSessionId(data: string): string | null {
+  for (const pattern of CODEX_SESSION_PATTERNS) {
     const match = data.match(pattern);
     if (match && match[1]) {
       return match[1];

@@ -76,7 +76,7 @@ export function registerInsightsHandlers(
       }
 
       if (!project.autoBuildPath) {
-        return { success: false, error: 'Auto Claude not initialized for this project' };
+        return { success: false, error: 'Auto Codex not initialized for this project' };
       }
 
       try {
@@ -290,7 +290,7 @@ export function registerInsightsHandlers(
   insightsService.on('sdk-rate-limit', (rateLimitInfo: unknown) => {
     const mainWindow = getMainWindow();
     if (mainWindow) {
-      mainWindow.webContents.send(IPC_CHANNELS.CLAUDE_SDK_RATE_LIMIT, rateLimitInfo);
+      mainWindow.webContents.send(IPC_CHANNELS.CODEX_SDK_RATE_LIMIT, rateLimitInfo);
     }
   });
 

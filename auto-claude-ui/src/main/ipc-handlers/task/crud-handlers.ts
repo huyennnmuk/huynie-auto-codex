@@ -42,10 +42,10 @@ export function registerTaskCRUDHandlers(agentManager: AgentManager): void {
         return { success: false, error: 'Project not found' };
       }
 
-      // Auto-generate title if empty using Claude AI
+      // Auto-generate title if empty using Codex AI
       let finalTitle = title;
       if (!title || !title.trim()) {
-        console.warn('[TASK_CREATE] Title is empty, generating with Claude AI...');
+        console.warn('[TASK_CREATE] Title is empty, generating with Codex AI...');
         try {
           const generatedTitle = await titleGenerator.generateTitle(description);
           if (generatedTitle) {
@@ -257,7 +257,7 @@ export function registerTaskCRUDHandlers(agentManager: AgentManager): void {
           return { success: false, error: 'Task not found' };
         }
 
-        const autoBuildDir = project.autoBuildPath || '.auto-claude';
+        const autoBuildDir = project.autoBuildPath || '.auto-codex';
         const specDir = path.join(project.path, autoBuildDir, 'specs', task.specId);
 
         if (!existsSync(specDir)) {
@@ -269,7 +269,7 @@ export function registerTaskCRUDHandlers(agentManager: AgentManager): void {
         if (updates.title !== undefined && !updates.title.trim()) {
           // Get description to use for title generation
           const descriptionToUse = updates.description ?? task.description;
-          console.warn('[TASK_UPDATE] Title is empty, generating with Claude AI...');
+          console.warn('[TASK_UPDATE] Title is empty, generating with Codex AI...');
           try {
             const generatedTitle = await titleGenerator.generateTitle(descriptionToUse);
             if (generatedTitle) {

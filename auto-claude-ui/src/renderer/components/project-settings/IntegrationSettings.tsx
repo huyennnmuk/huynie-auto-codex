@@ -473,7 +473,7 @@ export function IntegrationSettings({
                   </Select>
                   {settings.mainBranch && (
                     <p className="text-xs text-muted-foreground">
-                      任务将从 <code className="px-1 bg-muted rounded">{settings.mainBranch}</code> 创建分支，例如 <code className="px-1 bg-muted rounded">auto-claude/task-name</code>
+                      任务将从 <code className="px-1 bg-muted rounded">{settings.mainBranch}</code> 创建分支，例如 <code className="px-1 bg-muted rounded">auto-codex/task-name</code>
                     </p>
                   )}
                 </div>

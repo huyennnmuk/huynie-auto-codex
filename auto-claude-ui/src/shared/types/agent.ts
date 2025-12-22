@@ -1,15 +1,15 @@
 /**
- * Agent-related types (Claude profiles and authentication)
+ * Agent-related types (Codex profiles and authentication)
  */
 
 // ============================================
-// Claude Profile Types (Multi-Account Support)
+// Codex Profile Types (Multi-Account Support)
 // ============================================
 
 /**
- * Usage data parsed from Claude Code's /usage command
+ * Usage data parsed from Codex Code's /usage command
  */
-export interface ClaudeUsageData {
+export interface CodexUsageData {
   /** Session usage percentage (0-100) */
   sessionUsagePercent: number;
   /** When the session limit resets (ISO string or description like "11:59pm") */
@@ -28,7 +28,7 @@ export interface ClaudeUsageData {
  * Real-time usage snapshot for proactive monitoring
  * Returned from API or CLI usage check
  */
-export interface ClaudeUsageSnapshot {
+export interface CodexUsageSnapshot {
   /** Session usage percentage (0-100) */
   sessionPercent: number;
   /** Weekly usage percentage (0-100) */
@@ -50,27 +50,27 @@ export interface ClaudeUsageSnapshot {
 /**
  * Rate limit event recorded for a profile
  */
-export interface ClaudeRateLimitEvent {
+export interface CodexRateLimitEvent {
   /** Type of limit hit: 'session' or 'weekly' */
   type: 'session' | 'weekly';
   /** When the limit was hit */
   hitAt: Date;
   /** When it's expected to reset */
   resetAt: Date;
-  /** The reset time string from Claude (e.g., "Dec 17 at 6am") */
+  /** The reset time string from Codex (e.g., "Dec 17 at 6am") */
   resetTimeString: string;
 }
 
 /**
- * A Claude Code subscription profile for multi-account support.
+ * A Codex Code subscription profile for multi-account support.
  * Profiles store OAuth tokens for instant switching without browser re-auth.
  */
-export interface ClaudeProfile {
+export interface CodexProfile {
   id: string;
   name: string;
   /**
    * OAuth token (sk-ant-oat01-...) for this profile.
-   * When set, CLAUDE_CODE_OAUTH_TOKEN env var is used instead of config dir.
+   * When set, CODEX_CODE_OAUTH_TOKEN env var is used instead of config dir.
    * Token is valid for 1 year from creation.
    */
   oauthToken?: string;
@@ -79,11 +79,11 @@ export interface ClaudeProfile {
   /** When the OAuth token was created (for expiry tracking - 1 year validity) */
   tokenCreatedAt?: Date;
   /**
-   * Path to the Claude config directory (e.g., ~/.claude or ~/.claude-profiles/work)
+   * Path to the Codex config directory (e.g., ~/.codex or ~/.codex-profiles/work)
    * @deprecated Use oauthToken instead for reliable multi-profile switching
    */
   configDir?: string;
-  /** Whether this is the default profile (uses ~/.claude) */
+  /** Whether this is the default profile (uses ~/.codex) */
   isDefault: boolean;
   /** Optional description/notes for this profile */
   description?: string;
@@ -92,27 +92,27 @@ export interface ClaudeProfile {
   /** Last time this profile was used */
   lastUsedAt?: Date;
   /** Current usage data from /usage command */
-  usage?: ClaudeUsageData;
+  usage?: CodexUsageData;
   /** Recent rate limit events for this profile */
-  rateLimitEvents?: ClaudeRateLimitEvent[];
+  rateLimitEvents?: CodexRateLimitEvent[];
 }
 
 /**
- * Settings for Claude profile management
+ * Settings for Codex profile management
  */
-export interface ClaudeProfileSettings {
-  /** All configured Claude profiles */
-  profiles: ClaudeProfile[];
+export interface CodexProfileSettings {
+  /** All configured Codex profiles */
+  profiles: CodexProfile[];
   /** ID of the currently active profile */
   activeProfileId: string;
   /** Auto-switch settings */
-  autoSwitch?: ClaudeAutoSwitchSettings;
+  autoSwitch?: CodexAutoSwitchSettings;
 }
 
 /**
  * Settings for automatic profile switching
  */
-export interface ClaudeAutoSwitchSettings {
+export interface CodexAutoSwitchSettings {
   /** Master toggle - enables all auto-switch features */
   enabled: boolean;
 
@@ -133,7 +133,7 @@ export interface ClaudeAutoSwitchSettings {
   autoSwitchOnRateLimit: boolean;
 }
 
-export interface ClaudeAuthResult {
+export interface CodexAuthResult {
   success: boolean;
   authenticated: boolean;
   error?: string;

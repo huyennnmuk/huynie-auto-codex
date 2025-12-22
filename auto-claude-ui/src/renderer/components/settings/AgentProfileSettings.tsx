@@ -182,7 +182,7 @@ export function AgentProfileSettings() {
         {/* 说明 */}
         <div className="rounded-lg bg-muted/50 p-3">
           <p className="text-xs text-muted-foreground">
-            智能体配置提供 Claude 模型与思考等级的预设组合。
+            智能体配置提供 Codex 模型与思考等级的预设组合。
             创建新任务时将默认使用这些设置，你也可以在任务创建向导中随时覆盖。
           </p>
         </div>

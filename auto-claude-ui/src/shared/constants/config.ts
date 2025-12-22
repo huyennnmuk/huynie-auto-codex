@@ -11,7 +11,7 @@ export const DEFAULT_APP_SETTINGS = {
   theme: 'system' as const,
   colorTheme: 'default' as const,
   defaultModel: 'opus',
-  agentFramework: 'auto-claude',
+  agentFramework: 'auto-codex',
   pythonPath: undefined as string | undefined,
   autoBuildPath: undefined as string | undefined,
   autoUpdateAutoBuild: true,
@@ -24,7 +24,7 @@ export const DEFAULT_APP_SETTINGS = {
     sound: false
   },
   // 全局 API 密钥（作为所有项目的默认值）
-  globalClaudeOAuthToken: undefined as string | undefined,
+  globalCodexOAuthToken: undefined as string | undefined,
   globalOpenAIApiKey: undefined as string | undefined,
   // 已选择的代理配置 - 默认为 'auto'，按阶段优化模型选择
   selectedAgentProfile: 'auto',
@@ -58,11 +58,11 @@ export const DEFAULT_PROJECT_SETTINGS = {
 // ============================================
 
 // 相对于项目的文件路径
-// 重要：所有路径使用 .auto-claude/（已安装实例），而非 auto-claude/（源码）
+// 重要：所有路径使用 .auto-codex/（已安装实例），而非 auto-codex/（源码）
 export const AUTO_BUILD_PATHS = {
-  SPECS_DIR: '.auto-claude/specs',
-  ROADMAP_DIR: '.auto-claude/roadmap',
-  IDEATION_DIR: '.auto-claude/ideation',
+  SPECS_DIR: '.auto-codex/specs',
+  ROADMAP_DIR: '.auto-codex/roadmap',
+  IDEATION_DIR: '.auto-codex/ideation',
   IMPLEMENTATION_PLAN: 'implementation_plan.json',
   SPEC_FILE: 'spec.md',
   QA_REPORT: 'qa_report.md',
@@ -74,15 +74,15 @@ export const AUTO_BUILD_PATHS = {
   COMPETITOR_ANALYSIS: 'competitor_analysis.json',
   IDEATION_FILE: 'ideation.json',
   IDEATION_CONTEXT: 'ideation_context.json',
-  PROJECT_INDEX: '.auto-claude/project_index.json',
+  PROJECT_INDEX: '.auto-codex/project_index.json',
   GRAPHITI_STATE: '.graphiti_state.json'
 } as const;
 
 /**
  * 获取规范目录路径。
- * 所有规范都存放在 .auto-claude/specs/（项目的数据目录）。
+ * 所有规范都存放在 .auto-codex/specs/（项目的数据目录）。
  */
 export function getSpecsDir(autoBuildPath: string | undefined): string {
-  const basePath = autoBuildPath || '.auto-claude';
+  const basePath = autoBuildPath || '.auto-codex';
   return `${basePath}/specs`;
 }

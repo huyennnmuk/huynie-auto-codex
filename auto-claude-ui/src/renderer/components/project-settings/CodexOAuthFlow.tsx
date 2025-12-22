@@ -10,16 +10,16 @@ import {
 import { Button } from '../ui/button';
 import { Card, CardContent } from '../ui/card';
 
-interface ClaudeOAuthFlowProps {
+interface CodexOAuthFlowProps {
   onSuccess: () => void;
   onCancel?: () => void;
 }
 
 /**
- * Claude OAuth flow component for setup wizard
- * Guides users through authenticating with Claude using claude setup-token
+ * Codex OAuth flow component for setup wizard
+ * Guides users through authenticating with Codex using codex setup-token
  */
-export function ClaudeOAuthFlow({ onSuccess, onCancel }: ClaudeOAuthFlowProps) {
+export function CodexOAuthFlow({ onSuccess, onCancel }: CodexOAuthFlowProps) {
   const [status, setStatus] = useState<'ready' | 'authenticating' | 'success' | 'error'>('ready');
   const [error, setError] = useState<string | null>(null);
   const [email, setEmail] = useState<string | undefined>();
@@ -38,7 +38,7 @@ export function ClaudeOAuthFlow({ onSuccess, onCancel }: ClaudeOAuthFlowProps) {
     }
 
     const unsubscribe = window.electronAPI.onTerminalOAuthToken((info) => {
-      console.warn('[ClaudeOAuth] Token event received:', {
+      console.warn('[CodexOAuth] Token event received:', {
         success: info.success,
         hasEmail: !!info.email,
         profileId: info.profileId
@@ -71,37 +71,37 @@ export function ClaudeOAuthFlow({ onSuccess, onCancel }: ClaudeOAuthFlowProps) {
 
   const handleStartAuth = async () => {
     if (hasStartedRef.current) {
-      console.warn('[ClaudeOAuth] Auth already started, ignoring duplicate call');
+      console.warn('[CodexOAuth] Auth already started, ignoring duplicate call');
       return;
     }
     hasStartedRef.current = true;
 
-    console.warn('[ClaudeOAuth] Starting Claude authentication');
+    console.warn('[CodexOAuth] Starting Codex authentication');
     setStatus('authenticating');
     setError(null);
 
     try {
       // Get the active profile ID
-      const profilesResult = await window.electronAPI.getClaudeProfiles();
+      const profilesResult = await window.electronAPI.getCodexProfiles();
 
       if (!profilesResult.success || !profilesResult.data) {
-        throw new Error('Failed to get Claude profiles');
+        throw new Error('Failed to get Codex profiles');
       }
 
       const activeProfileId = profilesResult.data.activeProfileId;
-      console.warn('[ClaudeOAuth] Initializing profile:', activeProfileId);
+      console.warn('[CodexOAuth] Initializing profile:', activeProfileId);
 
-      // Initialize the profile - this opens a terminal and runs 'claude setup-token'
-      const result = await window.electronAPI.initializeClaudeProfile(activeProfileId);
+      // Initialize the profile - this opens a terminal and runs 'codex setup-token'
+      const result = await window.electronAPI.initializeCodexProfile(activeProfileId);
 
       if (!result.success) {
         throw new Error(result.error || 'Failed to start authentication');
       }
 
-      console.warn('[ClaudeOAuth] Authentication started, waiting for token...');
+      console.warn('[CodexOAuth] Authentication started, waiting for token...');
       // Status will be updated by the event listener when token is detected
     } catch (err) {
-      console.error('[ClaudeOAuth] Authentication failed:', err);
+      console.error('[CodexOAuth] Authentication failed:', err);
       setError(err instanceof Error ? err.message : 'Authentication failed');
       setStatus('error');
       hasStartedRef.current = false;
@@ -125,14 +125,14 @@ export function ClaudeOAuthFlow({ onSuccess, onCancel }: ClaudeOAuthFlowProps) {
                 <Key className="h-6 w-6 text-info shrink-0 mt-0.5" />
                 <div className="flex-1 space-y-3">
                   <h3 className="text-lg font-medium text-foreground">
-                    Authenticate with Claude
+                    Authenticate with Codex
                   </h3>
                   <p className="text-sm text-muted-foreground">
-                    Auto Claude requires Claude AI authentication for AI-powered features like
+                    Auto Codex requires Codex AI authentication for AI-powered features like
                     Roadmap generation, Task automation, and Ideation.
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    This will open a browser window to authenticate with your Claude account.
+                    This will open a browser window to authenticate with your Codex account.
                     Your credentials are stored securely and are valid for 1 year.
                   </p>
                 </div>
@@ -143,7 +143,7 @@ export function ClaudeOAuthFlow({ onSuccess, onCancel }: ClaudeOAuthFlowProps) {
           <div className="flex justify-center">
             <Button onClick={handleStartAuth} size="lg" className="gap-2">
               <Key className="h-5 w-5" />
-              Authenticate with Claude
+              Authenticate with Codex
             </Button>
           </div>
         </div>
@@ -172,11 +172,11 @@ export function ClaudeOAuthFlow({ onSuccess, onCancel }: ClaudeOAuthFlowProps) {
                   <div className="text-xs text-muted-foreground space-y-1">
                     <p className="font-medium">What's happening:</p>
                     <ol className="list-decimal list-inside space-y-1 ml-2">
-                      <li>A terminal opened and ran <code className="px-1 bg-muted rounded">claude setup-token</code></li>
-                      <li>Your browser should open to authenticate with Claude</li>
+                      <li>A terminal opened and ran <code className="px-1 bg-muted rounded">codex setup-token</code></li>
+                      <li>Your browser should open to authenticate with Codex</li>
                       <li>Complete the OAuth flow in your browser</li>
                       <li>The terminal will display your token (starts with sk-ant-oat01-...)</li>
-                      <li>Auto Claude will automatically detect and save it</li>
+                      <li>Auto Codex will automatically detect and save it</li>
                     </ol>
                   </div>
                 </div>
@@ -197,11 +197,11 @@ export function ClaudeOAuthFlow({ onSuccess, onCancel }: ClaudeOAuthFlowProps) {
                   Successfully Authenticated!
                 </h3>
                 <p className="text-sm text-success/80 mt-1">
-                  {email ? `Connected as ${email}` : 'Your Claude credentials have been saved'}
+                  {email ? `Connected as ${email}` : 'Your Codex credentials have been saved'}
                 </p>
                 <div className="flex items-center gap-2 mt-3 text-xs text-success/70">
                   <Sparkles className="h-3 w-3" />
-                  <span>You can now use all Auto Claude AI features</span>
+                  <span>You can now use all Auto Codex AI features</span>
                 </div>
               </div>
             </div>

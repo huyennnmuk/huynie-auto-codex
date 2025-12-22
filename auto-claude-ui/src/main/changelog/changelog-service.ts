@@ -36,7 +36,7 @@ import { findPythonCommand } from '../python-detector';
 export class ChangelogService extends EventEmitter {
   // Auto-detect Python command on initialization
   private pythonPath: string = findPythonCommand() || 'python';
-  private claudePath: string = 'claude';
+  private codexPath: string = 'codex';
   private autoBuildSourcePath: string = '';
   private cachedEnv: Record<string, string> | null = null;
   private debugEnabled: boolean | null = null;
@@ -45,53 +45,53 @@ export class ChangelogService extends EventEmitter {
 
   constructor() {
     super();
-    this.detectClaudePath();
+    this.detectCodexPath();
     this.debug('ChangelogService initialized');
   }
 
   /**
-   * Detect the full path to the claude CLI
+   * Detect the full path to the codex CLI
    * Electron apps don't inherit shell PATH, so we need to find it explicitly
    */
-  private detectClaudePath(): void {
+  private detectCodexPath(): void {
     const homeDir = os.homedir();
 
     // Platform-specific possible paths
     const possiblePaths = process.platform === 'win32'
       ? [
           // Windows paths
-          path.join(homeDir, 'AppData', 'Local', 'Programs', 'claude', 'claude.exe'),
-          path.join(homeDir, 'AppData', 'Roaming', 'npm', 'claude.cmd'),
-          path.join(homeDir, '.local', 'bin', 'claude.exe'),
-          'C:\\Program Files\\Claude\\claude.exe',
-          'C:\\Program Files (x86)\\Claude\\claude.exe',
-          // Also check if claude is in system PATH
-          'claude'
+          path.join(homeDir, 'AppData', 'Local', 'Programs', 'codex', 'codex.exe'),
+          path.join(homeDir, 'AppData', 'Roaming', 'npm', 'codex.cmd'),
+          path.join(homeDir, '.local', 'bin', 'codex.exe'),
+          'C:\\Program Files\\Codex\\codex.exe',
+          'C:\\Program Files (x86)\\Codex\\codex.exe',
+          // Also check if codex is in system PATH
+          'codex'
         ]
       : [
           // Unix paths (macOS/Linux)
-          '/usr/local/bin/claude',
-          '/opt/homebrew/bin/claude',
-          path.join(homeDir, '.local/bin/claude'),
-          path.join(homeDir, 'bin/claude'),
-          // Also check if claude is in system PATH
-          'claude'
+          '/usr/local/bin/codex',
+          '/opt/homebrew/bin/codex',
+          path.join(homeDir, '.local/bin/codex'),
+          path.join(homeDir, 'bin/codex'),
+          // Also check if codex is in system PATH
+          'codex'
         ];
 
-    for (const claudePath of possiblePaths) {
-      if (claudePath === 'claude' || existsSync(claudePath)) {
-        this.claudePath = claudePath;
-        this.debug('Claude CLI found at:', claudePath);
+    for (const codexPath of possiblePaths) {
+      if (codexPath === 'codex' || existsSync(codexPath)) {
+        this.codexPath = codexPath;
+        this.debug('Codex CLI found at:', codexPath);
         return;
       }
     }
 
-    this.debug('Claude CLI not found in common locations, using default');
+    this.debug('Codex CLI not found in common locations, using default');
   }
 
   /**
    * Check if debug mode is enabled
-   * Checks DEBUG from auto-claude/.env and DEBUG from process.env
+   * Checks DEBUG from auto-codex/.env and DEBUG from process.env
    */
   private isDebugEnabled(): boolean {
     // Cache the result after first check
@@ -110,14 +110,14 @@ export class ChangelogService extends EventEmitter {
       return true;
     }
 
-    // Check auto-claude .env file
+    // Check auto-codex .env file
     const env = this.loadAutoBuildEnv();
     this.debugEnabled = env.DEBUG === 'true' || env.DEBUG === '1';
     return this.debugEnabled;
   }
 
   /**
-   * Debug logging - only logs when DEBUG=true in auto-claude/.env or DEBUG is set
+   * Debug logging - only logs when DEBUG=true in auto-codex/.env or DEBUG is set
    */
   private debug(...args: unknown[]): void {
     if (this.isDebugEnabled()) {
@@ -126,7 +126,7 @@ export class ChangelogService extends EventEmitter {
   }
 
   /**
-   * Configure paths for Python and auto-claude source
+   * Configure paths for Python and auto-codex source
    */
   configure(pythonPath?: string, autoBuildSourcePath?: string): void {
     if (pythonPath) {
@@ -138,7 +138,7 @@ export class ChangelogService extends EventEmitter {
   }
 
   /**
-   * Get the auto-claude source path (detects automatically if not configured)
+   * Get the auto-codex source path (detects automatically if not configured)
    */
   private getAutoBuildSourcePath(): string | null {
     if (this.autoBuildSourcePath && existsSync(this.autoBuildSourcePath)) {
@@ -146,13 +146,13 @@ export class ChangelogService extends EventEmitter {
     }
 
     const possiblePaths = [
-      path.resolve(__dirname, '..', '..', '..', 'auto-claude'),
-      path.resolve(app.getAppPath(), '..', 'auto-claude'),
-      path.resolve(process.cwd(), 'auto-claude')
+      path.resolve(__dirname, '..', '..', '..', 'auto-codex'),
+      path.resolve(app.getAppPath(), '..', 'auto-codex'),
+      path.resolve(process.cwd(), 'auto-codex')
     ];
 
     for (const p of possiblePaths) {
-      // Use requirements.txt as marker - it always exists in auto-claude source
+      // Use requirements.txt as marker - it always exists in auto-codex source
       if (existsSync(p) && existsSync(path.join(p, 'requirements.txt'))) {
         return p;
       }
@@ -161,7 +161,7 @@ export class ChangelogService extends EventEmitter {
   }
 
   /**
-   * Load environment variables from auto-claude .env file
+   * Load environment variables from auto-codex .env file
    */
   private loadAutoBuildEnv(): Record<string, string> {
     const autoBuildSource = this.getAutoBuildSourcePath();
@@ -209,16 +209,16 @@ export class ChangelogService extends EventEmitter {
         throw new Error('Auto-build source path not found');
       }
 
-      // Verify claude CLI is available
-      if (this.claudePath !== 'claude' && !existsSync(this.claudePath)) {
-        throw new Error(`Claude CLI not found. Please ensure Claude Code is installed. Looked for: ${this.claudePath}`);
+      // Verify codex CLI is available
+      if (this.codexPath !== 'codex' && !existsSync(this.codexPath)) {
+        throw new Error(`Codex CLI not found. Please ensure Codex Code is installed. Looked for: ${this.codexPath}`);
       }
 
       const autoBuildEnv = this.loadAutoBuildEnv();
 
       this.generator = new ChangelogGenerator(
         this.pythonPath,
-        this.claudePath,
+        this.codexPath,
         autoBuildSource,
         autoBuildEnv,
         this.isDebugEnabled()
@@ -255,14 +255,14 @@ export class ChangelogService extends EventEmitter {
         throw new Error('Auto-build source path not found');
       }
 
-      // Verify claude CLI is available
-      if (this.claudePath !== 'claude' && !existsSync(this.claudePath)) {
-        throw new Error(`Claude CLI not found. Please ensure Claude Code is installed. Looked for: ${this.claudePath}`);
+      // Verify codex CLI is available
+      if (this.codexPath !== 'codex' && !existsSync(this.codexPath)) {
+        throw new Error(`Codex CLI not found. Please ensure Codex Code is installed. Looked for: ${this.codexPath}`);
       }
 
       this.versionSuggester = new VersionSuggester(
         this.pythonPath,
-        this.claudePath,
+        this.codexPath,
         autoBuildSource,
         this.isDebugEnabled()
       );

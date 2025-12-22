@@ -1,6 +1,6 @@
 # Context Handlers Module
 
-This directory contains the refactored context-related IPC handlers for the Auto Claude UI application. The handlers manage project context, memory systems (both file-based and Graphiti/FalkorDB), and project index operations.
+This directory contains the refactored context-related IPC handlers for the Auto Codex UI application. The handlers manage project context, memory systems (both file-based and Graphiti/FalkorDB), and project index operations.
 
 ## Architecture
 
@@ -136,7 +136,7 @@ test('parseEnvFile handles quotes correctly', () => {
 import { buildMemoryStatus } from './memory-status-handlers';
 
 test('buildMemoryStatus returns correct status', () => {
-  const status = buildMemoryStatus('/path/to/project', 'auto-claude');
+  const status = buildMemoryStatus('/path/to/project', 'auto-codex');
   expect(status).toHaveProperty('enabled');
   expect(status).toHaveProperty('available');
 });
@@ -152,7 +152,7 @@ test('buildMemoryStatus returns correct status', () => {
 
 ## Related Documentation
 
-- [Project Memory System](../../../../auto-claude/memory.py)
-- [Graphiti Memory Integration](../../../../auto-claude/graphiti_memory.py)
+- [Project Memory System](../../../../auto-codex/memory.py)
+- [Graphiti Memory Integration](../../../../auto-codex/graphiti_memory.py)
 - [FalkorDB Service](../../falkordb-service.ts)
 - [IPC Channels](../../../shared/constants.ts)

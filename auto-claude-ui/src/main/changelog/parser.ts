@@ -38,11 +38,11 @@ export function extractSpecOverview(spec: string): string {
 }
 
 /**
- * Extract changelog content from Claude output
+ * Extract changelog content from Codex output
  * Removes AI preambles and finds the actual changelog content
  */
 export function extractChangelog(output: string): string {
-  // Claude output should be the changelog directly
+  // Codex output should be the changelog directly
   // Clean up any potential wrapper text
   let changelog = output.trim();
 

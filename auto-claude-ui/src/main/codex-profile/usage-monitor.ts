@@ -1,7 +1,7 @@
 /**
  * Usage Monitor - Proactive usage monitoring and account switching
  *
- * Monitors Claude account usage at configured intervals and automatically
+ * Monitors Codex account usage at configured intervals and automatically
  * switches to alternative accounts before hitting rate limits.
  *
  * Uses hybrid approach:
@@ -10,13 +10,13 @@
  */
 
 import { EventEmitter } from 'events';
-import { getClaudeProfileManager } from '../claude-profile-manager';
-import { ClaudeUsageSnapshot } from '../../shared/types/agent';
+import { getCodexProfileManager } from '../codex-profile-manager';
+import { CodexUsageSnapshot } from '../../shared/types/agent';
 
 export class UsageMonitor extends EventEmitter {
   private static instance: UsageMonitor;
   private intervalId: NodeJS.Timeout | null = null;
-  private currentUsage: ClaudeUsageSnapshot | null = null;
+  private currentUsage: CodexUsageSnapshot | null = null;
   private isChecking = false;
   private useApiMethod = true; // Try API first, fall back to CLI if it fails
 
@@ -36,7 +36,7 @@ export class UsageMonitor extends EventEmitter {
    * Start monitoring usage at configured interval
    */
   start(): void {
-    const profileManager = getClaudeProfileManager();
+    const profileManager = getCodexProfileManager();
     const settings = profileManager.getAutoSwitchSettings();
 
     if (!settings.enabled || !settings.proactiveSwapEnabled) {
@@ -75,7 +75,7 @@ export class UsageMonitor extends EventEmitter {
   /**
    * Get current usage snapshot (for UI indicator)
    */
-  getCurrentUsage(): ClaudeUsageSnapshot | null {
+  getCurrentUsage(): CodexUsageSnapshot | null {
     return this.currentUsage;
   }
 
@@ -90,7 +90,7 @@ export class UsageMonitor extends EventEmitter {
     this.isChecking = true;
 
     try {
-      const profileManager = getClaudeProfileManager();
+      const profileManager = getCodexProfileManager();
       const activeProfile = profileManager.getActiveProfile();
 
       if (!activeProfile) {
@@ -145,8 +145,8 @@ export class UsageMonitor extends EventEmitter {
   private async fetchUsage(
     profileId: string,
     oauthToken?: string
-  ): Promise<ClaudeUsageSnapshot | null> {
-    const profileManager = getClaudeProfileManager();
+  ): Promise<CodexUsageSnapshot | null> {
+    const profileManager = getCodexProfileManager();
     const profile = profileManager.getProfile(profileId);
     if (!profile) {
       return null;
@@ -177,7 +177,7 @@ export class UsageMonitor extends EventEmitter {
     oauthToken: string,
     profileId: string,
     profileName: string
-  ): Promise<ClaudeUsageSnapshot | null> {
+  ): Promise<CodexUsageSnapshot | null> {
     try {
       const response = await fetch('https://api.anthropic.com/api/oauth/usage', {
         method: 'GET',
@@ -229,16 +229,16 @@ export class UsageMonitor extends EventEmitter {
   /**
    * Fetch usage via CLI /usage command (fallback)
    * Note: This is a fallback method. The API method is preferred.
-   * CLI-based fetching would require spawning a Claude process and parsing output,
+   * CLI-based fetching would require spawning a Codex process and parsing output,
    * which is complex. For now, we rely on the API method.
    */
   private async fetchUsageViaCLI(
     _profileId: string,
     _profileName: string
-  ): Promise<ClaudeUsageSnapshot | null> {
+  ): Promise<CodexUsageSnapshot | null> {
     // CLI-based usage fetching is not implemented yet.
     // The API method should handle most cases. If we need CLI fallback,
-    // we would need to spawn a Claude process with /usage command and parse the output.
+    // we would need to spawn a Codex process with /usage command and parse the output.
     console.warn('[UsageMonitor] CLI fallback not implemented, API method should be used');
     return null;
   }
@@ -275,7 +275,7 @@ export class UsageMonitor extends EventEmitter {
     currentProfileId: string,
     limitType: 'session' | 'weekly'
   ): Promise<void> {
-    const profileManager = getClaudeProfileManager();
+    const profileManager = getCodexProfileManager();
     const bestProfile = profileManager.getBestAvailableProfile(currentProfileId);
 
     if (!bestProfile) {

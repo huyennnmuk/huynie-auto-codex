@@ -14,7 +14,7 @@ export class InsightsConfig {
   private autoBuildSourcePath: string = '';
 
   /**
-   * Configure paths for Python and auto-claude source
+   * Configure paths for Python and auto-codex source
    */
   configure(pythonPath?: string, autoBuildSourcePath?: string): void {
     if (pythonPath) {
@@ -33,7 +33,7 @@ export class InsightsConfig {
   }
 
   /**
-   * Get the auto-claude source path (detects automatically if not configured)
+   * Get the auto-codex source path (detects automatically if not configured)
    */
   getAutoBuildSourcePath(): string | null {
     if (this.autoBuildSourcePath && existsSync(this.autoBuildSourcePath)) {
@@ -41,13 +41,13 @@ export class InsightsConfig {
     }
 
     const possiblePaths = [
-      path.resolve(__dirname, '..', '..', '..', 'auto-claude'),
-      path.resolve(app.getAppPath(), '..', 'auto-claude'),
-      path.resolve(process.cwd(), 'auto-claude')
+      path.resolve(__dirname, '..', '..', '..', 'auto-codex'),
+      path.resolve(app.getAppPath(), '..', 'auto-codex'),
+      path.resolve(process.cwd(), 'auto-codex')
     ];
 
     for (const p of possiblePaths) {
-      // Use requirements.txt as marker - it always exists in auto-claude source
+      // Use requirements.txt as marker - it always exists in auto-codex source
       if (existsSync(p) && existsSync(path.join(p, 'requirements.txt'))) {
         return p;
       }
@@ -56,7 +56,7 @@ export class InsightsConfig {
   }
 
   /**
-   * Load environment variables from auto-claude .env file
+   * Load environment variables from auto-codex .env file
    */
   loadAutoBuildEnv(): Record<string, string> {
     const autoBuildSource = this.getAutoBuildSourcePath();
@@ -96,7 +96,7 @@ export class InsightsConfig {
 
   /**
    * Get complete environment for process execution
-   * Includes system env, auto-claude env, and active Claude profile
+   * Includes system env, auto-codex env, and active Codex profile
    */
   getProcessEnv(): Record<string, string> {
     const autoBuildEnv = this.loadAutoBuildEnv();

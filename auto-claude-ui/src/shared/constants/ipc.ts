@@ -55,14 +55,14 @@ export const IPC_CHANNELS = {
   TERMINAL_DESTROY: 'terminal:destroy',
   TERMINAL_INPUT: 'terminal:input',
   TERMINAL_RESIZE: 'terminal:resize',
-  TERMINAL_INVOKE_CLAUDE: 'terminal:invokeClaude',
+  TERMINAL_INVOKE_CODEX: 'terminal:invokeCodex',
   TERMINAL_GENERATE_NAME: 'terminal:generateName',
 
   // 终端会话管理
   TERMINAL_GET_SESSIONS: 'terminal:getSessions',
   TERMINAL_RESTORE_SESSION: 'terminal:restoreSession',
   TERMINAL_CLEAR_SESSIONS: 'terminal:clearSessions',
-  TERMINAL_RESUME_CLAUDE: 'terminal:resumeClaude',
+  TERMINAL_RESUME_CODEX: 'terminal:resumeCodex',
   TERMINAL_GET_SESSION_DATES: 'terminal:getSessionDates',
   TERMINAL_GET_SESSIONS_FOR_DATE: 'terminal:getSessionsForDate',
   TERMINAL_RESTORE_FROM_DATE: 'terminal:restoreFromDate',
@@ -71,33 +71,33 @@ export const IPC_CHANNELS = {
   TERMINAL_OUTPUT: 'terminal:output',
   TERMINAL_EXIT: 'terminal:exit',
   TERMINAL_TITLE_CHANGE: 'terminal:titleChange',
-  TERMINAL_CLAUDE_SESSION: 'terminal:claudeSession',  // 已捕获 Claude 会话 ID
-  TERMINAL_RATE_LIMIT: 'terminal:rateLimit',  // 检测到 Claude Code 限流
+  TERMINAL_CODEX_SESSION: 'terminal:codexSession',  // 已捕获 Codex 会话 ID
+  TERMINAL_RATE_LIMIT: 'terminal:rateLimit',  // 检测到 Codex Code 限流
   TERMINAL_OAUTH_TOKEN: 'terminal:oauthToken',  // 从 setup-token 输出捕获 OAuth 令牌
 
-  // Claude 配置管理（多账号支持）
-  CLAUDE_PROFILES_GET: 'claude:profilesGet',
-  CLAUDE_PROFILE_SAVE: 'claude:profileSave',
-  CLAUDE_PROFILE_DELETE: 'claude:profileDelete',
-  CLAUDE_PROFILE_RENAME: 'claude:profileRename',
-  CLAUDE_PROFILE_SET_ACTIVE: 'claude:profileSetActive',
-  CLAUDE_PROFILE_SWITCH: 'claude:profileSwitch',
-  CLAUDE_PROFILE_INITIALIZE: 'claude:profileInitialize',
-  CLAUDE_PROFILE_SET_TOKEN: 'claude:profileSetToken',  // 为配置设置 OAuth 令牌
-  CLAUDE_PROFILE_AUTO_SWITCH_SETTINGS: 'claude:autoSwitchSettings',
-  CLAUDE_PROFILE_UPDATE_AUTO_SWITCH: 'claude:updateAutoSwitch',
-  CLAUDE_PROFILE_FETCH_USAGE: 'claude:fetchUsage',
-  CLAUDE_PROFILE_GET_BEST_PROFILE: 'claude:getBestProfile',
+  // Codex 配置管理（多账号支持）
+  CODEX_PROFILES_GET: 'codex:profilesGet',
+  CODEX_PROFILE_SAVE: 'codex:profileSave',
+  CODEX_PROFILE_DELETE: 'codex:profileDelete',
+  CODEX_PROFILE_RENAME: 'codex:profileRename',
+  CODEX_PROFILE_SET_ACTIVE: 'codex:profileSetActive',
+  CODEX_PROFILE_SWITCH: 'codex:profileSwitch',
+  CODEX_PROFILE_INITIALIZE: 'codex:profileInitialize',
+  CODEX_PROFILE_SET_TOKEN: 'codex:profileSetToken',  // 为配置设置 OAuth 令牌
+  CODEX_PROFILE_AUTO_SWITCH_SETTINGS: 'codex:autoSwitchSettings',
+  CODEX_PROFILE_UPDATE_AUTO_SWITCH: 'codex:updateAutoSwitch',
+  CODEX_PROFILE_FETCH_USAGE: 'codex:fetchUsage',
+  CODEX_PROFILE_GET_BEST_PROFILE: 'codex:getBestProfile',
 
-  // SDK/CLI 限流事件（用于非终端 Claude 调用）
-  CLAUDE_SDK_RATE_LIMIT: 'claude:sdkRateLimit',
+  // SDK/CLI 限流事件（用于非终端 Codex 调用）
+  CODEX_SDK_RATE_LIMIT: 'codex:sdkRateLimit',
   // 使用不同配置重试被限流的操作
-  CLAUDE_RETRY_WITH_PROFILE: 'claude:retryWithProfile',
+  CODEX_RETRY_WITH_PROFILE: 'codex:retryWithProfile',
 
   // 用量监控（主动切换账号）
-  USAGE_UPDATED: 'claude:usageUpdated',  // 事件：用量数据已更新（主进程 -> 渲染进程）
-  USAGE_REQUEST: 'claude:usageRequest',  // 请求当前用量快照
-  PROACTIVE_SWAP_NOTIFICATION: 'claude:proactiveSwapNotification',  // 事件：发生主动切换
+  USAGE_UPDATED: 'codex:usageUpdated',  // 事件：用量数据已更新（主进程 -> 渲染进程）
+  USAGE_REQUEST: 'codex:usageRequest',  // 请求当前用量快照
+  PROACTIVE_SWAP_NOTIFICATION: 'codex:proactiveSwapNotification',  // 事件：发生主动切换
 
   // 设置
   SETTINGS_GET: 'settings:get',
@@ -141,8 +141,8 @@ export const IPC_CHANNELS = {
   // 环境配置
   ENV_GET: 'env:get',
   ENV_UPDATE: 'env:update',
-  ENV_CHECK_CLAUDE_AUTH: 'env:checkClaudeAuth',
-  ENV_INVOKE_CLAUDE_SETUP: 'env:invokeClaudeSetup',
+  ENV_CHECK_CODEX_AUTH: 'env:checkCodexAuth',
+  ENV_INVOKE_CODEX_SETUP: 'env:invokeCodexSetup',
 
   // 创意操作
   IDEATION_GET: 'ideation:get',
@@ -210,13 +210,13 @@ export const IPC_CHANNELS = {
   GRAPHITI_VALIDATE_OPENAI: 'graphiti:validateOpenai',
   GRAPHITI_TEST_CONNECTION: 'graphiti:testConnection',
 
-  // Auto Claude 源码更新
+  // Auto Codex 源码更新
   AUTOBUILD_SOURCE_CHECK: 'autobuild:source:check',
   AUTOBUILD_SOURCE_DOWNLOAD: 'autobuild:source:download',
   AUTOBUILD_SOURCE_VERSION: 'autobuild:source:version',
   AUTOBUILD_SOURCE_PROGRESS: 'autobuild:source:progress',
 
-  // Auto Claude 源码环境配置
+  // Auto Codex 源码环境配置
   AUTOBUILD_SOURCE_ENV_GET: 'autobuild:source:env:get',
   AUTOBUILD_SOURCE_ENV_UPDATE: 'autobuild:source:env:update',
   AUTOBUILD_SOURCE_ENV_CHECK_TOKEN: 'autobuild:source:env:checkToken',

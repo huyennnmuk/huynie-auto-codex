@@ -4,9 +4,9 @@ import type {
   IPCResult,
   TerminalCreateOptions,
   RateLimitInfo,
-  ClaudeProfile,
-  ClaudeProfileSettings,
-  ClaudeUsageSnapshot
+  CodexProfile,
+  CodexProfileSettings,
+  CodexUsageSnapshot
 } from '../../shared/types';
 
 /** Type for proactive swap notification events */
@@ -14,7 +14,7 @@ interface ProactiveSwapNotification {
   fromProfile: { id: string; name: string };
   toProfile: { id: string; name: string };
   reason: string;
-  usageSnapshot: ClaudeUsageSnapshot;
+  usageSnapshot: CodexUsageSnapshot;
 }
 
 export interface TerminalAPI {
@@ -23,7 +23,7 @@ export interface TerminalAPI {
   destroyTerminal: (id: string) => Promise<IPCResult>;
   sendTerminalInput: (id: string, data: string) => void;
   resizeTerminal: (id: string, cols: number, rows: number) => void;
-  invokeClaudeInTerminal: (id: string, cwd?: string) => void;
+  invokeCodexInTerminal: (id: string, cwd?: string) => void;
   generateTerminalName: (command: string, cwd?: string) => Promise<IPCResult<string>>;
 
   // Terminal Session Management
@@ -34,7 +34,7 @@ export interface TerminalAPI {
     rows?: number
   ) => Promise<IPCResult<import('../../shared/types').TerminalRestoreResult>>;
   clearTerminalSessions: (projectPath: string) => Promise<IPCResult>;
-  resumeClaudeInTerminal: (id: string, sessionId?: string) => void;
+  resumeCodexInTerminal: (id: string, sessionId?: string) => void;
   getTerminalSessionDates: (projectPath?: string) => Promise<IPCResult<import('../../shared/types').SessionDateInfo[]>>;
   getTerminalSessionsForDate: (
     date: string,
@@ -51,31 +51,31 @@ export interface TerminalAPI {
   onTerminalOutput: (callback: (id: string, data: string) => void) => () => void;
   onTerminalExit: (callback: (id: string, exitCode: number) => void) => () => void;
   onTerminalTitleChange: (callback: (id: string, title: string) => void) => () => void;
-  onTerminalClaudeSession: (callback: (id: string, sessionId: string) => void) => () => void;
+  onTerminalCodexSession: (callback: (id: string, sessionId: string) => void) => () => void;
   onTerminalRateLimit: (callback: (info: RateLimitInfo) => void) => () => void;
   onTerminalOAuthToken: (
     callback: (info: { terminalId: string; profileId?: string; email?: string; success: boolean; message?: string; detectedAt: string }) => void
   ) => () => void;
 
-  // Claude Profile Management
-  getClaudeProfiles: () => Promise<IPCResult<ClaudeProfileSettings>>;
-  saveClaudeProfile: (profile: ClaudeProfile) => Promise<IPCResult<ClaudeProfile>>;
-  deleteClaudeProfile: (profileId: string) => Promise<IPCResult>;
-  renameClaudeProfile: (profileId: string, newName: string) => Promise<IPCResult>;
-  setActiveClaudeProfile: (profileId: string) => Promise<IPCResult>;
-  switchClaudeProfile: (terminalId: string, profileId: string) => Promise<IPCResult>;
-  initializeClaudeProfile: (profileId: string) => Promise<IPCResult>;
-  setClaudeProfileToken: (profileId: string, token: string, email?: string) => Promise<IPCResult>;
-  getAutoSwitchSettings: () => Promise<IPCResult<import('../../shared/types').ClaudeAutoSwitchSettings>>;
-  updateAutoSwitchSettings: (settings: Partial<import('../../shared/types').ClaudeAutoSwitchSettings>) => Promise<IPCResult>;
-  fetchClaudeUsage: (terminalId: string) => Promise<IPCResult>;
-  getBestAvailableProfile: (excludeProfileId?: string) => Promise<IPCResult<import('../../shared/types').ClaudeProfile | null>>;
+  // Codex Profile Management
+  getCodexProfiles: () => Promise<IPCResult<CodexProfileSettings>>;
+  saveCodexProfile: (profile: CodexProfile) => Promise<IPCResult<CodexProfile>>;
+  deleteCodexProfile: (profileId: string) => Promise<IPCResult>;
+  renameCodexProfile: (profileId: string, newName: string) => Promise<IPCResult>;
+  setActiveCodexProfile: (profileId: string) => Promise<IPCResult>;
+  switchCodexProfile: (terminalId: string, profileId: string) => Promise<IPCResult>;
+  initializeCodexProfile: (profileId: string) => Promise<IPCResult>;
+  setCodexProfileToken: (profileId: string, token: string, email?: string) => Promise<IPCResult>;
+  getAutoSwitchSettings: () => Promise<IPCResult<import('../../shared/types').CodexAutoSwitchSettings>>;
+  updateAutoSwitchSettings: (settings: Partial<import('../../shared/types').CodexAutoSwitchSettings>) => Promise<IPCResult>;
+  fetchCodexUsage: (terminalId: string) => Promise<IPCResult>;
+  getBestAvailableProfile: (excludeProfileId?: string) => Promise<IPCResult<import('../../shared/types').CodexProfile | null>>;
   onSDKRateLimit: (callback: (info: import('../../shared/types').SDKRateLimitInfo) => void) => () => void;
   retryWithProfile: (request: import('../../shared/types').RetryWithProfileRequest) => Promise<IPCResult>;
 
   // Usage Monitoring (Proactive Account Switching)
-  requestUsageUpdate: () => Promise<IPCResult<import('../../shared/types').ClaudeUsageSnapshot | null>>;
-  onUsageUpdated: (callback: (usage: import('../../shared/types').ClaudeUsageSnapshot) => void) => () => void;
+  requestUsageUpdate: () => Promise<IPCResult<import('../../shared/types').CodexUsageSnapshot | null>>;
+  onUsageUpdated: (callback: (usage: import('../../shared/types').CodexUsageSnapshot) => void) => () => void;
   onProactiveSwapNotification: (callback: (notification: ProactiveSwapNotification) => void) => () => void;
 }
 
@@ -93,8 +93,8 @@ export const createTerminalAPI = (): TerminalAPI => ({
   resizeTerminal: (id: string, cols: number, rows: number): void =>
     ipcRenderer.send(IPC_CHANNELS.TERMINAL_RESIZE, id, cols, rows),
 
-  invokeClaudeInTerminal: (id: string, cwd?: string): void =>
-    ipcRenderer.send(IPC_CHANNELS.TERMINAL_INVOKE_CLAUDE, id, cwd),
+  invokeCodexInTerminal: (id: string, cwd?: string): void =>
+    ipcRenderer.send(IPC_CHANNELS.TERMINAL_INVOKE_CODEX, id, cwd),
 
   generateTerminalName: (command: string, cwd?: string): Promise<IPCResult<string>> =>
     ipcRenderer.invoke(IPC_CHANNELS.TERMINAL_GENERATE_NAME, command, cwd),
@@ -113,8 +113,8 @@ export const createTerminalAPI = (): TerminalAPI => ({
   clearTerminalSessions: (projectPath: string): Promise<IPCResult> =>
     ipcRenderer.invoke(IPC_CHANNELS.TERMINAL_CLEAR_SESSIONS, projectPath),
 
-  resumeClaudeInTerminal: (id: string, sessionId?: string): void =>
-    ipcRenderer.send(IPC_CHANNELS.TERMINAL_RESUME_CLAUDE, id, sessionId),
+  resumeCodexInTerminal: (id: string, sessionId?: string): void =>
+    ipcRenderer.send(IPC_CHANNELS.TERMINAL_RESUME_CODEX, id, sessionId),
 
   getTerminalSessionDates: (projectPath?: string): Promise<IPCResult<import('../../shared/types').SessionDateInfo[]>> =>
     ipcRenderer.invoke(IPC_CHANNELS.TERMINAL_GET_SESSION_DATES, projectPath),
@@ -182,7 +182,7 @@ export const createTerminalAPI = (): TerminalAPI => ({
     };
   },
 
-  onTerminalClaudeSession: (
+  onTerminalCodexSession: (
     callback: (id: string, sessionId: string) => void
   ): (() => void) => {
     const handler = (
@@ -192,9 +192,9 @@ export const createTerminalAPI = (): TerminalAPI => ({
     ): void => {
       callback(id, sessionId);
     };
-    ipcRenderer.on(IPC_CHANNELS.TERMINAL_CLAUDE_SESSION, handler);
+    ipcRenderer.on(IPC_CHANNELS.TERMINAL_CODEX_SESSION, handler);
     return () => {
-      ipcRenderer.removeListener(IPC_CHANNELS.TERMINAL_CLAUDE_SESSION, handler);
+      ipcRenderer.removeListener(IPC_CHANNELS.TERMINAL_CODEX_SESSION, handler);
     };
   },
 
@@ -228,42 +228,42 @@ export const createTerminalAPI = (): TerminalAPI => ({
     };
   },
 
-  // Claude Profile Management
-  getClaudeProfiles: (): Promise<IPCResult<ClaudeProfileSettings>> =>
-    ipcRenderer.invoke(IPC_CHANNELS.CLAUDE_PROFILES_GET),
+  // Codex Profile Management
+  getCodexProfiles: (): Promise<IPCResult<CodexProfileSettings>> =>
+    ipcRenderer.invoke(IPC_CHANNELS.CODEX_PROFILES_GET),
 
-  saveClaudeProfile: (profile: ClaudeProfile): Promise<IPCResult<ClaudeProfile>> =>
-    ipcRenderer.invoke(IPC_CHANNELS.CLAUDE_PROFILE_SAVE, profile),
+  saveCodexProfile: (profile: CodexProfile): Promise<IPCResult<CodexProfile>> =>
+    ipcRenderer.invoke(IPC_CHANNELS.CODEX_PROFILE_SAVE, profile),
 
-  deleteClaudeProfile: (profileId: string): Promise<IPCResult> =>
-    ipcRenderer.invoke(IPC_CHANNELS.CLAUDE_PROFILE_DELETE, profileId),
+  deleteCodexProfile: (profileId: string): Promise<IPCResult> =>
+    ipcRenderer.invoke(IPC_CHANNELS.CODEX_PROFILE_DELETE, profileId),
 
-  renameClaudeProfile: (profileId: string, newName: string): Promise<IPCResult> =>
-    ipcRenderer.invoke(IPC_CHANNELS.CLAUDE_PROFILE_RENAME, profileId, newName),
+  renameCodexProfile: (profileId: string, newName: string): Promise<IPCResult> =>
+    ipcRenderer.invoke(IPC_CHANNELS.CODEX_PROFILE_RENAME, profileId, newName),
 
-  setActiveClaudeProfile: (profileId: string): Promise<IPCResult> =>
-    ipcRenderer.invoke(IPC_CHANNELS.CLAUDE_PROFILE_SET_ACTIVE, profileId),
+  setActiveCodexProfile: (profileId: string): Promise<IPCResult> =>
+    ipcRenderer.invoke(IPC_CHANNELS.CODEX_PROFILE_SET_ACTIVE, profileId),
 
-  switchClaudeProfile: (terminalId: string, profileId: string): Promise<IPCResult> =>
-    ipcRenderer.invoke(IPC_CHANNELS.CLAUDE_PROFILE_SWITCH, terminalId, profileId),
+  switchCodexProfile: (terminalId: string, profileId: string): Promise<IPCResult> =>
+    ipcRenderer.invoke(IPC_CHANNELS.CODEX_PROFILE_SWITCH, terminalId, profileId),
 
-  initializeClaudeProfile: (profileId: string): Promise<IPCResult> =>
-    ipcRenderer.invoke(IPC_CHANNELS.CLAUDE_PROFILE_INITIALIZE, profileId),
+  initializeCodexProfile: (profileId: string): Promise<IPCResult> =>
+    ipcRenderer.invoke(IPC_CHANNELS.CODEX_PROFILE_INITIALIZE, profileId),
 
-  setClaudeProfileToken: (profileId: string, token: string, email?: string): Promise<IPCResult> =>
-    ipcRenderer.invoke(IPC_CHANNELS.CLAUDE_PROFILE_SET_TOKEN, profileId, token, email),
+  setCodexProfileToken: (profileId: string, token: string, email?: string): Promise<IPCResult> =>
+    ipcRenderer.invoke(IPC_CHANNELS.CODEX_PROFILE_SET_TOKEN, profileId, token, email),
 
-  getAutoSwitchSettings: (): Promise<IPCResult<import('../../shared/types').ClaudeAutoSwitchSettings>> =>
-    ipcRenderer.invoke(IPC_CHANNELS.CLAUDE_PROFILE_AUTO_SWITCH_SETTINGS),
+  getAutoSwitchSettings: (): Promise<IPCResult<import('../../shared/types').CodexAutoSwitchSettings>> =>
+    ipcRenderer.invoke(IPC_CHANNELS.CODEX_PROFILE_AUTO_SWITCH_SETTINGS),
 
-  updateAutoSwitchSettings: (settings: Partial<import('../../shared/types').ClaudeAutoSwitchSettings>): Promise<IPCResult> =>
-    ipcRenderer.invoke(IPC_CHANNELS.CLAUDE_PROFILE_UPDATE_AUTO_SWITCH, settings),
+  updateAutoSwitchSettings: (settings: Partial<import('../../shared/types').CodexAutoSwitchSettings>): Promise<IPCResult> =>
+    ipcRenderer.invoke(IPC_CHANNELS.CODEX_PROFILE_UPDATE_AUTO_SWITCH, settings),
 
-  fetchClaudeUsage: (terminalId: string): Promise<IPCResult> =>
-    ipcRenderer.invoke(IPC_CHANNELS.CLAUDE_PROFILE_FETCH_USAGE, terminalId),
+  fetchCodexUsage: (terminalId: string): Promise<IPCResult> =>
+    ipcRenderer.invoke(IPC_CHANNELS.CODEX_PROFILE_FETCH_USAGE, terminalId),
 
-  getBestAvailableProfile: (excludeProfileId?: string): Promise<IPCResult<import('../../shared/types').ClaudeProfile | null>> =>
-    ipcRenderer.invoke(IPC_CHANNELS.CLAUDE_PROFILE_GET_BEST_PROFILE, excludeProfileId),
+  getBestAvailableProfile: (excludeProfileId?: string): Promise<IPCResult<import('../../shared/types').CodexProfile | null>> =>
+    ipcRenderer.invoke(IPC_CHANNELS.CODEX_PROFILE_GET_BEST_PROFILE, excludeProfileId),
 
   onSDKRateLimit: (
     callback: (info: import('../../shared/types').SDKRateLimitInfo) => void
@@ -274,25 +274,25 @@ export const createTerminalAPI = (): TerminalAPI => ({
     ): void => {
       callback(info);
     };
-    ipcRenderer.on(IPC_CHANNELS.CLAUDE_SDK_RATE_LIMIT, handler);
+    ipcRenderer.on(IPC_CHANNELS.CODEX_SDK_RATE_LIMIT, handler);
     return () => {
-      ipcRenderer.removeListener(IPC_CHANNELS.CLAUDE_SDK_RATE_LIMIT, handler);
+      ipcRenderer.removeListener(IPC_CHANNELS.CODEX_SDK_RATE_LIMIT, handler);
     };
   },
 
   retryWithProfile: (request: import('../../shared/types').RetryWithProfileRequest): Promise<IPCResult> =>
-    ipcRenderer.invoke(IPC_CHANNELS.CLAUDE_RETRY_WITH_PROFILE, request),
+    ipcRenderer.invoke(IPC_CHANNELS.CODEX_RETRY_WITH_PROFILE, request),
 
   // Usage Monitoring (Proactive Account Switching)
-  requestUsageUpdate: (): Promise<IPCResult<import('../../shared/types').ClaudeUsageSnapshot | null>> =>
+  requestUsageUpdate: (): Promise<IPCResult<import('../../shared/types').CodexUsageSnapshot | null>> =>
     ipcRenderer.invoke(IPC_CHANNELS.USAGE_REQUEST),
 
   onUsageUpdated: (
-    callback: (usage: import('../../shared/types').ClaudeUsageSnapshot) => void
+    callback: (usage: import('../../shared/types').CodexUsageSnapshot) => void
   ): (() => void) => {
     const handler = (
       _event: Electron.IpcRendererEvent,
-      usage: import('../../shared/types').ClaudeUsageSnapshot
+      usage: import('../../shared/types').CodexUsageSnapshot
     ): void => {
       callback(usage);
     };

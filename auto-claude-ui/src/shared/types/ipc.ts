@@ -49,11 +49,11 @@ import type {
   RetryWithProfileRequest
 } from './terminal';
 import type {
-  ClaudeProfileSettings,
-  ClaudeProfile,
-  ClaudeAutoSwitchSettings,
-  ClaudeAuthResult,
-  ClaudeUsageSnapshot
+  CodexProfileSettings,
+  CodexProfile,
+  CodexAutoSwitchSettings,
+  CodexAuthResult,
+  CodexUsageSnapshot
 } from './agent';
 import type { AppSettings, SourceEnvConfig, SourceEnvCheckResult, AutoBuildSourceUpdateCheck, AutoBuildSourceUpdateProgress } from './settings';
 import type { AppUpdateInfo, AppUpdateProgress, AppUpdateAvailableEvent, AppUpdateDownloadedEvent } from './app-update';
@@ -156,14 +156,14 @@ export interface ElectronAPI {
   destroyTerminal: (id: string) => Promise<IPCResult>;
   sendTerminalInput: (id: string, data: string) => void;
   resizeTerminal: (id: string, cols: number, rows: number) => void;
-  invokeClaudeInTerminal: (id: string, cwd?: string) => void;
+  invokeCodexInTerminal: (id: string, cwd?: string) => void;
   generateTerminalName: (command: string, cwd?: string) => Promise<IPCResult<string>>;
 
   // Terminal session management (persistence/restore)
   getTerminalSessions: (projectPath: string) => Promise<IPCResult<TerminalSession[]>>;
   restoreTerminalSession: (session: TerminalSession, cols?: number, rows?: number) => Promise<IPCResult<TerminalRestoreResult>>;
   clearTerminalSessions: (projectPath: string) => Promise<IPCResult>;
-  resumeClaudeInTerminal: (id: string, sessionId?: string) => void;
+  resumeCodexInTerminal: (id: string, sessionId?: string) => void;
   getTerminalSessionDates: (projectPath?: string) => Promise<IPCResult<SessionDateInfo[]>>;
   getTerminalSessionsForDate: (date: string, projectPath: string) => Promise<IPCResult<TerminalSession[]>>;
   restoreTerminalSessionsFromDate: (date: string, projectPath: string, cols?: number, rows?: number) => Promise<IPCResult<SessionDateRestoreResult>>;
@@ -173,7 +173,7 @@ export interface ElectronAPI {
   onTerminalOutput: (callback: (id: string, data: string) => void) => () => void;
   onTerminalExit: (callback: (id: string, exitCode: number) => void) => () => void;
   onTerminalTitleChange: (callback: (id: string, title: string) => void) => () => void;
-  onTerminalClaudeSession: (callback: (id: string, sessionId: string) => void) => () => void;
+  onTerminalCodexSession: (callback: (id: string, sessionId: string) => void) => () => void;
   onTerminalRateLimit: (callback: (info: RateLimitInfo) => void) => () => void;
   /** Listen for OAuth authentication completion (token is auto-saved to profile, never exposed to frontend) */
   onTerminalOAuthToken: (callback: (info: {
@@ -185,26 +185,26 @@ export interface ElectronAPI {
     detectedAt: string
   }) => void) => () => void;
 
-  // Claude profile management (multi-account support)
-  getClaudeProfiles: () => Promise<IPCResult<ClaudeProfileSettings>>;
-  saveClaudeProfile: (profile: ClaudeProfile) => Promise<IPCResult<ClaudeProfile>>;
-  deleteClaudeProfile: (profileId: string) => Promise<IPCResult>;
-  renameClaudeProfile: (profileId: string, newName: string) => Promise<IPCResult>;
-  setActiveClaudeProfile: (profileId: string) => Promise<IPCResult>;
-  /** Switch terminal to use a different Claude profile (restarts Claude with new config) */
-  switchClaudeProfile: (terminalId: string, profileId: string) => Promise<IPCResult>;
-  /** Initialize authentication for a Claude profile */
-  initializeClaudeProfile: (profileId: string) => Promise<IPCResult>;
+  // Codex profile management (multi-account support)
+  getCodexProfiles: () => Promise<IPCResult<CodexProfileSettings>>;
+  saveCodexProfile: (profile: CodexProfile) => Promise<IPCResult<CodexProfile>>;
+  deleteCodexProfile: (profileId: string) => Promise<IPCResult>;
+  renameCodexProfile: (profileId: string, newName: string) => Promise<IPCResult>;
+  setActiveCodexProfile: (profileId: string) => Promise<IPCResult>;
+  /** Switch terminal to use a different Codex profile (restarts Codex with new config) */
+  switchCodexProfile: (terminalId: string, profileId: string) => Promise<IPCResult>;
+  /** Initialize authentication for a Codex profile */
+  initializeCodexProfile: (profileId: string) => Promise<IPCResult>;
   /** Set OAuth token for a profile (used when capturing from terminal) */
-  setClaudeProfileToken: (profileId: string, token: string, email?: string) => Promise<IPCResult>;
+  setCodexProfileToken: (profileId: string, token: string, email?: string) => Promise<IPCResult>;
   /** Get auto-switch settings */
-  getAutoSwitchSettings: () => Promise<IPCResult<ClaudeAutoSwitchSettings>>;
+  getAutoSwitchSettings: () => Promise<IPCResult<CodexAutoSwitchSettings>>;
   /** Update auto-switch settings */
-  updateAutoSwitchSettings: (settings: Partial<ClaudeAutoSwitchSettings>) => Promise<IPCResult>;
+  updateAutoSwitchSettings: (settings: Partial<CodexAutoSwitchSettings>) => Promise<IPCResult>;
   /** Request usage fetch from a terminal (sends /usage command) */
-  fetchClaudeUsage: (terminalId: string) => Promise<IPCResult>;
+  fetchCodexUsage: (terminalId: string) => Promise<IPCResult>;
   /** Get the best available profile (for manual switching) */
-  getBestAvailableProfile: (excludeProfileId?: string) => Promise<IPCResult<ClaudeProfile | null>>;
+  getBestAvailableProfile: (excludeProfileId?: string) => Promise<IPCResult<CodexProfile | null>>;
   /** Listen for SDK/CLI rate limit events (non-terminal) */
   onSDKRateLimit: (callback: (info: SDKRateLimitInfo) => void) => () => void;
   /** Retry a rate-limited operation with a different profile */
@@ -212,15 +212,15 @@ export interface ElectronAPI {
 
   // Usage Monitoring (Proactive Account Switching)
   /** Request current usage snapshot */
-  requestUsageUpdate: () => Promise<IPCResult<ClaudeUsageSnapshot | null>>;
+  requestUsageUpdate: () => Promise<IPCResult<CodexUsageSnapshot | null>>;
   /** Listen for usage data updates */
-  onUsageUpdated: (callback: (usage: ClaudeUsageSnapshot) => void) => () => void;
+  onUsageUpdated: (callback: (usage: CodexUsageSnapshot) => void) => () => void;
   /** Listen for proactive swap notifications */
   onProactiveSwapNotification: (callback: (notification: {
     fromProfile: { id: string; name: string };
     toProfile: { id: string; name: string };
     reason: string;
-    usageSnapshot: ClaudeUsageSnapshot;
+    usageSnapshot: CodexUsageSnapshot;
   }) => void) => () => void;
 
   // App settings
@@ -276,8 +276,8 @@ export interface ElectronAPI {
   // Environment configuration operations
   getProjectEnv: (projectId: string) => Promise<IPCResult<ProjectEnvConfig>>;
   updateProjectEnv: (projectId: string, config: Partial<ProjectEnvConfig>) => Promise<IPCResult>;
-  checkClaudeAuth: (projectId: string) => Promise<IPCResult<ClaudeAuthResult>>;
-  invokeClaudeSetup: (projectId: string) => Promise<IPCResult<ClaudeAuthResult>>;
+  checkCodexAuth: (projectId: string) => Promise<IPCResult<CodexAuthResult>>;
+  invokeCodexSetup: (projectId: string) => Promise<IPCResult<CodexAuthResult>>;
 
   // Docker & Infrastructure operations (for Graphiti/FalkorDB)
   getInfrastructureStatus: (port?: number) => Promise<IPCResult<InfrastructureStatus>>;
@@ -396,12 +396,12 @@ export interface ElectronAPI {
     callback: (projectId: string, ideationType: string) => void
   ) => () => void;
 
-  // Auto Claude source update operations
+  // Auto Codex source update operations
   checkAutoBuildSourceUpdate: () => Promise<IPCResult<AutoBuildSourceUpdateCheck>>;
   downloadAutoBuildSourceUpdate: () => void;
   getAutoBuildSourceVersion: () => Promise<IPCResult<string>>;
 
-  // Auto Claude source update event listeners
+  // Auto Codex source update event listeners
   onAutoBuildSourceUpdateProgress: (
     callback: (progress: AutoBuildSourceUpdateProgress) => void
   ) => () => void;
@@ -425,9 +425,9 @@ export interface ElectronAPI {
   // Shell operations
   openExternal: (url: string) => Promise<void>;
 
-  // Auto Claude source environment operations
+  // Auto Codex source environment operations
   getSourceEnv: () => Promise<IPCResult<SourceEnvConfig>>;
-  updateSourceEnv: (config: { claudeOAuthToken?: string }) => Promise<IPCResult>;
+  updateSourceEnv: (config: { codexOAuthToken?: string }) => Promise<IPCResult>;
   checkSourceToken: () => Promise<IPCResult<SourceEnvCheckResult>>;
 
   // Changelog operations

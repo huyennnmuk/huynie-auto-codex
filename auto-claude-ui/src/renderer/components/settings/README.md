@@ -87,7 +87,7 @@ settings/
 
 **SectionRouter** (207 lines)
 - Routes to appropriate settings section
-- Sections: `general`, `claude`, `linear`, `github`, `memory`
+- Sections: `general`, `codex`, `linear`, `github`, `memory`
 - Wraps sections with `InitializationGuard` where needed
 - Maintains consistent section structure
 - Passes appropriate props to each section

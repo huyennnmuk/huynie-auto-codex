@@ -1,5 +1,5 @@
 /**
- * Usage Indicator - Real-time Claude usage display in header
+ * Usage Indicator - Real-time Codex usage display in header
  *
  * Displays current session/weekly usage as a badge with color-coded status.
  * Shows detailed breakdown on hover.
@@ -13,15 +13,15 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from './ui/tooltip';
-import type { ClaudeUsageSnapshot } from '../../shared/types/agent';
+import type { CodexUsageSnapshot } from '../../shared/types/agent';
 
 export function UsageIndicator() {
-  const [usage, setUsage] = useState<ClaudeUsageSnapshot | null>(null);
+  const [usage, setUsage] = useState<CodexUsageSnapshot | null>(null);
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     // Listen for usage updates from main process
-    const unsubscribe = window.electronAPI.onUsageUpdated((snapshot: ClaudeUsageSnapshot) => {
+    const unsubscribe = window.electronAPI.onUsageUpdated((snapshot: CodexUsageSnapshot) => {
       setUsage(snapshot);
       setIsVisible(true);
     });
@@ -63,7 +63,7 @@ export function UsageIndicator() {
         <TooltipTrigger asChild>
           <button
             className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border transition-all hover:opacity-80 ${colorClasses}`}
-            aria-label="Claude 使用量状态"
+            aria-label="Codex 使用量状态"
           >
             <Icon className="h-3.5 w-3.5" />
             <span className="text-xs font-semibold font-mono">

@@ -6,22 +6,22 @@
 import { homedir } from 'os';
 import { join } from 'path';
 import { existsSync, readFileSync, readdirSync, mkdirSync } from 'fs';
-import type { ClaudeProfile } from '../../shared/types';
+import type { CodexProfile } from '../../shared/types';
 
 /**
- * Default Claude config directory
+ * Default Codex config directory
  */
-export const DEFAULT_CLAUDE_CONFIG_DIR = join(homedir(), '.claude');
+export const DEFAULT_CODEX_CONFIG_DIR = join(homedir(), '.codex');
 
 /**
  * Default profiles directory for additional accounts
  */
-export const CLAUDE_PROFILES_DIR = join(homedir(), '.claude-profiles');
+export const CODEX_PROFILES_DIR = join(homedir(), '.codex-profiles');
 
 /**
  * Generate a unique ID for a new profile
  */
-export function generateProfileId(name: string, existingProfiles: ClaudeProfile[]): string {
+export function generateProfileId(name: string, existingProfiles: CodexProfile[]): string {
   const baseId = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
   let id = baseId;
   let counter = 1;
@@ -39,13 +39,13 @@ export function generateProfileId(name: string, existingProfiles: ClaudeProfile[
  */
 export async function createProfileDirectory(profileName: string): Promise<string> {
   // Ensure profiles directory exists
-  if (!existsSync(CLAUDE_PROFILES_DIR)) {
-    mkdirSync(CLAUDE_PROFILES_DIR, { recursive: true });
+  if (!existsSync(CODEX_PROFILES_DIR)) {
+    mkdirSync(CODEX_PROFILES_DIR, { recursive: true });
   }
 
   // Create directory for this profile
   const sanitizedName = profileName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-  const profileDir = join(CLAUDE_PROFILES_DIR, sanitizedName);
+  const profileDir = join(CODEX_PROFILES_DIR, sanitizedName);
 
   if (!existsSync(profileDir)) {
     mkdirSync(profileDir, { recursive: true });
@@ -58,13 +58,13 @@ export async function createProfileDirectory(profileName: string): Promise<strin
  * Check if a profile has valid authentication
  * (checks if the config directory has credential files)
  */
-export function isProfileAuthenticated(profile: ClaudeProfile): boolean {
+export function isProfileAuthenticated(profile: CodexProfile): boolean {
   const configDir = profile.configDir;
   if (!configDir || !existsSync(configDir)) {
     return false;
   }
 
-  // Claude stores auth in .claude/credentials or similar files
+  // Codex stores auth in .codex/credentials or similar files
   // Check for common auth indicators
   const possibleAuthFiles = [
     join(configDir, 'credentials'),
@@ -107,7 +107,7 @@ export function isProfileAuthenticated(profile: ClaudeProfile): boolean {
  * Check if a profile has a valid OAuth token.
  * Token is valid for 1 year from creation.
  */
-export function hasValidToken(profile: ClaudeProfile): boolean {
+export function hasValidToken(profile: CodexProfile): boolean {
   if (!profile?.oauthToken) {
     return false;
   }

@@ -42,7 +42,7 @@ const LLM_PROVIDERS: Array<{
   requiresApiKey: boolean;
 }> = [
   { id: 'openai', name: 'OpenAI', description: 'GPT 模型（推荐）', requiresApiKey: true },
-  { id: 'anthropic', name: 'Anthropic', description: 'Claude 模型', requiresApiKey: true },
+  { id: 'anthropic', name: 'Anthropic', description: 'Codex 模型', requiresApiKey: true },
   { id: 'google', name: 'Google AI', description: 'Gemini 模型', requiresApiKey: true },
   { id: 'groq', name: 'Groq', description: 'Llama 模型（推理更快）', requiresApiKey: true },
   { id: 'azure_openai', name: 'Azure OpenAI', description: '企业级 Azure 部署', requiresApiKey: true },
@@ -753,7 +753,7 @@ export function GraphitiStep({ onNext, onBack, onSkip }: GraphitiStepProps) {
                         Graphiti 配置成功
                       </h3>
                       <p className="mt-1 text-sm text-success/80">
-                        记忆功能已启用。Auto Claude 将在不同会话间保持上下文，
+                        记忆功能已启用。Auto Codex 将在不同会话间保持上下文，
                         以提升代码理解能力。
                       </p>
                     </div>
@@ -819,7 +819,7 @@ export function GraphitiStep({ onNext, onBack, onSkip }: GraphitiStepProps) {
                           什么是 Graphiti？
                         </p>
                         <p className="text-sm text-muted-foreground">
-                          Graphiti 是智能记忆层，帮助 Auto Claude 在不同会话中保留上下文。
+                          Graphiti 是智能记忆层，帮助 Auto Codex 在不同会话中保留上下文。
                           它使用知识图谱存储代码库中的发现、模式和洞察。
                         </p>
                         <ul className="text-sm text-muted-foreground space-y-1.5 list-disc list-inside">

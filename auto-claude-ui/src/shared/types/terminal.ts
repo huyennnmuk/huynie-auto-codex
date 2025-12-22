@@ -24,8 +24,8 @@ export interface TerminalSession {
   title: string;
   cwd: string;
   projectPath: string;
-  isClaudeMode: boolean;
-  claudeSessionId?: string;  // Claude Code session ID for --resume
+  isCodexMode: boolean;
+  codexSessionId?: string;  // Codex Code session ID for --resume
   outputBuffer: string;
   createdAt: string;
   lastActiveAt: string;
@@ -62,7 +62,7 @@ export interface SessionDateRestoreResult {
 }
 
 /**
- * Rate limit information when Claude Code hits subscription limits
+ * Rate limit information when Codex Code hits subscription limits
  */
 export interface RateLimitInfo {
   terminalId: string;

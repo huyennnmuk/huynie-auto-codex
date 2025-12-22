@@ -6,7 +6,7 @@ import { existsSync, readdirSync, statSync } from 'fs';
 import { execSync, spawn, spawnSync } from 'child_process';
 import { projectStore } from '../../project-store';
 import { PythonEnvManager } from '../../python-env-manager';
-import { getEffectiveSourcePath } from '../../auto-claude-updater';
+import { getEffectiveSourcePath } from '../../auto-codex-updater';
 import { getProfileEnv } from '../../rate-limit-detector';
 import { findTaskAndProject } from './shared';
 import { findPythonCommand, parsePythonCommand } from '../../python-detector';
@@ -243,7 +243,7 @@ export function registerWorktreeHandlers(
               return { success: false, error: `Python environment not ready: ${status.error || 'Unknown error'}` };
             }
           } else {
-            return { success: false, error: 'Python environment not ready and Auto Claude source not found' };
+            return { success: false, error: 'Python environment not ready and Auto Codex source not found' };
           }
         }
 
@@ -258,11 +258,11 @@ export function registerWorktreeHandlers(
         // Use run.py --merge to handle the merge
         const sourcePath = getEffectiveSourcePath();
         if (!sourcePath) {
-          return { success: false, error: 'Auto Claude source not found' };
+          return { success: false, error: 'Auto Codex source not found' };
         }
 
         const runScript = path.join(sourcePath, 'run.py');
-        const specDir = path.join(project.path, project.autoBuildPath || '.auto-claude', 'specs', task.specId);
+        const specDir = path.join(project.path, project.autoBuildPath || '.auto-codex', 'specs', task.specId);
 
         if (!existsSync(specDir)) {
           debug('Spec directory not found:', specDir);
@@ -327,8 +327,8 @@ export function registerWorktreeHandlers(
         // Get profile environment with OAuth token for AI merge resolution
         const profileEnv = getProfileEnv();
         debug('Profile env for merge:', {
-          hasOAuthToken: !!profileEnv.CLAUDE_CODE_OAUTH_TOKEN,
-          hasConfigDir: !!profileEnv.CLAUDE_CONFIG_DIR
+          hasOAuthToken: !!profileEnv.CODEX_CODE_OAUTH_TOKEN,
+          hasConfigDir: !!profileEnv.CODEX_CONFIG_DIR
         });
 
         return new Promise((resolve) => {
@@ -342,7 +342,7 @@ export function registerWorktreeHandlers(
             cwd: sourcePath,
             env: {
               ...process.env,
-              ...profileEnv, // Include active Claude profile OAuth token
+              ...profileEnv, // Include active Codex profile OAuth token
               PYTHONUNBUFFERED: '1',
               PYTHONIOENCODING: 'utf-8',
               PYTHONUTF8: '1'
@@ -443,7 +443,7 @@ export function registerWorktreeHandlers(
 
                   if (!hasActualStagedChanges) {
                     // Check if worktree branch was already merged (merge commit exists)
-                    const specBranch = `auto-claude/${task.specId}`;
+                    const specBranch = `auto-codex/${task.specId}`;
                     try {
                       // Check if current branch contains all commits from spec branch
                       const mergeBaseResult = execSync(
@@ -617,8 +617,8 @@ export function registerWorktreeHandlers(
               return { success: false, error: `Python environment not ready: ${status.error || 'Unknown error'}` };
             }
           } else {
-            console.error('[IPC] Auto Claude source not found');
-            return { success: false, error: 'Python environment not ready and Auto Claude source not found' };
+            console.error('[IPC] Auto Codex source not found');
+            return { success: false, error: 'Python environment not ready and Auto Codex source not found' };
           }
         }
 
@@ -654,8 +654,8 @@ export function registerWorktreeHandlers(
 
         const sourcePath = getEffectiveSourcePath();
         if (!sourcePath) {
-          console.error('[IPC] Auto Claude source not found');
-          return { success: false, error: 'Auto Claude source not found' };
+          console.error('[IPC] Auto Codex source not found');
+          return { success: false, error: 'Auto Codex source not found' };
         }
 
         const runScript = path.join(sourcePath, 'run.py');

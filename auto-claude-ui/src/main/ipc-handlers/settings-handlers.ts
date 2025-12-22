@@ -10,12 +10,12 @@ import type {
 } from '../../shared/types';
 import { AgentManager } from '../agent';
 import type { BrowserWindow } from 'electron';
-import { getEffectiveVersion } from '../auto-claude-updater';
+import { getEffectiveVersion } from '../auto-codex-updater';
 
 const settingsPath = path.join(app.getPath('userData'), 'settings.json');
 
 /**
- * Auto-detect the auto-claude source path relative to the app location.
+ * Auto-detect the auto-codex source path relative to the app location.
  * Works across platforms (macOS, Windows, Linux) in both dev and production modes.
  */
 const detectAutoBuildSourcePath = (): string | null => {
@@ -23,13 +23,13 @@ const detectAutoBuildSourcePath = (): string | null => {
 
   // Development mode paths
   if (is.dev) {
-    // In dev, __dirname is typically auto-claude-ui/out/main
-    // We need to go up to the project root to find auto-claude/
+    // In dev, __dirname is typically __AUTO_CODEX_UI__/out/main
+    // We need to go up to the project root to find auto-codex/
     possiblePaths.push(
-      path.resolve(__dirname, '..', '..', '..', 'auto-claude'),  // From out/main up 3 levels
-      path.resolve(__dirname, '..', '..', 'auto-claude'),        // From out/main up 2 levels
-      path.resolve(process.cwd(), 'auto-claude'),                // From cwd (project root)
-      path.resolve(process.cwd(), '..', 'auto-claude')           // From cwd parent (if running from auto-claude-ui/)
+      path.resolve(__dirname, '..', '..', '..', 'auto-codex'),  // From out/main up 3 levels
+      path.resolve(__dirname, '..', '..', 'auto-codex'),        // From out/main up 2 levels
+      path.resolve(process.cwd(), 'auto-codex'),                // From cwd (project root)
+      path.resolve(process.cwd(), '..', 'auto-codex')           // From cwd parent (if running from __AUTO_CODEX_UI__/)
     );
   } else {
     // Production mode paths (packaged app)
@@ -37,16 +37,16 @@ const detectAutoBuildSourcePath = (): string | null => {
     // We check common locations relative to the app bundle
     const appPath = app.getAppPath();
     possiblePaths.push(
-      path.resolve(appPath, '..', 'auto-claude'),               // Sibling to app
-      path.resolve(appPath, '..', '..', 'auto-claude'),         // Up 2 from app
-      path.resolve(appPath, '..', '..', '..', 'auto-claude'),   // Up 3 from app
-      path.resolve(process.resourcesPath, '..', 'auto-claude'), // Relative to resources
-      path.resolve(process.resourcesPath, '..', '..', 'auto-claude')
+      path.resolve(appPath, '..', 'auto-codex'),               // Sibling to app
+      path.resolve(appPath, '..', '..', 'auto-codex'),         // Up 2 from app
+      path.resolve(appPath, '..', '..', '..', 'auto-codex'),   // Up 3 from app
+      path.resolve(process.resourcesPath, '..', 'auto-codex'), // Relative to resources
+      path.resolve(process.resourcesPath, '..', '..', 'auto-codex')
     );
   }
 
   // Add process.cwd() as last resort on all platforms
-  possiblePaths.push(path.resolve(process.cwd(), 'auto-claude'));
+  possiblePaths.push(path.resolve(process.cwd(), 'auto-codex'));
 
   // Enable debug logging with DEBUG=1
   const debug = process.env.DEBUG === '1' || process.env.DEBUG === 'true';
@@ -61,7 +61,7 @@ const detectAutoBuildSourcePath = (): string | null => {
   }
 
   for (const p of possiblePaths) {
-    // Use requirements.txt as marker - it always exists in auto-claude source
+    // Use requirements.txt as marker - it always exists in auto-codex source
     const markerPath = path.join(p, 'requirements.txt');
     const exists = existsSync(p) && existsSync(markerPath);
 
@@ -75,7 +75,7 @@ const detectAutoBuildSourcePath = (): string | null => {
     }
   }
 
-  console.warn('[detectAutoBuildSourcePath] Could not auto-detect Auto Claude source path. Please configure manually in settings.');
+  console.warn('[detectAutoBuildSourcePath] Could not auto-detect Auto Codex source path. Please configure manually in settings.');
   console.warn('[detectAutoBuildSourcePath] Set DEBUG=1 environment variable for detailed path checking.');
   return null;
 };

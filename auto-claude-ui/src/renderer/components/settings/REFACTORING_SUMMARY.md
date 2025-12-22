@@ -96,7 +96,7 @@ settings/
 #### `SectionRouter.tsx`
 - **Purpose**: Routes to appropriate settings section with initialization guards
 - **Lines**: 175
-- **Handles**: `general`, `claude`, `linear`, `github`, `memory` sections
+- **Handles**: `general`, `codex`, `linear`, `github`, `memory` sections
 - **Features**:
   - Wraps sections with `InitializationGuard` where needed
   - Passes appropriate props to each section

@@ -25,8 +25,8 @@ import { Label } from '../ui/label';
 import { Switch } from '../ui/switch';
 import { cn } from '../../lib/utils';
 import { SettingsSection } from './SettingsSection';
-import { loadClaudeProfiles as loadGlobalClaudeProfiles } from '../../stores/claude-profile-store';
-import type { AppSettings, ClaudeProfile, ClaudeAutoSwitchSettings } from '../../../shared/types';
+import { loadCodexProfiles as loadGlobalCodexProfiles } from '../../stores/codex-profile-store';
+import type { AppSettings, CodexProfile, CodexAutoSwitchSettings } from '../../../shared/types';
 
 interface IntegrationSettingsProps {
   settings: AppSettings;
@@ -35,14 +35,14 @@ interface IntegrationSettingsProps {
 }
 
 /**
- * 用于 Claude 账户与 API 密钥的集成设置
+ * 用于 Codex 账户与 API 密钥的集成设置
  */
 export function IntegrationSettings({ settings, onSettingsChange, isOpen }: IntegrationSettingsProps) {
   // 全局 API 密钥的密码可见性开关
   const [showGlobalOpenAIKey, setShowGlobalOpenAIKey] = useState(false);
 
-  // Claude 账户状态
-  const [claudeProfiles, setClaudeProfiles] = useState<ClaudeProfile[]>([]);
+  // Codex 账户状态
+  const [codexProfiles, setCodexProfiles] = useState<CodexProfile[]>([]);
   const [activeProfileId, setActiveProfileId] = useState<string | null>(null);
   const [isLoadingProfiles, setIsLoadingProfiles] = useState(false);
   const [newProfileName, setNewProfileName] = useState('');
@@ -58,13 +58,13 @@ export function IntegrationSettings({ settings, onSettingsChange, isOpen }: Inte
   const [savingTokenProfileId, setSavingTokenProfileId] = useState<string | null>(null);
 
   // 自动切换设置状态
-  const [autoSwitchSettings, setAutoSwitchSettings] = useState<ClaudeAutoSwitchSettings | null>(null);
+  const [autoSwitchSettings, setAutoSwitchSettings] = useState<CodexAutoSwitchSettings | null>(null);
   const [isLoadingAutoSwitch, setIsLoadingAutoSwitch] = useState(false);
 
-  // 分区显示时加载 Claude 配置与自动切换设置
+  // 分区显示时加载 Codex 配置与自动切换设置
   useEffect(() => {
     if (isOpen) {
-      loadClaudeProfiles();
+      loadCodexProfiles();
       loadAutoSwitchSettings();
     }
   }, [isOpen]);
@@ -74,7 +74,7 @@ export function IntegrationSettings({ settings, onSettingsChange, isOpen }: Inte
     const unsubscribe = window.electronAPI.onTerminalOAuthToken(async (info) => {
       if (info.success && info.profileId) {
         // 重新加载配置以显示更新状态
-        await loadClaudeProfiles();
+        await loadCodexProfiles();
         // 显示简单的成功提示
         alert(`✅ 配置认证成功！\n\n${info.email ? `账户：${info.email}` : '认证完成。'}\n\n现在可以使用此配置。`);
       }
@@ -83,18 +83,18 @@ export function IntegrationSettings({ settings, onSettingsChange, isOpen }: Inte
     return unsubscribe;
   }, []);
 
-  const loadClaudeProfiles = async () => {
+  const loadCodexProfiles = async () => {
     setIsLoadingProfiles(true);
     try {
-      const result = await window.electronAPI.getClaudeProfiles();
+      const result = await window.electronAPI.getCodexProfiles();
       if (result.success && result.data) {
-        setClaudeProfiles(result.data.profiles);
+        setCodexProfiles(result.data.profiles);
         setActiveProfileId(result.data.activeProfileId);
         // 同时更新全局 store
-        await loadGlobalClaudeProfiles();
+        await loadGlobalCodexProfiles();
       }
     } catch (err) {
-      console.error('Failed to load Claude profiles:', err);
+      console.error('Failed to load Codex profiles:', err);
     } finally {
       setIsLoadingProfiles(false);
     }
@@ -108,29 +108,29 @@ export function IntegrationSettings({ settings, onSettingsChange, isOpen }: Inte
       const profileName = newProfileName.trim();
       const profileSlug = profileName.toLowerCase().replace(/\s+/g, '-');
 
-      const result = await window.electronAPI.saveClaudeProfile({
+      const result = await window.electronAPI.saveCodexProfile({
         id: `profile-${Date.now()}`,
         name: profileName,
-        configDir: `~/.claude-profiles/${profileSlug}`,
+        configDir: `~/.codex-profiles/${profileSlug}`,
         isDefault: false,
         createdAt: new Date()
       });
 
       if (result.success && result.data) {
         // 初始化配置
-        const initResult = await window.electronAPI.initializeClaudeProfile(result.data.id);
+        const initResult = await window.electronAPI.initializeCodexProfile(result.data.id);
 
         if (initResult.success) {
-          await loadClaudeProfiles();
+          await loadCodexProfiles();
           setNewProfileName('');
 
           alert(
             `正在认证“${profileName}”...\n\n` +
-            `浏览器窗口将打开，请使用你的 Claude 账户登录。\n\n` +
+            `浏览器窗口将打开，请使用你的 Codex 账户登录。\n\n` +
             `认证完成后将自动保存。`
           );
         } else {
-          await loadClaudeProfiles();
+          await loadCodexProfiles();
           alert(`无法开始认证：${initResult.error || '请重试。'}`);
         }
       }
@@ -145,9 +145,9 @@ export function IntegrationSettings({ settings, onSettingsChange, isOpen }: Inte
   const handleDeleteProfile = async (profileId: string) => {
     setDeletingProfileId(profileId);
     try {
-      const result = await window.electronAPI.deleteClaudeProfile(profileId);
+      const result = await window.electronAPI.deleteCodexProfile(profileId);
       if (result.success) {
-        await loadClaudeProfiles();
+        await loadCodexProfiles();
       }
     } catch (err) {
       console.error('Failed to delete profile:', err);
@@ -156,7 +156,7 @@ export function IntegrationSettings({ settings, onSettingsChange, isOpen }: Inte
     }
   };
 
-  const startEditingProfile = (profile: ClaudeProfile) => {
+  const startEditingProfile = (profile: CodexProfile) => {
     setEditingProfileId(profile.id);
     setEditingProfileName(profile.name);
   };
@@ -170,9 +170,9 @@ export function IntegrationSettings({ settings, onSettingsChange, isOpen }: Inte
     if (!editingProfileId || !editingProfileName.trim()) return;
 
     try {
-      const result = await window.electronAPI.renameClaudeProfile(editingProfileId, editingProfileName.trim());
+      const result = await window.electronAPI.renameCodexProfile(editingProfileId, editingProfileName.trim());
       if (result.success) {
-        await loadClaudeProfiles();
+        await loadCodexProfiles();
       }
     } catch (err) {
       console.error('Failed to rename profile:', err);
@@ -184,10 +184,10 @@ export function IntegrationSettings({ settings, onSettingsChange, isOpen }: Inte
 
   const handleSetActiveProfile = async (profileId: string) => {
     try {
-      const result = await window.electronAPI.setActiveClaudeProfile(profileId);
+      const result = await window.electronAPI.setActiveCodexProfile(profileId);
       if (result.success) {
         setActiveProfileId(profileId);
-        await loadGlobalClaudeProfiles();
+        await loadGlobalCodexProfiles();
       }
     } catch (err) {
       console.error('Failed to set active profile:', err);
@@ -197,11 +197,11 @@ export function IntegrationSettings({ settings, onSettingsChange, isOpen }: Inte
   const handleAuthenticateProfile = async (profileId: string) => {
     setAuthenticatingProfileId(profileId);
     try {
-      const initResult = await window.electronAPI.initializeClaudeProfile(profileId);
+      const initResult = await window.electronAPI.initializeCodexProfile(profileId);
       if (initResult.success) {
         alert(
           `正在认证配置...\n\n` +
-          `浏览器窗口将打开，请使用你的 Claude 账户登录。\n\n` +
+          `浏览器窗口将打开，请使用你的 Codex 账户登录。\n\n` +
           `认证完成后将自动保存。`
         );
       } else {
@@ -234,13 +234,13 @@ export function IntegrationSettings({ settings, onSettingsChange, isOpen }: Inte
 
     setSavingTokenProfileId(profileId);
     try {
-      const result = await window.electronAPI.setClaudeProfileToken(
+      const result = await window.electronAPI.setCodexProfileToken(
         profileId,
         manualToken.trim(),
         manualTokenEmail.trim() || undefined
       );
       if (result.success) {
-        await loadClaudeProfiles();
+        await loadCodexProfiles();
         setExpandedTokenProfileId(null);
         setManualToken('');
         setManualTokenEmail('');
@@ -272,7 +272,7 @@ export function IntegrationSettings({ settings, onSettingsChange, isOpen }: Inte
   };
 
   // 更新自动切换设置
-  const handleUpdateAutoSwitch = async (updates: Partial<ClaudeAutoSwitchSettings>) => {
+  const handleUpdateAutoSwitch = async (updates: Partial<CodexAutoSwitchSettings>) => {
     setIsLoadingAutoSwitch(true);
     try {
       const result = await window.electronAPI.updateAutoSwitchSettings(updates);
@@ -292,19 +292,19 @@ export function IntegrationSettings({ settings, onSettingsChange, isOpen }: Inte
   return (
     <SettingsSection
       title="集成"
-      description="管理 Claude 账户与 API 密钥"
+      description="管理 Codex 账户与 API 密钥"
     >
       <div className="space-y-6">
-        {/* Claude 账户分区 */}
+        {/* Codex 账户分区 */}
         <div className="space-y-4">
           <div className="flex items-center gap-2">
             <Users className="h-4 w-4 text-muted-foreground" />
-            <h4 className="text-sm font-semibold text-foreground">Claude 账户</h4>
+            <h4 className="text-sm font-semibold text-foreground">Codex 账户</h4>
           </div>
 
           <div className="rounded-lg bg-muted/30 border border-border p-4">
             <p className="text-sm text-muted-foreground mb-4">
-              添加多个 Claude 订阅，以便在达到速率限制时自动切换。
+              添加多个 Codex 订阅，以便在达到速率限制时自动切换。
             </p>
 
             {/* 账户列表 */}
@@ -312,13 +312,13 @@ export function IntegrationSettings({ settings, onSettingsChange, isOpen }: Inte
               <div className="flex items-center justify-center py-4">
                 <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
               </div>
-            ) : claudeProfiles.length === 0 ? (
+            ) : codexProfiles.length === 0 ? (
               <div className="rounded-lg border border-dashed border-border p-4 text-center mb-4">
                 <p className="text-sm text-muted-foreground">尚未配置账户</p>
               </div>
             ) : (
               <div className="space-y-2 mb-4">
-                {claudeProfiles.map((profile) => (
+                {codexProfiles.map((profile) => (
                   <div
                     key={profile.id}
                     className={cn(
@@ -501,7 +501,7 @@ export function IntegrationSettings({ settings, onSettingsChange, isOpen }: Inte
                               手动输入令牌
                             </Label>
                             <span className="text-xs text-muted-foreground">
-                              运行 <code className="px-1 py-0.5 bg-muted rounded font-mono text-xs">claude setup-token</code> 获取令牌
+                              运行 <code className="px-1 py-0.5 bg-muted rounded font-mono text-xs">codex setup-token</code> 获取令牌
                             </span>
                           </div>
                           
@@ -594,7 +594,7 @@ export function IntegrationSettings({ settings, onSettingsChange, isOpen }: Inte
         </div>
 
         {/* 自动切换设置分区 */}
-        {claudeProfiles.length > 1 && (
+        {codexProfiles.length > 1 && (
           <div className="space-y-4 pt-6 border-t border-border">
             <div className="flex items-center gap-2">
               <RefreshCw className="h-4 w-4 text-muted-foreground" />
@@ -603,7 +603,7 @@ export function IntegrationSettings({ settings, onSettingsChange, isOpen }: Inte
 
             <div className="rounded-lg bg-muted/30 border border-border p-4 space-y-4">
               <p className="text-sm text-muted-foreground">
-                自动在 Claude 账户之间切换以避免中断。
+                自动在 Codex 账户之间切换以避免中断。
                 配置主动监控以在触达限制前切换。
               </p>
 

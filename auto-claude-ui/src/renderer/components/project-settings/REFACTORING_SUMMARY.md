@@ -31,14 +31,14 @@ ProjectSettings.tsx (321 lines) ← Main orchestrator
 ├── Hooks (6 custom hooks)
 │   ├── useProjectSettings.ts
 │   ├── useEnvironmentConfig.ts
-│   ├── useClaudeAuth.ts
+│   ├── useCodexAuth.ts
 │   ├── useLinearConnection.ts
 │   ├── useGitHubConnection.ts
 │   └── useInfrastructureStatus.ts
 │
 ├── Section Components (7 feature components)
 │   ├── AutoBuildIntegration.tsx
-│   ├── ClaudeAuthSection.tsx
+│   ├── CodexAuthSection.tsx
 │   ├── LinearIntegrationSection.tsx
 │   ├── GitHubIntegrationSection.tsx
 │   ├── MemoryBackendSection.tsx
@@ -86,7 +86,7 @@ const [error, setError] = useState(...)
 // Clean, organized hook usage
 const { settings, setSettings, versionInfo } = useProjectSettings(project, open);
 const { envConfig, updateEnvConfig } = useEnvironmentConfig(project.id, ...);
-const { claudeAuthStatus } = useClaudeAuth(project.id, ...);
+const { codexAuthStatus } = useCodexAuth(project.id, ...);
 ```
 
 ### 3. Component Composition
@@ -108,7 +108,7 @@ return (
   <Dialog>
     <DialogContent>
       <AutoBuildIntegration {...props} />
-      <ClaudeAuthSection {...props} />
+      <CodexAuthSection {...props} />
       <LinearIntegrationSection {...props} />
       <GitHubIntegrationSection {...props} />
       <MemoryBackendSection {...props} />
@@ -152,12 +152,12 @@ return (
 **After**: Fully testable in isolation
 ```tsx
 // Test individual hooks
-describe('useClaudeAuth', () => {
+describe('useCodexAuth', () => {
   it('should check authentication status', () => { ... });
 });
 
 // Test individual components
-describe('ClaudeAuthSection', () => {
+describe('CodexAuthSection', () => {
   it('should render authentication status', () => { ... });
 });
 
@@ -175,7 +175,7 @@ describe('PasswordInput', () => {
 | MemoryBackendSection.tsx | ~240 | Graphiti configuration (largest section) |
 | LinearIntegrationSection.tsx | ~160 | Linear integration |
 | GitHubIntegrationSection.tsx | ~140 | GitHub integration |
-| ClaudeAuthSection.tsx | ~100 | Claude authentication |
+| CodexAuthSection.tsx | ~100 | Codex authentication |
 | InfrastructureStatus.tsx | ~100 | Docker/FalkorDB status |
 | AutoBuildIntegration.tsx | ~70 | Auto-Build setup |
 | NotificationsSection.tsx | ~60 | Notification preferences |
@@ -191,7 +191,7 @@ describe('PasswordInput', () => {
 |------|-------|---------|
 | useInfrastructureStatus.ts | ~95 | Docker/FalkorDB monitoring |
 | useEnvironmentConfig.ts | ~75 | Environment config management |
-| useClaudeAuth.ts | ~55 | Claude auth checking |
+| useCodexAuth.ts | ~55 | Codex auth checking |
 | useGitHubConnection.ts | ~45 | GitHub connection monitoring |
 | useLinearConnection.ts | ~40 | Linear connection monitoring |
 | useProjectSettings.ts | ~35 | Settings state management |
@@ -205,7 +205,7 @@ describe('PasswordInput', () => {
 
 **After**: Explicit interfaces for all components
 ```tsx
-interface ClaudeAuthSectionProps {
+interface CodexAuthSectionProps {
   isExpanded: boolean;
   onToggle: () => void;
   envConfig: ProjectEnvConfig | null;
@@ -221,7 +221,7 @@ interface ClaudeAuthSectionProps {
 - **After**: Open `LinearIntegrationSection.tsx`
 
 ### Easy to Modify
-- **Before**: Changing Linear logic risks breaking Claude, GitHub, or Graphiti
+- **Before**: Changing Linear logic risks breaking Codex, GitHub, or Graphiti
 - **After**: Change `LinearIntegrationSection.tsx` in isolation
 
 ### Easy to Add Features

@@ -39,8 +39,8 @@ export function ProjectSettings({ project, open, onOpenChange }: ProjectSettings
     envError,
     isSavingEnv,
     updateEnvConfig,
-    showClaudeToken,
-    setShowClaudeToken,
+    showCodexToken,
+    setShowCodexToken,
     showLinearKey,
     setShowLinearKey,
     showOpenAIKey,
@@ -53,15 +53,15 @@ export function ProjectSettings({ project, open, onOpenChange }: ProjectSettings
     toggleSection,
     gitHubConnectionStatus,
     isCheckingGitHub,
-    isCheckingClaudeAuth,
-    claudeAuthStatus,
+    isCheckingCodexAuth,
+    codexAuthStatus,
     showLinearImportModal,
     setShowLinearImportModal,
     linearConnectionStatus,
     isCheckingLinear,
     handleInitialize,
     handleUpdate,
-    handleClaudeSetup,
+    handleCodexSetup,
     handleSave
   } = hook;
 
@@ -97,19 +97,19 @@ export function ProjectSettings({ project, open, onOpenChange }: ProjectSettings
               <>
                 <Separator />
 
-                {/* Claude 认证 */}
+                {/* Codex 认证 */}
                 <EnvironmentSettings
                   envConfig={envConfig}
                   isLoadingEnv={isLoadingEnv}
                   envError={envError}
                   updateEnvConfig={updateEnvConfig}
-                  isCheckingClaudeAuth={isCheckingClaudeAuth}
-                  claudeAuthStatus={claudeAuthStatus}
-                  handleClaudeSetup={handleClaudeSetup}
-                  showClaudeToken={showClaudeToken}
-                  setShowClaudeToken={setShowClaudeToken}
-                  expanded={expandedSections.claude}
-                  onToggle={() => toggleSection('claude')}
+                  isCheckingCodexAuth={isCheckingCodexAuth}
+                  codexAuthStatus={codexAuthStatus}
+                  handleCodexSetup={handleCodexSetup}
+                  showCodexToken={showCodexToken}
+                  setShowCodexToken={setShowCodexToken}
+                  expanded={expandedSections.codex}
+                  onToggle={() => toggleSection('codex')}
                 />
 
                 <Separator />

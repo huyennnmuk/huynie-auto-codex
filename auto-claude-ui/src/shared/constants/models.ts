@@ -1,6 +1,6 @@
 /**
  * 模型与代理配置常量
- * Claude 模型、思考级别、记忆后端和代理配置
+ * Codex 模型、思考级别、记忆后端和代理配置
  */
 
 import type { AgentProfile, PhaseModelConfig, FeatureModelConfig, FeatureThinkingConfig } from '../types/settings';
@@ -10,16 +10,16 @@ import type { AgentProfile, PhaseModelConfig, FeatureModelConfig, FeatureThinkin
 // ============================================
 
 export const AVAILABLE_MODELS = [
-  { value: 'opus', label: 'Claude Opus 4.5' },
-  { value: 'sonnet', label: 'Claude Sonnet 4.5' },
-  { value: 'haiku', label: 'Claude Haiku 4.5' }
+  { value: 'opus', label: 'Codex Opus 4.5' },
+  { value: 'sonnet', label: 'Codex Sonnet 4.5' },
+  { value: 'haiku', label: 'Codex Haiku 4.5' }
 ] as const;
 
-// 将模型简称映射到实际 Claude 模型 ID
+// 将模型简称映射到实际 Codex 模型 ID
 export const MODEL_ID_MAP: Record<string, string> = {
-  opus: 'claude-opus-4-5-20251101',
-  sonnet: 'claude-sonnet-4-5-20250929',
-  haiku: 'claude-haiku-4-5-20251001'
+  opus: 'codex-opus-4-5-20251101',
+  sonnet: 'codex-sonnet-4-5-20250929',
+  haiku: 'codex-haiku-4-5-20251001'
 } as const;
 
 // 将思考级别映射到预算 token（null 表示不启用扩展思考）
@@ -35,7 +35,7 @@ export const THINKING_BUDGET_MAP: Record<string, number | null> = {
 // 思考级别
 // ============================================
 
-// Claude 模型的思考级别（预算 token 分配）
+// Codex 模型的思考级别（预算 token 分配）
 export const THINKING_LEVELS = [
   { value: 'none', label: 'None', description: 'No extended thinking' },
   { value: 'low', label: 'Low', description: 'Brief consideration' },

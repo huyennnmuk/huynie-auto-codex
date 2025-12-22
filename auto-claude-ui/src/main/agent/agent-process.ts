@@ -8,7 +8,7 @@ import { AgentEvents } from './agent-events';
 import { ProcessType, ExecutionProgressData } from './types';
 import { detectRateLimit, createSDKRateLimitInfo, getProfileEnv, detectAuthFailure } from '../rate-limit-detector';
 import { projectStore } from '../project-store';
-import { getClaudeProfileManager } from '../claude-profile-manager';
+import { getCodexProfileManager } from '../codex-profile-manager';
 import { findPythonCommand, parsePythonCommand } from '../python-detector';
 
 /**
@@ -29,7 +29,7 @@ export class AgentProcessManager {
   }
 
   /**
-   * Configure paths for Python and auto-claude source
+   * Configure paths for Python and auto-codex source
    */
   configure(pythonPath?: string, autoBuildSourcePath?: string): void {
     if (pythonPath) {
@@ -48,7 +48,7 @@ export class AgentProcessManager {
   }
 
   /**
-   * Get the auto-claude source path (detects automatically if not configured)
+   * Get the auto-codex source path (detects automatically if not configured)
    */
   getAutoBuildSourcePath(): string | null {
     // If manually configured, use that
@@ -58,16 +58,16 @@ export class AgentProcessManager {
 
     // Auto-detect from app location
     const possiblePaths = [
-      // Dev mode: from dist/main -> ../../auto-claude (sibling to auto-claude-ui)
-      path.resolve(__dirname, '..', '..', '..', 'auto-claude'),
+      // Dev mode: from dist/main -> ../../auto-codex (sibling to __AUTO_CODEX_UI__)
+      path.resolve(__dirname, '..', '..', '..', 'auto-codex'),
       // Alternative: from app root
-      path.resolve(app.getAppPath(), '..', 'auto-claude'),
+      path.resolve(app.getAppPath(), '..', 'auto-codex'),
       // If running from repo root
-      path.resolve(process.cwd(), 'auto-claude')
+      path.resolve(process.cwd(), 'auto-codex')
     ];
 
     for (const p of possiblePaths) {
-      // Use requirements.txt as marker - it always exists in auto-claude source
+      // Use requirements.txt as marker - it always exists in auto-codex source
       if (existsSync(p) && existsSync(path.join(p, 'requirements.txt'))) {
         return p;
       }
@@ -97,7 +97,7 @@ export class AgentProcessManager {
   }
 
   /**
-   * Load environment variables from auto-claude .env file
+   * Load environment variables from auto-codex .env file
    */
   loadAutoBuildEnv(): Record<string, string> {
     const autoBuildSource = this.getAutoBuildSourcePath();
@@ -160,7 +160,7 @@ export class AgentProcessManager {
     // Generate unique spawn ID for this process instance
     const spawnId = this.state.generateSpawnId();
 
-    // Get active Claude profile environment (CLAUDE_CONFIG_DIR if not default)
+    // Get active Codex profile environment (CODEX_CONFIG_DIR if not default)
     const profileEnv = getProfileEnv();
 
     // Parse Python command to handle space-separated commands like "py -3"
@@ -170,7 +170,7 @@ export class AgentProcessManager {
       env: {
         ...process.env,
         ...extraEnv,
-        ...profileEnv, // Include active Claude profile config
+        ...profileEnv, // Include active Codex profile config
         PYTHONUNBUFFERED: '1', // Ensure real-time output
         PYTHONIOENCODING: 'utf-8', // Ensure UTF-8 encoding on Windows
         PYTHONUTF8: '1' // Force Python UTF-8 mode on Windows (Python 3.7+)
@@ -276,7 +276,7 @@ export class AgentProcessManager {
         const rateLimitDetection = detectRateLimit(allOutput);
         if (rateLimitDetection.isRateLimited) {
           // Check if auto-swap is enabled
-          const profileManager = getClaudeProfileManager();
+          const profileManager = getCodexProfileManager();
           const autoSwitchSettings = profileManager.getAutoSwitchSettings();
 
           if (autoSwitchSettings.enabled && autoSwitchSettings.autoSwitchOnRateLimit) {

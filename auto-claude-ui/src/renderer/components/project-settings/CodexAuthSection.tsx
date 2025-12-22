@@ -6,7 +6,7 @@ import { Button } from '../ui/button';
 import { Label } from '../ui/label';
 import type { ProjectEnvConfig } from '../../../shared/types';
 
-interface ClaudeAuthSectionProps {
+interface CodexAuthSectionProps {
   isExpanded: boolean;
   onToggle: () => void;
   envConfig: ProjectEnvConfig | null;
@@ -14,11 +14,11 @@ interface ClaudeAuthSectionProps {
   envError: string | null;
   isCheckingAuth: boolean;
   authStatus: 'checking' | 'authenticated' | 'not_authenticated' | 'error';
-  onClaudeSetup: () => void;
+  onCodexSetup: () => void;
   onUpdateConfig: (updates: Partial<ProjectEnvConfig>) => void;
 }
 
-export function ClaudeAuthSection({
+export function CodexAuthSection({
   isExpanded,
   onToggle,
   envConfig,
@@ -26,9 +26,9 @@ export function ClaudeAuthSection({
   envError,
   isCheckingAuth,
   authStatus,
-  onClaudeSetup,
+  onCodexSetup,
   onUpdateConfig,
-}: ClaudeAuthSectionProps) {
+}: CodexAuthSectionProps) {
   const badge = authStatus === 'authenticated' ? (
     <StatusBadge status="success" label="Connected" />
   ) : authStatus === 'not_authenticated' ? (
@@ -37,7 +37,7 @@ export function ClaudeAuthSection({
 
   return (
     <CollapsibleSection
-      title="Claude Authentication"
+      title="Codex Authentication"
       icon={<Key className="h-4 w-4" />}
       isExpanded={isExpanded}
       onToggle={onToggle}
@@ -50,11 +50,11 @@ export function ClaudeAuthSection({
         </div>
       ) : envConfig ? (
         <>
-          {/* Claude CLI Status */}
+          {/* Codex CLI Status */}
           <div className="rounded-lg border border-border bg-muted/30 p-3">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-foreground">Claude CLI</p>
+                <p className="text-sm font-medium text-foreground">Codex CLI</p>
                 <p className="text-xs text-muted-foreground">
                   {isCheckingAuth ? 'Checking...' :
                     authStatus === 'authenticated' ? 'Authenticated via OAuth' :
@@ -65,7 +65,7 @@ export function ClaudeAuthSection({
               <Button
                 size="sm"
                 variant="outline"
-                onClick={onClaudeSetup}
+                onClick={onCodexSetup}
                 disabled={isCheckingAuth}
               >
                 {isCheckingAuth ? (
@@ -84,30 +84,30 @@ export function ClaudeAuthSection({
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label className="text-sm font-medium text-foreground">
-                OAuth Token {envConfig.claudeTokenIsGlobal ? '(Override)' : ''}
+                OAuth Token {envConfig.codexTokenIsGlobal ? '(Override)' : ''}
               </Label>
-              {envConfig.claudeTokenIsGlobal && (
+              {envConfig.codexTokenIsGlobal && (
                 <span className="flex items-center gap-1 text-xs text-info">
                   <Globe className="h-3 w-3" />
                   Using global token
                 </span>
               )}
             </div>
-            {envConfig.claudeTokenIsGlobal ? (
+            {envConfig.codexTokenIsGlobal ? (
               <p className="text-xs text-muted-foreground">
                 Using token from App Settings. Enter a project-specific token below to override.
               </p>
             ) : (
               <p className="text-xs text-muted-foreground">
-                Paste a token from <code className="px-1 bg-muted rounded">claude setup-token</code>
+                Paste a token from <code className="px-1 bg-muted rounded">codex setup-token</code>
               </p>
             )}
             <PasswordInput
-              value={envConfig.claudeTokenIsGlobal ? '' : (envConfig.claudeOAuthToken || '')}
+              value={envConfig.codexTokenIsGlobal ? '' : (envConfig.codexOAuthToken || '')}
               onChange={(value) => onUpdateConfig({
-                claudeOAuthToken: value || undefined,
+                codexOAuthToken: value || undefined,
               })}
-              placeholder={envConfig.claudeTokenIsGlobal ? 'Enter to override global token...' : 'your-oauth-token-here'}
+              placeholder={envConfig.codexTokenIsGlobal ? 'Enter to override global token...' : 'your-oauth-token-here'}
             />
           </div>
         </>

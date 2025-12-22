@@ -54,7 +54,7 @@ terminal/
 1. **TerminalHeader.tsx** (94 lines)
    - Status indicator
    - Title display
-   - Claude invocation button
+   - Codex invocation button
    - Close button
    - Task selector integration
 
@@ -92,7 +92,7 @@ terminal/
    - Output streaming
    - Exit notification
    - Title change tracking
-   - Claude session ID capture
+   - Codex session ID capture
 
 4. **useAutoNaming.ts** (62 lines)
    - Command-based terminal naming

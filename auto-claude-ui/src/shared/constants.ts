@@ -1,5 +1,5 @@
 /**
- * Shared constants for Auto Claude UI
+ * Shared constants for Auto Codex UI
  *
  * This file has been refactored for better organization and maintainability.
  * All constants are now organized in domain-specific modules in the constants/ directory.
@@ -18,7 +18,7 @@
  *   - constants/roadmap.ts - Roadmap priority, complexity, impact
  *   - constants/ideation.ts - Ideation types, categories, configuration
  *   - constants/changelog.ts - Changelog formats, audiences, configuration
- *   - constants/models.ts - Claude models, thinking levels, agent profiles
+ *   - constants/models.ts - Codex models, thinking levels, agent profiles
  *   - constants/github.ts - GitHub integration constants
  *   - constants/config.ts - App settings, project settings, file paths
  */

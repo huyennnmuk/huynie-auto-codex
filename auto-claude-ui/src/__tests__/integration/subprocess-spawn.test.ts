@@ -29,38 +29,38 @@ vi.mock('child_process', () => ({
   spawn: vi.fn(() => mockProcess)
 }));
 
-// Mock claude-profile-manager to bypass auth checks in tests
-vi.mock('../../main/claude-profile-manager', () => ({
-  getClaudeProfileManager: () => ({
+// Mock codex-profile-manager to bypass auth checks in tests
+vi.mock('../../main/codex-profile-manager', () => ({
+  getCodexProfileManager: () => ({
     hasValidAuth: () => true,
     getActiveProfile: () => ({ profileId: 'default', profileName: 'Default' })
   })
 }));
 
-// Auto-claude source path (for getAutoBuildSourcePath to find)
-const AUTO_CLAUDE_SOURCE = path.join(TEST_DIR, 'auto-claude-source');
+// Auto-codex source path (for getAutoBuildSourcePath to find)
+const AUTO_CODEX_SOURCE = path.join(TEST_DIR, 'auto-codex-source');
 
 // Setup test directories
 function setupTestDirs(): void {
   mkdirSync(TEST_PROJECT_PATH, { recursive: true });
 
-  // Create auto-claude source directory that getAutoBuildSourcePath looks for
-  mkdirSync(AUTO_CLAUDE_SOURCE, { recursive: true });
+  // Create auto-codex source directory that getAutoBuildSourcePath looks for
+  mkdirSync(AUTO_CODEX_SOURCE, { recursive: true });
 
   // Create requirements.txt file (used as marker by getAutoBuildSourcePath)
-  writeFileSync(path.join(AUTO_CLAUDE_SOURCE, 'requirements.txt'), '# Mock requirements');
+  writeFileSync(path.join(AUTO_CODEX_SOURCE, 'requirements.txt'), '# Mock requirements');
 
   // Create runners subdirectory (where spec_runner.py lives after restructure)
-  mkdirSync(path.join(AUTO_CLAUDE_SOURCE, 'runners'), { recursive: true });
+  mkdirSync(path.join(AUTO_CODEX_SOURCE, 'runners'), { recursive: true });
 
   // Create mock spec_runner.py in runners/ subdirectory
   writeFileSync(
-    path.join(AUTO_CLAUDE_SOURCE, 'runners', 'spec_runner.py'),
+    path.join(AUTO_CODEX_SOURCE, 'runners', 'spec_runner.py'),
     '# Mock spec runner\nprint("Starting spec creation")'
   );
   // Create mock run.py
   writeFileSync(
-    path.join(AUTO_CLAUDE_SOURCE, 'run.py'),
+    path.join(AUTO_CODEX_SOURCE, 'run.py'),
     '# Mock run.py\nprint("Starting task execution")'
   );
 }
@@ -95,7 +95,7 @@ describe('Subprocess Spawn Integration', () => {
       const { AgentManager } = await import('../../main/agent');
 
       const manager = new AgentManager();
-      manager.configure(undefined, AUTO_CLAUDE_SOURCE);
+      manager.configure(undefined, AUTO_CODEX_SOURCE);
       manager.startSpecCreation('task-1', TEST_PROJECT_PATH, 'Test task description');
 
       expect(spawn).toHaveBeenCalledWith(
@@ -106,7 +106,7 @@ describe('Subprocess Spawn Integration', () => {
           'Test task description'
         ]),
         expect.objectContaining({
-          cwd: AUTO_CLAUDE_SOURCE,  // Process runs from auto-claude source directory
+          cwd: AUTO_CODEX_SOURCE,  // Process runs from auto-codex source directory
           env: expect.objectContaining({
             PYTHONUNBUFFERED: '1'
           })
@@ -119,14 +119,14 @@ describe('Subprocess Spawn Integration', () => {
       const { AgentManager } = await import('../../main/agent');
 
       const manager = new AgentManager();
-      manager.configure(undefined, AUTO_CLAUDE_SOURCE);
+      manager.configure(undefined, AUTO_CODEX_SOURCE);
       manager.startTaskExecution('task-1', TEST_PROJECT_PATH, 'spec-001');
 
       expect(spawn).toHaveBeenCalledWith(
         'python3',
         expect.arrayContaining([expect.stringContaining('run.py'), '--spec', 'spec-001']),
         expect.objectContaining({
-          cwd: AUTO_CLAUDE_SOURCE  // Process runs from auto-claude source directory
+          cwd: AUTO_CODEX_SOURCE  // Process runs from auto-codex source directory
         })
       );
     });
@@ -136,7 +136,7 @@ describe('Subprocess Spawn Integration', () => {
       const { AgentManager } = await import('../../main/agent');
 
       const manager = new AgentManager();
-      manager.configure(undefined, AUTO_CLAUDE_SOURCE);
+      manager.configure(undefined, AUTO_CODEX_SOURCE);
       manager.startQAProcess('task-1', TEST_PROJECT_PATH, 'spec-001');
 
       expect(spawn).toHaveBeenCalledWith(
@@ -148,7 +148,7 @@ describe('Subprocess Spawn Integration', () => {
           '--qa'
         ]),
         expect.objectContaining({
-          cwd: AUTO_CLAUDE_SOURCE  // Process runs from auto-claude source directory
+          cwd: AUTO_CODEX_SOURCE  // Process runs from auto-codex source directory
         })
       );
     });
@@ -159,7 +159,7 @@ describe('Subprocess Spawn Integration', () => {
       const { AgentManager } = await import('../../main/agent');
 
       const manager = new AgentManager();
-      manager.configure(undefined, AUTO_CLAUDE_SOURCE);
+      manager.configure(undefined, AUTO_CODEX_SOURCE);
       manager.startTaskExecution('task-1', TEST_PROJECT_PATH, 'spec-001', {
         parallel: true,
         workers: 4
@@ -177,7 +177,7 @@ describe('Subprocess Spawn Integration', () => {
       const { AgentManager } = await import('../../main/agent');
 
       const manager = new AgentManager();
-      manager.configure(undefined, AUTO_CLAUDE_SOURCE);
+      manager.configure(undefined, AUTO_CODEX_SOURCE);
       const logHandler = vi.fn();
       manager.on('log', logHandler);
 
@@ -193,7 +193,7 @@ describe('Subprocess Spawn Integration', () => {
       const { AgentManager } = await import('../../main/agent');
 
       const manager = new AgentManager();
-      manager.configure(undefined, AUTO_CLAUDE_SOURCE);
+      manager.configure(undefined, AUTO_CODEX_SOURCE);
       const logHandler = vi.fn();
       manager.on('log', logHandler);
 
@@ -209,7 +209,7 @@ describe('Subprocess Spawn Integration', () => {
       const { AgentManager } = await import('../../main/agent');
 
       const manager = new AgentManager();
-      manager.configure(undefined, AUTO_CLAUDE_SOURCE);
+      manager.configure(undefined, AUTO_CODEX_SOURCE);
       const exitHandler = vi.fn();
       manager.on('exit', exitHandler);
 
@@ -226,7 +226,7 @@ describe('Subprocess Spawn Integration', () => {
       const { AgentManager } = await import('../../main/agent');
 
       const manager = new AgentManager();
-      manager.configure(undefined, AUTO_CLAUDE_SOURCE);
+      manager.configure(undefined, AUTO_CODEX_SOURCE);
       const errorHandler = vi.fn();
       manager.on('error', errorHandler);
 
@@ -242,7 +242,7 @@ describe('Subprocess Spawn Integration', () => {
       const { AgentManager } = await import('../../main/agent');
 
       const manager = new AgentManager();
-      manager.configure(undefined, AUTO_CLAUDE_SOURCE);
+      manager.configure(undefined, AUTO_CODEX_SOURCE);
       manager.startSpecCreation('task-1', TEST_PROJECT_PATH, 'Test');
 
       expect(manager.isRunning('task-1')).toBe(true);
@@ -267,7 +267,7 @@ describe('Subprocess Spawn Integration', () => {
       const { AgentManager } = await import('../../main/agent');
 
       const manager = new AgentManager();
-      manager.configure(undefined, AUTO_CLAUDE_SOURCE);
+      manager.configure(undefined, AUTO_CODEX_SOURCE);
       expect(manager.getRunningTasks()).toHaveLength(0);
 
       manager.startSpecCreation('task-1', TEST_PROJECT_PATH, 'Test 1');
@@ -282,7 +282,7 @@ describe('Subprocess Spawn Integration', () => {
       const { AgentManager } = await import('../../main/agent');
 
       const manager = new AgentManager();
-      manager.configure('/custom/python3', AUTO_CLAUDE_SOURCE);
+      manager.configure('/custom/python3', AUTO_CODEX_SOURCE);
 
       manager.startSpecCreation('task-1', TEST_PROJECT_PATH, 'Test');
 
@@ -297,7 +297,7 @@ describe('Subprocess Spawn Integration', () => {
       const { AgentManager } = await import('../../main/agent');
 
       const manager = new AgentManager();
-      manager.configure(undefined, AUTO_CLAUDE_SOURCE);
+      manager.configure(undefined, AUTO_CODEX_SOURCE);
       manager.startSpecCreation('task-1', TEST_PROJECT_PATH, 'Test 1');
       manager.startTaskExecution('task-2', TEST_PROJECT_PATH, 'spec-001');
 
@@ -310,7 +310,7 @@ describe('Subprocess Spawn Integration', () => {
       const { AgentManager } = await import('../../main/agent');
 
       const manager = new AgentManager();
-      manager.configure(undefined, AUTO_CLAUDE_SOURCE);
+      manager.configure(undefined, AUTO_CODEX_SOURCE);
       manager.startSpecCreation('task-1', TEST_PROJECT_PATH, 'Test 1');
 
       // Start another process for same task

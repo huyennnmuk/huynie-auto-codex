@@ -7,7 +7,7 @@ export const integrationMock = {
   getProjectEnv: async () => ({
     success: true,
     data: {
-      claudeAuthStatus: 'not_configured' as const,
+      codexAuthStatus: 'not_configured' as const,
       linearEnabled: false,
       githubEnabled: false,
       graphitiEnabled: false,
@@ -23,9 +23,9 @@ export const integrationMock = {
   getSourceEnv: async () => ({
     success: true,
     data: {
-      hasClaudeToken: true,
+      hasCodexToken: true,
       envExists: true,
-      sourcePath: '/mock/auto-claude'
+      sourcePath: '/mock/auto-codex'
     }
   }),
 
@@ -37,12 +37,12 @@ export const integrationMock = {
     success: true,
     data: {
       hasToken: true,
-      sourcePath: '/mock/auto-claude'
+      sourcePath: '/mock/auto-codex'
     }
   }),
 
-  // Claude Authentication
-  checkClaudeAuth: async () => ({
+  // Codex Authentication
+  checkCodexAuth: async () => ({
     success: true,
     data: {
       success: false,
@@ -51,7 +51,7 @@ export const integrationMock = {
     }
   }),
 
-  invokeClaudeSetup: async () => ({
+  invokeCodexSetup: async () => ({
     success: true,
     data: {
       success: false,

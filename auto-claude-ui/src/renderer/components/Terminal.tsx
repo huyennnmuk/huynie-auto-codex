@@ -25,7 +25,7 @@ export function Terminal({
   const isCreatedRef = useRef(false);
 
   const terminal = useTerminalStore((state) => state.terminals.find((t) => t.id === id));
-  const setClaudeMode = useTerminalStore((state) => state.setClaudeMode);
+  const setCodexMode = useTerminalStore((state) => state.setCodexMode);
   const updateTerminal = useTerminalStore((state) => state.updateTerminal);
   const setAssociatedTask = useTerminalStore((state) => state.setAssociatedTask);
 
@@ -116,10 +116,10 @@ export function Terminal({
     };
   }, [id, dispose, cleanupAutoNaming]);
 
-  const handleInvokeClaude = useCallback(() => {
-    setClaudeMode(id, true);
-    window.electronAPI.invokeClaudeInTerminal(id, cwd);
-  }, [id, cwd, setClaudeMode]);
+  const handleInvokeCodex = useCallback(() => {
+    setCodexMode(id, true);
+    window.electronAPI.invokeCodexInTerminal(id, cwd);
+  }, [id, cwd, setCodexMode]);
 
   const handleClick = useCallback(() => {
     onActivate();
@@ -149,7 +149,7 @@ ${selectedTask.description}
 
   const handleClearTask = useCallback(() => {
     setAssociatedTask(id, undefined);
-    updateTerminal(id, { title: 'Claude' });
+    updateTerminal(id, { title: 'Codex' });
   }, [id, setAssociatedTask, updateTerminal]);
 
   return (
@@ -175,11 +175,11 @@ ${selectedTask.description}
         terminalId={id}
         title={terminal?.title || '终端'}
         status={terminal?.status || 'idle'}
-        isClaudeMode={terminal?.isClaudeMode || false}
+        isCodexMode={terminal?.isCodexMode || false}
         tasks={tasks}
         associatedTask={associatedTask}
         onClose={onClose}
-        onInvokeClaude={handleInvokeClaude}
+        onInvokeCodex={handleInvokeCodex}
         onTitleChange={handleTitleChange}
         onTaskSelect={handleTaskSelect}
         onClearTask={handleClearTask}

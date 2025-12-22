@@ -40,8 +40,8 @@
     const existingVars = existingContent ? parseEnvFile(existingContent) : {};
 
     // Update with new values
-    if (config.claudeOAuthToken !== undefined) {
-      existingVars['CLAUDE_CODE_OAUTH_TOKEN'] = config.claudeOAuthToken;
+    if (config.codexOAuthToken !== undefined) {
+      existingVars['CODEX_CODE_OAUTH_TOKEN'] = config.codexOAuthToken;
     }
     if (config.autoBuildModel !== undefined) {
       existingVars['AUTO_BUILD_MODEL'] = config.autoBuildModel;
@@ -91,14 +91,14 @@
     }
 
     // Generate content with sections
-    let content = `# Auto Claude Framework Environment Variables
-# Managed by Auto Claude UI
+    let content = `# Auto Codex Framework Environment Variables
+# Managed by Auto Codex UI
 
-# Claude Code OAuth Token (REQUIRED)
-CLAUDE_CODE_OAUTH_TOKEN=${existingVars['CLAUDE_CODE_OAUTH_TOKEN'] || ''}
+# Codex Code OAuth Token (REQUIRED)
+CODEX_CODE_OAUTH_TOKEN=${existingVars['CODEX_CODE_OAUTH_TOKEN'] || ''}
 
 # Model override (OPTIONAL)
-${existingVars['AUTO_BUILD_MODEL'] ? `AUTO_BUILD_MODEL=${existingVars['AUTO_BUILD_MODEL']}` : '# AUTO_BUILD_MODEL=claude-opus-4-5-20251101'}
+${existingVars['AUTO_BUILD_MODEL'] ? `AUTO_BUILD_MODEL=${existingVars['AUTO_BUILD_MODEL']}` : '# AUTO_BUILD_MODEL=codex-opus-4-5-20251101'}
 
 # =============================================================================
 # LINEAR INTEGRATION (OPTIONAL)
@@ -161,12 +161,12 @@ ${existingVars['GRAPHITI_DATABASE'] ? `GRAPHITI_DATABASE=${existingVars['GRAPHIT
 
       // Default config
       const config: ProjectEnvConfig = {
-        claudeAuthStatus: 'not_configured',
+        codexAuthStatus: 'not_configured',
         linearEnabled: false,
         githubEnabled: false,
         graphitiEnabled: false,
         enableFancyUi: true,
-        claudeTokenIsGlobal: false,
+        codexTokenIsGlobal: false,
         openaiKeyIsGlobal: false
       };
 
@@ -181,15 +181,15 @@ ${existingVars['GRAPHITI_DATABASE'] ? `GRAPHITI_DATABASE=${existingVars['GRAPHIT
         }
       }
 
-      // Claude OAuth Token: project-specific takes precedence, then global
-      if (vars['CLAUDE_CODE_OAUTH_TOKEN']) {
-        config.claudeOAuthToken = vars['CLAUDE_CODE_OAUTH_TOKEN'];
-        config.claudeAuthStatus = 'token_set';
-        config.claudeTokenIsGlobal = false;
-      } else if (globalSettings.globalClaudeOAuthToken) {
-        config.claudeOAuthToken = globalSettings.globalClaudeOAuthToken;
-        config.claudeAuthStatus = 'token_set';
-        config.claudeTokenIsGlobal = true;
+      // Codex OAuth Token: project-specific takes precedence, then global
+      if (vars['CODEX_CODE_OAUTH_TOKEN']) {
+        config.codexOAuthToken = vars['CODEX_CODE_OAUTH_TOKEN'];
+        config.codexAuthStatus = 'token_set';
+        config.codexTokenIsGlobal = false;
+      } else if (globalSettings.globalCodexOAuthToken) {
+        config.codexOAuthToken = globalSettings.globalCodexOAuthToken;
+        config.codexAuthStatus = 'token_set';
+        config.codexTokenIsGlobal = true;
       }
 
       if (vars['AUTO_BUILD_MODEL']) {
@@ -294,17 +294,17 @@ ${existingVars['GRAPHITI_DATABASE'] ? `GRAPHITI_DATABASE=${existingVars['GRAPHIT
   );
 
   ipcMain.handle(
-    IPC_CHANNELS.ENV_CHECK_CLAUDE_AUTH,
-    async (_, projectId: string): Promise<IPCResult<ClaudeAuthResult>> => {
+    IPC_CHANNELS.ENV_CHECK_CODEX_AUTH,
+    async (_, projectId: string): Promise<IPCResult<CodexAuthResult>> => {
       const project = projectStore.getProject(projectId);
       if (!project) {
         return { success: false, error: 'Project not found' };
       }
 
       try {
-        // Check if Claude CLI is available and authenticated
-        const result = await new Promise<ClaudeAuthResult>((resolve) => {
-          const proc = spawn('claude', ['--version'], {
+        // Check if Codex CLI is available and authenticated
+        const result = await new Promise<CodexAuthResult>((resolve) => {
+          const proc = spawn('codex', ['--version'], {
             cwd: project.path,
             env: { ...process.env },
             shell: true
@@ -323,9 +323,9 @@ ${existingVars['GRAPHITI_DATABASE'] ? `GRAPHITI_DATABASE=${existingVars['GRAPHIT
 
           proc.on('close', (code: number | null) => {
             if (code === 0) {
-              // Claude CLI is available, check if authenticated
+              // Codex CLI is available, check if authenticated
               // Run a simple command that requires auth
-              const authCheck = spawn('claude', ['api', '--help'], {
+              const authCheck = spawn('codex', ['api', '--help'], {
                 cwd: project.path,
                 env: { ...process.env },
                 shell: true
@@ -349,7 +349,7 @@ ${existingVars['GRAPHITI_DATABASE'] ? `GRAPHITI_DATABASE=${existingVars['GRAPHIT
               resolve({
                 success: false,
                 authenticated: false,
-                error: 'Claude CLI not found. Please install it first.'
+                error: 'Codex CLI not found. Please install it first.'
               });
             }
           });
@@ -358,7 +358,7 @@ ${existingVars['GRAPHITI_DATABASE'] ? `GRAPHITI_DATABASE=${existingVars['GRAPHIT
             resolve({
               success: false,
               authenticated: false,
-              error: 'Claude CLI not found. Please install it first.'
+              error: 'Codex CLI not found. Please install it first.'
             });
           });
         });
@@ -367,24 +367,24 @@ ${existingVars['GRAPHITI_DATABASE'] ? `GRAPHITI_DATABASE=${existingVars['GRAPHIT
       } catch (error) {
         return {
           success: false,
-          error: error instanceof Error ? error.message : 'Failed to check Claude auth'
+          error: error instanceof Error ? error.message : 'Failed to check Codex auth'
         };
       }
     }
   );
 
   ipcMain.handle(
-    IPC_CHANNELS.ENV_INVOKE_CLAUDE_SETUP,
-    async (_, projectId: string): Promise<IPCResult<ClaudeAuthResult>> => {
+    IPC_CHANNELS.ENV_INVOKE_CODEX_SETUP,
+    async (_, projectId: string): Promise<IPCResult<CodexAuthResult>> => {
       const project = projectStore.getProject(projectId);
       if (!project) {
         return { success: false, error: 'Project not found' };
       }
 
       try {
-        // Run claude setup-token which will open browser for OAuth
-        const result = await new Promise<ClaudeAuthResult>((resolve) => {
-          const proc = spawn('claude', ['setup-token'], {
+        // Run codex setup-token which will open browser for OAuth
+        const result = await new Promise<CodexAuthResult>((resolve) => {
+          const proc = spawn('codex', ['setup-token'], {
             cwd: project.path,
             env: { ...process.env },
             shell: true,
@@ -419,7 +419,7 @@ ${existingVars['GRAPHITI_DATABASE'] ? `GRAPHITI_DATABASE=${existingVars['GRAPHIT
       } catch (error) {
         return {
           success: false,
-          error: error instanceof Error ? error.message : 'Failed to invoke Claude setup'
+          error: error instanceof Error ? error.message : 'Failed to invoke Codex setup'
         };
       }
     }
@@ -971,7 +971,7 @@ ${issue.description || 'No description provided.'}
       headers: {
         'Accept': 'application/vnd.github.v3+json',
         'Authorization': `Bearer ${token}`,
-        'User-Agent': 'Auto-Claude-UI',
+        'User-Agent': 'Auto-Codex-UI',
         ...options.headers
       }
     });

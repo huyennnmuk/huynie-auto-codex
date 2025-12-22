@@ -4,14 +4,14 @@
  */
 
 import { existsSync, readFileSync, writeFileSync } from 'fs';
-import type { ClaudeProfile, ClaudeAutoSwitchSettings } from '../../shared/types';
+import type { CodexProfile, CodexAutoSwitchSettings } from '../../shared/types';
 
 export const STORE_VERSION = 3;  // Bumped for encrypted token storage
 
 /**
  * Default auto-switch settings
  */
-export const DEFAULT_AUTO_SWITCH_SETTINGS: ClaudeAutoSwitchSettings = {
+export const DEFAULT_AUTO_SWITCH_SETTINGS: CodexAutoSwitchSettings = {
   enabled: false,
   proactiveSwapEnabled: false,  // Proactive monitoring disabled by default
   sessionThreshold: 95,  // Consider switching at 95% session usage
@@ -21,13 +21,13 @@ export const DEFAULT_AUTO_SWITCH_SETTINGS: ClaudeAutoSwitchSettings = {
 };
 
 /**
- * Internal storage format for Claude profiles
+ * Internal storage format for Codex profiles
  */
 export interface ProfileStoreData {
   version: number;
-  profiles: ClaudeProfile[];
+  profiles: CodexProfile[];
   activeProfileId: string;
-  autoSwitch?: ClaudeAutoSwitchSettings;
+  autoSwitch?: CodexAutoSwitchSettings;
 }
 
 /**
@@ -48,7 +48,7 @@ export function loadProfileStore(storePath: string): ProfileStoreData | null {
 
       if (data.version === STORE_VERSION) {
         // Parse dates
-        data.profiles = data.profiles.map((p: ClaudeProfile) => ({
+        data.profiles = data.profiles.map((p: CodexProfile) => ({
           ...p,
           createdAt: new Date(p.createdAt),
           lastUsedAt: p.lastUsedAt ? new Date(p.lastUsedAt) : undefined,

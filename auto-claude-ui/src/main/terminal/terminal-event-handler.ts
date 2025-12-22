@@ -4,14 +4,14 @@
  */
 
 import * as OutputParser from './output-parser';
-import * as ClaudeIntegration from './claude-integration-handler';
+import * as CodexIntegration from './codex-integration-handler';
 import type { TerminalProcess, WindowGetter } from './types';
 
 /**
  * Event handler callbacks
  */
 export interface EventHandlerCallbacks {
-  onClaudeSessionId: (terminal: TerminalProcess, sessionId: string) => void;
+  onCodexSessionId: (terminal: TerminalProcess, sessionId: string) => void;
   onRateLimit: (terminal: TerminalProcess, data: string) => void;
   onOAuthToken: (terminal: TerminalProcess, data: string) => void;
 }
@@ -24,16 +24,16 @@ export function handleTerminalData(
   data: string,
   callbacks: EventHandlerCallbacks
 ): void {
-  // Try to extract Claude session ID
-  if (terminal.isClaudeMode && !terminal.claudeSessionId) {
-    const sessionId = OutputParser.extractClaudeSessionId(data);
+  // Try to extract Codex session ID
+  if (terminal.isCodexMode && !terminal.codexSessionId) {
+    const sessionId = OutputParser.extractCodexSessionId(data);
     if (sessionId) {
-      callbacks.onClaudeSessionId(terminal, sessionId);
+      callbacks.onCodexSessionId(terminal, sessionId);
     }
   }
 
   // Check for rate limit messages
-  if (terminal.isClaudeMode) {
+  if (terminal.isCodexMode) {
     callbacks.onRateLimit(terminal, data);
   }
 
@@ -50,11 +50,11 @@ export function createEventCallbacks(
   switchProfileCallback: (terminalId: string, profileId: string) => Promise<void>
 ): EventHandlerCallbacks {
   return {
-    onClaudeSessionId: (terminal, sessionId) => {
-      ClaudeIntegration.handleClaudeSessionId(terminal, sessionId, getWindow);
+    onCodexSessionId: (terminal, sessionId) => {
+      CodexIntegration.handleCodexSessionId(terminal, sessionId, getWindow);
     },
     onRateLimit: (terminal, data) => {
-      ClaudeIntegration.handleRateLimit(
+      CodexIntegration.handleRateLimit(
         terminal,
         data,
         lastNotifiedRateLimitReset,
@@ -63,7 +63,7 @@ export function createEventCallbacks(
       );
     },
     onOAuthToken: (terminal, data) => {
-      ClaudeIntegration.handleOAuthToken(terminal, data, getWindow);
+      CodexIntegration.handleOAuthToken(terminal, data, getWindow);
     }
   };
 }

@@ -4,11 +4,11 @@
  */
 
 export type {
-  ClaudeProfile,
-  ClaudeProfileSettings,
-  ClaudeUsageData,
-  ClaudeRateLimitEvent,
-  ClaudeAutoSwitchSettings
+  CodexProfile,
+  CodexProfileSettings,
+  CodexUsageData,
+  CodexRateLimitEvent,
+  CodexAutoSwitchSettings
 } from '../../shared/types';
 
 export type { ProfileStoreData } from './profile-storage';

@@ -11,11 +11,11 @@ interface TerminalHeaderProps {
   terminalId: string;
   title: string;
   status: TerminalStatus;
-  isClaudeMode: boolean;
+  isCodexMode: boolean;
   tasks: Task[];
   associatedTask?: Task;
   onClose: () => void;
-  onInvokeClaude: () => void;
+  onInvokeCodex: () => void;
   onTitleChange: (newTitle: string) => void;
   onTaskSelect: (taskId: string) => void;
   onClearTask: () => void;
@@ -26,11 +26,11 @@ export function TerminalHeader({
   terminalId,
   title,
   status,
-  isClaudeMode,
+  isCodexMode,
   tasks,
   associatedTask,
   onClose,
-  onInvokeClaude,
+  onInvokeCodex,
   onTitleChange,
   onTaskSelect,
   onClearTask,
@@ -50,13 +50,13 @@ export function TerminalHeader({
             onTitleChange={onTitleChange}
           />
         </div>
-        {isClaudeMode && (
+        {isCodexMode && (
           <span className="flex items-center gap-1 text-[10px] font-medium text-primary bg-primary/10 px-1.5 py-0.5 rounded">
             <Sparkles className="h-2.5 w-2.5" />
-            Claude
+            Codex
           </span>
         )}
-        {isClaudeMode && (
+        {isCodexMode && (
           <TaskSelector
             terminalId={terminalId}
             backlogTasks={backlogTasks}
@@ -68,18 +68,18 @@ export function TerminalHeader({
         )}
       </div>
       <div className="flex items-center gap-1">
-        {!isClaudeMode && status !== 'exited' && (
+        {!isCodexMode && status !== 'exited' && (
           <Button
             variant="ghost"
             size="sm"
             className="h-6 px-2 text-xs gap-1 hover:bg-primary/10 hover:text-primary"
             onClick={(e) => {
               e.stopPropagation();
-              onInvokeClaude();
+              onInvokeCodex();
             }}
           >
             <Sparkles className="h-3 w-3" />
-            Claude
+            Codex
           </Button>
         )}
         <Button

@@ -5,7 +5,7 @@
 
 export interface ChangelogConfig {
   pythonPath: string;
-  claudePath: string;
+  codexPath: string;
   autoBuildSourcePath: string;
 }
 
@@ -26,5 +26,5 @@ export interface VersionSuggestion {
 
 export interface GenerationScriptParams {
   prompt: string;
-  claudePath: string;
+  codexPath: string;
 }

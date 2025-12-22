@@ -123,8 +123,8 @@ export function Ideation({ projectId, onGoToTask }: IdeationProps) {
           open={showEnvConfigModal}
           onOpenChange={setShowEnvConfigModal}
           onConfigured={handleEnvConfigured}
-          title="需要 Claude 身份验证"
-          description="生成 AI 驱动的功能想法需要 Claude Code OAuth token。"
+          title="需要 Codex 身份验证"
+          description="生成 AI 驱动的功能想法需要 Codex Code OAuth token。"
           projectId={projectId}
         />
       </>
@@ -247,8 +247,8 @@ export function Ideation({ projectId, onGoToTask }: IdeationProps) {
         open={showEnvConfigModal}
         onOpenChange={setShowEnvConfigModal}
         onConfigured={handleEnvConfigured}
-        title="需要 Claude 身份验证"
-        description="生成 AI 驱动的功能想法需要 Claude Code OAuth token。"
+        title="需要 Codex 身份验证"
+        description="生成 AI 驱动的功能想法需要 Codex Code OAuth token。"
         projectId={projectId}
       />
     </div>

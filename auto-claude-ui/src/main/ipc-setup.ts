@@ -19,7 +19,7 @@ import { setupIpcHandlers as setupModularHandlers } from './ipc-handlers';
  *
  * - project-handlers.ts: Project CRUD and initialization
  * - task-handlers.ts: Task management and execution
- * - terminal-handlers.ts: Terminal operations and Claude profiles
+ * - terminal-handlers.ts: Terminal operations and Codex profiles
  * - agent-events-handlers.ts: Agent event forwarding
  * - settings-handlers.ts: App settings and dialogs
  * - file-handlers.ts: File system operations

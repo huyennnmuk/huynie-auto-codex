@@ -73,7 +73,7 @@ export function App() {
   const [initError, setInitError] = useState<string | null>(null);
   const [skippedInitProjectId, setSkippedInitProjectId] = useState<string | null>(null);
 
-  // GitHub 设置状态（Auto Claude 初始化后显示）
+  // GitHub 设置状态（Auto Codex 初始化后显示）
   const [showGitHubSetup, setShowGitHubSetup] = useState(false);
   const [gitHubSetupProject, setGitHubSetupProject] = useState<Project | null>(null);
 
@@ -135,7 +135,7 @@ export function App() {
     };
   }, []);
 
-  // 检查所选项目是否需要初始化（例如 .auto-claude 文件夹被删除）
+  // 检查所选项目是否需要初始化（例如 .auto-codex 文件夹被删除）
   useEffect(() => {
     // 初始化进行中时不显示对话框
     if (isInitializing) return;
@@ -251,7 +251,7 @@ export function App() {
       if (path) {
         const project = await addProject(path);
         if (project && !project.autoBuildPath) {
-          // 项目未初始化 Auto Claude，显示初始化对话框
+          // 项目未初始化 Auto Codex，显示初始化对话框
           setPendingProject(project);
           setInitError(null); // 清除之前的错误
           setInitSuccess(false); // 重置成功标记
@@ -297,7 +297,7 @@ export function App() {
       } else {
         // 初始化失败 - 显示错误但保持对话框开启
         console.log('[InitDialog] Initialization failed, showing error');
-        const errorMessage = result?.error || 'Failed to initialize Auto Claude. Please try again.';
+        const errorMessage = result?.error || 'Failed to initialize Auto Codex. Please try again.';
         setInitError(errorMessage);
         setIsInitializing(false);
       }
@@ -319,10 +319,10 @@ export function App() {
 
     try {
       // 注意：settings.githubToken 是 GitHub 访问令牌（来自 gh CLI），
-      // 不是 Claude Code OAuth 令牌。它们是不同的：
+      // 不是 OpenAI API 令牌。它们是不同的：
       // - GitHub 令牌：用于 GitHub API 访问（仓库操作）
-      // - Claude 令牌：用于 Claude AI 访问（run.py、roadmap 等）
-      // 用户需要使用 'claude setup-token' 单独完成 Claude 认证
+      // - OpenAI API Key：用于 Codex 访问（run.py、roadmap 等）
+      // 用户需要使用 'codex setup-token' 单独完成 Codex 认证
 
       // 使用 GitHub 设置更新项目环境配置
       await window.electronAPI.updateProjectEnv(gitHubSetupProject.id, {
@@ -521,7 +521,7 @@ export function App() {
           }}
         />
 
-        {/* 初始化 Auto Claude 对话框 */}
+        {/* 初始化 Auto Codex 对话框 */}
         <Dialog open={showInitDialog} onOpenChange={(open) => {
           console.log('[InitDialog] onOpenChange called', { open, pendingProject: !!pendingProject, isInitializing, initSuccess });
           // 仅在用户手动关闭对话框时触发跳过
@@ -534,18 +534,18 @@ export function App() {
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <Download className="h-5 w-5" />
-                Initialize Auto Claude
+                Initialize Auto Codex
               </DialogTitle>
               <DialogDescription>
-                This project doesn't have Auto Claude initialized. Would you like to set it up now?
+                This project doesn't have Auto Codex initialized. Would you like to set it up now?
               </DialogDescription>
             </DialogHeader>
             <div className="py-4">
               <div className="rounded-lg bg-muted p-4 text-sm">
                 <p className="font-medium mb-2">This will:</p>
                 <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                  <li>Create a <code className="text-xs bg-background px-1 py-0.5 rounded">.auto-claude</code> folder in your project</li>
-                  <li>Copy the Auto Claude framework files</li>
+                  <li>Create a <code className="text-xs bg-background px-1 py-0.5 rounded">.auto-codex</code> folder in your project</li>
+                  <li>Copy the Auto Codex framework files</li>
                   <li>Set up the specs directory for your tasks</li>
                 </ul>
               </div>
@@ -556,7 +556,7 @@ export function App() {
                     <div>
                       <p className="font-medium text-warning">Source path not configured</p>
                       <p className="text-muted-foreground mt-1">
-                        Please set the Auto Claude source path in App Settings before initializing.
+                        Please set the Auto Codex source path in App Settings before initializing.
                       </p>
                     </div>
                   </div>
@@ -600,7 +600,7 @@ export function App() {
           </DialogContent>
         </Dialog>
 
-        {/* GitHub 设置弹窗 - Auto Claude 初始化后用于配置 GitHub */}
+        {/* GitHub 设置弹窗 - Auto Codex 初始化后用于配置 GitHub */}
         {gitHubSetupProject && (
           <GitHubSetupModal
             open={showGitHubSetup}
@@ -611,7 +611,7 @@ export function App() {
           />
         )}
 
-        {/* 限流弹窗 - Claude Code 触达用量限制时显示（终端） */}
+        {/* 限流弹窗 - Codex 触达用量限制时显示（终端） */}
         <RateLimitModal />
 
         {/* SDK 限流弹窗 - SDK/CLI 操作触达限制时显示（变更日志、任务等） */}

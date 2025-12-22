@@ -21,8 +21,8 @@ export const terminalMock = {
     console.warn('[Browser Mock] resizeTerminal called');
   },
 
-  invokeClaudeInTerminal: () => {
-    console.warn('[Browser Mock] invokeClaudeInTerminal called');
+  invokeCodexInTerminal: () => {
+    console.warn('[Browser Mock] invokeCodexInTerminal called');
   },
 
   generateTerminalName: async () => ({
@@ -46,8 +46,8 @@ export const terminalMock = {
 
   clearTerminalSessions: async () => ({ success: true }),
 
-  resumeClaudeInTerminal: () => {
-    console.warn('[Browser Mock] resumeClaudeInTerminal called');
+  resumeCodexInTerminal: () => {
+    console.warn('[Browser Mock] resumeCodexInTerminal called');
   },
 
   getTerminalSessionDates: async () => ({
@@ -75,7 +75,7 @@ export const terminalMock = {
   onTerminalOutput: () => () => {},
   onTerminalExit: () => () => {},
   onTerminalTitleChange: () => () => {},
-  onTerminalClaudeSession: () => () => {},
+  onTerminalCodexSession: () => () => {},
   onTerminalRateLimit: () => () => {},
   onTerminalOAuthToken: () => () => {}
 };

@@ -7,7 +7,7 @@ import * as pty from '@lydell/node-pty';
 import * as os from 'os';
 import type { TerminalProcess, WindowGetter } from './types';
 import { IPC_CHANNELS } from '../../shared/constants';
-import { getClaudeProfileManager } from '../claude-profile-manager';
+import { getCodexProfileManager } from '../codex-profile-manager';
 
 /**
  * Spawn a new PTY process with appropriate shell and environment
@@ -105,9 +105,9 @@ export function killPty(terminal: TerminalProcess): void {
 }
 
 /**
- * Get the active Claude profile environment variables
+ * Get the active Codex profile environment variables
  */
 export function getActiveProfileEnv(): Record<string, string> {
-  const profileManager = getClaudeProfileManager();
+  const profileManager = getCodexProfileManager();
   return profileManager.getActiveProfileEnv();
 }

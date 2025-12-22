@@ -14,7 +14,7 @@ import {
 import { Button } from '../ui/button';
 import { Label } from '../ui/label';
 import { cn } from '../../lib/utils';
-import type { ProjectEnvConfig, ClaudeProfile } from '../../../shared/types';
+import type { ProjectEnvConfig, CodexProfile } from '../../../shared/types';
 
 interface EnvironmentSettingsProps {
   envConfig: ProjectEnvConfig | null;
@@ -22,14 +22,14 @@ interface EnvironmentSettingsProps {
   envError: string | null;
   updateEnvConfig: (updates: Partial<ProjectEnvConfig>) => void;
 
-  // Claude auth state
-  isCheckingClaudeAuth: boolean;
-  claudeAuthStatus: 'checking' | 'authenticated' | 'not_authenticated' | 'error';
-  handleClaudeSetup: () => Promise<void>;
+  // Codex auth state
+  isCheckingCodexAuth: boolean;
+  codexAuthStatus: 'checking' | 'authenticated' | 'not_authenticated' | 'error';
+  handleCodexSetup: () => Promise<void>;
 
   // Password visibility (kept for interface compatibility but not used)
-  showClaudeToken: boolean;
-  setShowClaudeToken: React.Dispatch<React.SetStateAction<boolean>>;
+  showCodexToken: boolean;
+  setShowCodexToken: React.Dispatch<React.SetStateAction<boolean>>;
 
   // Collapsible section
   expanded: boolean;
@@ -40,14 +40,14 @@ export function EnvironmentSettings({
   envConfig,
   isLoadingEnv,
   envError,
-  isCheckingClaudeAuth,
-  claudeAuthStatus,
-  handleClaudeSetup,
+  isCheckingCodexAuth,
+  codexAuthStatus,
+  handleCodexSetup,
   expanded,
   onToggle
 }: EnvironmentSettingsProps) {
-  // Load global Claude profiles to show active account
-  const [claudeProfiles, setClaudeProfiles] = useState<ClaudeProfile[]>([]);
+  // Load global Codex profiles to show active account
+  const [codexProfiles, setCodexProfiles] = useState<CodexProfile[]>([]);
   const [activeProfileId, setActiveProfileId] = useState<string | null>(null);
   const [isLoadingProfiles, setIsLoadingProfiles] = useState(false);
 
@@ -55,13 +55,13 @@ export function EnvironmentSettings({
     const loadProfiles = async () => {
       setIsLoadingProfiles(true);
       try {
-        const result = await window.electronAPI.getClaudeProfiles();
+        const result = await window.electronAPI.getCodexProfiles();
         if (result.success && result.data) {
-          setClaudeProfiles(result.data.profiles);
+          setCodexProfiles(result.data.profiles);
           setActiveProfileId(result.data.activeProfileId);
         }
       } catch (err) {
-        console.error('Failed to load Claude profiles:', err);
+        console.error('Failed to load Codex profiles:', err);
       } finally {
         setIsLoadingProfiles(false);
       }
@@ -69,8 +69,8 @@ export function EnvironmentSettings({
     loadProfiles();
   }, []);
 
-  const activeProfile = claudeProfiles.find(p => p.id === activeProfileId);
-  const hasAuthenticatedProfiles = claudeProfiles.some(p => p.oauthToken);
+  const activeProfile = codexProfiles.find(p => p.id === activeProfileId);
+  const hasAuthenticatedProfiles = codexProfiles.some(p => p.oauthToken);
 
   return (
     <section className="space-y-3">
@@ -80,13 +80,13 @@ export function EnvironmentSettings({
       >
         <div className="flex items-center gap-2">
           <Key className="h-4 w-4" />
-          Claude 认证
-          {claudeAuthStatus === 'authenticated' && (
+          Codex 认证
+          {codexAuthStatus === 'authenticated' && (
             <span className="px-2 py-0.5 text-xs bg-success/10 text-success rounded-full">
               已连接
             </span>
           )}
-          {claudeAuthStatus === 'not_authenticated' && (
+          {codexAuthStatus === 'not_authenticated' && (
             <span className="px-2 py-0.5 text-xs bg-warning/10 text-warning rounded-full">
               未连接
             </span>
@@ -117,9 +117,9 @@ export function EnvironmentSettings({
                       使用全局认证
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Claude 认证在{' '}
+                      Codex 认证在{' '}
                       <span className="font-medium text-info">设置 → 集成</span>中管理。
-                      所有项目共享相同的 Claude 账号。
+                      所有项目共享相同的 Codex 账号。
                     </p>
                   </div>
                 </div>
@@ -138,10 +138,10 @@ export function EnvironmentSettings({
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={handleClaudeSetup}
-                      disabled={isCheckingClaudeAuth}
+                      onClick={handleCodexSetup}
+                      disabled={isCheckingCodexAuth}
                     >
-                      {isCheckingClaudeAuth ? (
+                      {isCheckingCodexAuth ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (
                         <>
@@ -183,20 +183,20 @@ export function EnvironmentSettings({
                         )}
                       </div>
                     </div>
-                  ) : claudeProfiles.length > 0 ? (
+                  ) : codexProfiles.length > 0 ? (
                     <p className="text-xs text-warning mt-2">
                       未选择当前账号。请前往 设置 → 集成 选择账号。
                     </p>
                   ) : null}
 
                   {/* Show other authenticated accounts */}
-                  {claudeProfiles.filter(p => p.id !== activeProfileId && p.oauthToken).length > 0 && (
+                  {codexProfiles.filter(p => p.id !== activeProfileId && p.oauthToken).length > 0 && (
                     <div className="mt-3 pt-3 border-t border-border/50">
                       <p className="text-xs text-muted-foreground mb-2">
                         其他已认证账号（用于限流备用）：
                       </p>
                       <div className="flex flex-wrap gap-2">
-                        {claudeProfiles
+                        {codexProfiles
                           .filter(p => p.id !== activeProfileId && p.oauthToken)
                           .map(profile => (
                             <div
@@ -219,9 +219,9 @@ export function EnvironmentSettings({
                 <div className="rounded-lg border border-warning/30 bg-warning/5 p-4">
                   <div className="flex flex-col items-center text-center">
                     <Users className="h-8 w-8 text-warning mb-2" />
-                    <p className="text-sm font-medium text-foreground">未配置 Claude 账号</p>
+                    <p className="text-sm font-medium text-foreground">未配置 Codex 账号</p>
                     <p className="text-xs text-muted-foreground mt-1 mb-3">
-                      在全局设置中添加 Claude 账号以使用 Auto-Build。
+                      在全局设置中添加 Codex 账号以使用 Auto-Build。
                     </p>
                     <Button
                       size="sm"

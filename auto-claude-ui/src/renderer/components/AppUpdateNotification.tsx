@@ -140,7 +140,7 @@ export function AppUpdateNotification() {
             有可用更新
           </DialogTitle>
           <DialogDescription>
-            Auto Claude 有新版本可供下载
+            Auto Codex 有新版本可供下载
           </DialogDescription>
         </DialogHeader>
 

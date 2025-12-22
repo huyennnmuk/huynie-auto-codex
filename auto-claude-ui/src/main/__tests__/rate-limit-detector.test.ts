@@ -4,9 +4,9 @@
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
-// Mock the claude-profile-manager before importing
-vi.mock('../claude-profile-manager', () => ({
-  getClaudeProfileManager: vi.fn(() => ({
+// Mock the codex-profile-manager before importing
+vi.mock('../codex-profile-manager', () => ({
+  getCodexProfileManager: vi.fn(() => ({
     getActiveProfile: vi.fn(() => ({
       id: 'test-profile-id',
       name: 'Test Profile',
@@ -407,7 +407,7 @@ describe('Auth Failure Detection', () => {
 
       expect(result.isAuthFailure).toBe(true);
       expect(result.message).toContain('Settings');
-      expect(result.message).toContain('Claude Profiles');
+      expect(result.message).toContain('Codex Profiles');
     });
 
     it('should provide user-friendly message for expired auth', async () => {

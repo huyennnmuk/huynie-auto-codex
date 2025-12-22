@@ -23,7 +23,7 @@ project-settings/
 ├── README.md                         # This file
 ├── index.ts                          # Barrel export for all components
 ├── AutoBuildIntegration.tsx          # Auto-Build setup and status
-├── ClaudeAuthSection.tsx             # Claude authentication configuration
+├── CodexAuthSection.tsx             # Codex authentication configuration
 ├── LinearIntegrationSection.tsx      # Linear project management integration
 ├── GitHubIntegrationSection.tsx      # GitHub issues integration
 ├── MemoryBackendSection.tsx          # Graphiti/file-based memory configuration
@@ -39,7 +39,7 @@ hooks/
 ├── index.ts                          # Barrel export for all hooks
 ├── useProjectSettings.ts             # Project settings state management
 ├── useEnvironmentConfig.ts           # Environment configuration state
-├── useClaudeAuth.ts                  # Claude authentication status
+├── useCodexAuth.ts                  # Codex authentication status
 ├── useLinearConnection.ts            # Linear connection status
 ├── useGitHubConnection.ts            # GitHub connection status
 └── useInfrastructureStatus.ts        # Docker/FalkorDB infrastructure status
@@ -64,8 +64,8 @@ hooks/
 - Show Auto-Build version information
 - Handle initialization and updates
 
-#### ClaudeAuthSection.tsx
-**Purpose**: Manages Claude Code authentication configuration.
+#### CodexAuthSection.tsx
+**Purpose**: Manages Codex Code authentication configuration.
 **Props**:
 - `isExpanded`: Section expand/collapse state
 - `onToggle`: Toggle handler
@@ -74,11 +74,11 @@ hooks/
 - `envError`: Error message
 - `isCheckingAuth`: Auth check in progress
 - `authStatus`: Current authentication status
-- `onClaudeSetup`: OAuth setup handler
+- `onCodexSetup`: OAuth setup handler
 - `onUpdateConfig`: Configuration update handler
 
 **Responsibilities**:
-- Display Claude CLI authentication status
+- Display Codex CLI authentication status
 - Manage OAuth token configuration
 - Handle global vs project-specific tokens
 
@@ -232,12 +232,12 @@ hooks/
 - `isSavingEnv`: Save in progress state
 - `saveEnvConfig`: Save function
 
-### useClaudeAuth.ts
-**Purpose**: Manages Claude authentication status checking.
+### useCodexAuth.ts
+**Purpose**: Manages Codex authentication status checking.
 **Returns**:
-- `isCheckingClaudeAuth`: Loading state
-- `claudeAuthStatus`: Authentication status
-- `handleClaudeSetup`: OAuth setup handler
+- `isCheckingCodexAuth`: Loading state
+- `codexAuthStatus`: Authentication status
+- `handleCodexSetup`: OAuth setup handler
 
 ### useLinearConnection.ts
 **Purpose**: Monitors Linear connection status.

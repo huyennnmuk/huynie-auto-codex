@@ -10,8 +10,8 @@ export interface TerminalSession {
   title: string;
   cwd: string;
   projectPath: string;  // Which project this terminal belongs to
-  isClaudeMode: boolean;
-  claudeSessionId?: string;  // Claude session ID for resume functionality
+  isCodexMode: boolean;
+  codexSessionId?: string;  // Codex session ID for resume functionality
   outputBuffer: string;  // Last 100KB of output for replay
   createdAt: string;  // ISO timestamp
   lastActiveAt: string;  // ISO timestamp
@@ -349,19 +349,19 @@ export class TerminalSessionStore {
   }
 
   /**
-   * Update Claude session ID for a terminal
+   * Update Codex session ID for a terminal
    */
-  updateClaudeSessionId(projectPath: string, terminalId: string, claudeSessionId: string): void {
+  updateCodexSessionId(projectPath: string, terminalId: string, codexSessionId: string): void {
     const todaySessions = this.getTodaysSessions();
     const sessions = todaySessions[projectPath];
     if (!sessions) return;
 
     const session = sessions.find(s => s.id === terminalId);
     if (session) {
-      session.claudeSessionId = claudeSessionId;
-      session.isClaudeMode = true;
+      session.codexSessionId = codexSessionId;
+      session.isCodexMode = true;
       this.save();
-      console.warn('[TerminalSessionStore] Saved Claude session ID:', claudeSessionId, 'for terminal:', terminalId);
+      console.warn('[TerminalSessionStore] Saved Codex session ID:', codexSessionId, 'for terminal:', terminalId);
     }
   }
 

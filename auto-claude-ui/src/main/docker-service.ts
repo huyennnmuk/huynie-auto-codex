@@ -12,7 +12,7 @@ import { promisify } from 'util';
 const execAsync = promisify(exec);
 
 // FalkorDB container configuration
-const FALKORDB_CONTAINER_NAME = 'auto-claude-falkordb';
+const FALKORDB_CONTAINER_NAME = 'auto-codex-falkordb';
 const FALKORDB_IMAGE = 'falkordb/falkordb:latest';
 const FALKORDB_DEFAULT_PORT = 6380;
 

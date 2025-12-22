@@ -29,7 +29,7 @@ changelog/
 - ~465 lines (down from 1,279)
 
 #### `generator.ts` (AI Generation)
-- Handles Claude CLI subprocess spawning
+- Handles Codex CLI subprocess spawning
 - Manages generation lifecycle and progress
 - Rate limit detection and error handling
 - Environment configuration for subprocess
@@ -47,7 +47,7 @@ changelog/
 - Build prompts for git-based changelogs
 - Format templates (keep-a-changelog, simple-list, github-release)
 - Audience-specific instructions (technical, user-facing, marketing)
-- Python script generation for Claude CLI
+- Python script generation for Codex CLI
 - ~190 lines
 
 #### `git-integration.ts` (Git Operations)

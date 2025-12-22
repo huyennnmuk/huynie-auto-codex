@@ -12,7 +12,7 @@ export interface PythonEnvStatus {
 }
 
 /**
- * Manages the Python virtual environment for the auto-claude backend.
+ * Manages the Python virtual environment for the auto-codex backend.
  * Automatically creates venv and installs dependencies if needed.
  */
 export class PythonEnvManager extends EventEmitter {
@@ -53,15 +53,15 @@ export class PythonEnvManager extends EventEmitter {
   }
 
   /**
-   * Check if claude-agent-sdk is installed
+   * Check if codex-agent-sdk is installed
    */
   private async checkDepsInstalled(): Promise<boolean> {
     const venvPython = this.getVenvPythonPath();
     if (!venvPython || !existsSync(venvPython)) return false;
 
     try {
-      // Check if claude_agent_sdk can be imported
-      execSync(`"${venvPython}" -c "import claude_agent_sdk"`, {
+      // Check if codex_agent_sdk can be imported
+      execSync(`"${venvPython}" -c "import codex_agent_sdk"`, {
         stdio: 'pipe',
         timeout: 10000
       });

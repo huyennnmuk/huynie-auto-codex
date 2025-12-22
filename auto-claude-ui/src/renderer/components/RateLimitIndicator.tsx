@@ -27,7 +27,7 @@ export function RateLimitIndicator() {
 
   // Get source info for SDK rate limits
   const source = pendingRateLimitType === 'sdk' ? sdkRateLimitInfo?.source : null;
-  const sourceLabel = source ? getSourceLabel(source) : 'Claude';
+  const sourceLabel = source ? getSourceLabel(source) : 'Codex';
 
   return (
     <div className="mx-3 mb-3">
@@ -83,6 +83,6 @@ function getSourceLabel(source: string): string {
     case 'roadmap': return 'Roadmap';
     case 'ideation': return 'Ideation';
     case 'title-generator': return 'Title Generator';
-    default: return 'Claude';
+    default: return 'Codex';
   }
 }

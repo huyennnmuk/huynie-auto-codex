@@ -20,10 +20,10 @@ import { Switch } from './ui/switch';
 import { Label } from './ui/label';
 import { Input } from './ui/input';
 import { useRateLimitStore } from '../stores/rate-limit-store';
-import { useClaudeProfileStore, loadClaudeProfiles } from '../stores/claude-profile-store';
+import { useCodexProfileStore, loadCodexProfiles } from '../stores/codex-profile-store';
 import type { SDKRateLimitInfo } from '../../shared/types';
 
-const CLAUDE_UPGRADE_URL = 'https://claude.ai/upgrade';
+const CODEX_UPGRADE_URL = 'https://codex.ai/upgrade';
 
 /**
  * Get a human-readable name for the source
@@ -35,7 +35,7 @@ function getSourceName(source: SDKRateLimitInfo['source']): string {
     case 'roadmap': return '路线图生成';
     case 'ideation': return '构思';
     case 'title-generator': return '标题生成';
-    default: return 'Claude 操作';
+    default: return 'Codex 操作';
   }
 }
 
@@ -54,7 +54,7 @@ function getSourceIcon(source: SDKRateLimitInfo['source']) {
 
 export function SDKRateLimitModal() {
   const { isSDKModalOpen, sdkRateLimitInfo, hideSDKRateLimitModal, clearPendingRateLimit } = useRateLimitStore();
-  const { profiles, isSwitching, setSwitching } = useClaudeProfileStore();
+  const { profiles, isSwitching, setSwitching } = useCodexProfileStore();
   const [selectedProfileId, setSelectedProfileId] = useState<string | null>(null);
   const [autoSwitchEnabled, setAutoSwitchEnabled] = useState(false);
   const [isLoadingSettings, setIsLoadingSettings] = useState(false);
@@ -71,7 +71,7 @@ export function SDKRateLimitModal() {
   // Load profiles and auto-switch settings when modal opens
   useEffect(() => {
     if (isSDKModalOpen) {
-      loadClaudeProfiles();
+      loadCodexProfiles();
       loadAutoSwitchSettings();
 
       // Pre-select the suggested profile if available
@@ -128,7 +128,7 @@ export function SDKRateLimitModal() {
   };
 
   const handleUpgrade = () => {
-    window.open(CLAUDE_UPGRADE_URL, '_blank');
+    window.open(CODEX_UPGRADE_URL, '_blank');
   };
 
   const handleAddProfile = async () => {
@@ -140,22 +140,22 @@ export function SDKRateLimitModal() {
       const profileName = newProfileName.trim();
       const profileSlug = profileName.toLowerCase().replace(/\s+/g, '-');
       
-      const result = await window.electronAPI.saveClaudeProfile({
+      const result = await window.electronAPI.saveCodexProfile({
         id: `profile-${Date.now()}`,
         name: profileName,
         // Use a placeholder - the backend will resolve the actual path
-        configDir: `~/.claude-profiles/${profileSlug}`,
+        configDir: `~/.codex-profiles/${profileSlug}`,
         isDefault: false,
         createdAt: new Date()
       });
 
       if (result.success && result.data) {
-        // Initialize the profile (creates terminal and runs claude setup-token)
-        const initResult = await window.electronAPI.initializeClaudeProfile(result.data.id);
+        // Initialize the profile (creates terminal and runs codex setup-token)
+        const initResult = await window.electronAPI.initializeCodexProfile(result.data.id);
         
         if (initResult.success) {
           // Reload profiles
-          loadClaudeProfiles();
+          loadCodexProfiles();
           setNewProfileName('');
           // Close the modal so user can see the terminal
           hideSDKRateLimitModal();
@@ -189,7 +189,7 @@ export function SDKRateLimitModal() {
 
     try {
       // First, set the active profile
-      await window.electronAPI.setActiveClaudeProfile(selectedProfileId);
+      await window.electronAPI.setActiveCodexProfile(selectedProfileId);
 
       // Then retry the operation
       const result = await window.electronAPI.retryWithProfile({
@@ -236,7 +236,7 @@ export function SDKRateLimitModal() {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-warning">
             <AlertCircle className="h-5 w-5" />
-            Claude Code 速率限制
+            Codex Code 速率限制
           </DialogTitle>
           <DialogDescription className="flex items-center gap-2">
             <SourceIcon className="h-4 w-4" />
@@ -272,7 +272,7 @@ export function SDKRateLimitModal() {
                   操作已停止，因为 {currentProfile?.name || '您的账号'} 达到使用上限。
                   {hasMultipleProfiles
                     ? ' 请在下方切换到其他账号以继续。'
-                    : ' 添加其他 Claude 账号以继续工作。'}
+                    : ' 添加其他 Codex 账号以继续工作。'}
                 </p>
               </>
             )}
@@ -283,7 +283,7 @@ export function SDKRateLimitModal() {
             variant="default"
             size="sm"
             className="gap-2 w-full"
-            onClick={() => window.open(CLAUDE_UPGRADE_URL, '_blank')}
+            onClick={() => window.open(CODEX_UPGRADE_URL, '_blank')}
           >
             <Zap className="h-4 w-4" />
             升级到 Pro 以获得更高上限
@@ -319,7 +319,7 @@ export function SDKRateLimitModal() {
                     {suggestedProfile ? (
                       <>推荐：<strong>{suggestedProfile.name}</strong> 还有更多可用额度。</>
                     ) : (
-                      '切换到其他 Claude 账号并重试操作：'
+                      '切换到其他 Codex 账号并重试操作：'
                     )}
                   </p>
 
@@ -413,14 +413,14 @@ export function SDKRateLimitModal() {
               </>
             ) : (
               <p className="text-sm text-muted-foreground mb-3">
-                添加另一个 Claude 订阅，以便在触发速率限制时自动切换。
+                添加另一个 Codex 订阅，以便在触发速率限制时自动切换。
               </p>
             )}
 
             {/* Add new account section */}
             <div className={hasMultipleProfiles ? "mt-4 pt-3 border-t border-border/50" : ""}>
               <p className="text-xs text-muted-foreground mb-2">
-                {hasMultipleProfiles ? '添加另一个账号：' : '连接 Claude 账号：'}
+                {hasMultipleProfiles ? '添加另一个账号：' : '连接 Codex 账号：'}
               </p>
               <div className="flex items-center gap-2">
                 <Input
@@ -450,7 +450,7 @@ export function SDKRateLimitModal() {
                 </Button>
               </div>
               <p className="text-xs text-muted-foreground mt-2">
-                将打开 Claude 登录以认证新账号。
+                将打开 Codex 登录以认证新账号。
               </p>
             </div>
           </div>
@@ -461,7 +461,7 @@ export function SDKRateLimitModal() {
               升级以获得更多使用额度
             </h4>
             <p className="text-sm text-muted-foreground mb-3">
-              升级 Claude 订阅以获得更高的使用上限。
+              升级 Codex 订阅以获得更高的使用上限。
             </p>
             <Button
               variant="outline"
@@ -478,11 +478,11 @@ export function SDKRateLimitModal() {
           <div className="text-xs text-muted-foreground bg-muted/30 rounded-lg p-3">
             <p className="font-medium mb-1">发生了什么：</p>
             <p>
-              {sourceName.toLowerCase()} 操作已停止，因为您的 Claude 账号
+              {sourceName.toLowerCase()} 操作已停止，因为您的 Codex 账号
               （{currentProfile?.name || '默认账号'}）达到使用上限。
               {hasMultipleProfiles
                 ? ' 您可以切换到其他账号并重试，或在上方添加更多账号。'
-                : ' 在上方添加其他 Claude 账号以继续工作，或等待限制重置。'}
+                : ' 在上方添加其他 Codex 账号以继续工作，或等待限制重置。'}
             </p>
           </div>
         </div>

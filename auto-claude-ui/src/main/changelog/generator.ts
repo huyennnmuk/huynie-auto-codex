@@ -16,7 +16,7 @@ import { parsePythonCommand } from '../python-detector';
 
 /**
  * Core changelog generation logic
- * Handles AI generation via Claude CLI subprocess
+ * Handles AI generation via Codex CLI subprocess
  */
 export class ChangelogGenerator extends EventEmitter {
   private generationProcesses: Map<string, ReturnType<typeof spawn>> = new Map();
@@ -24,7 +24,7 @@ export class ChangelogGenerator extends EventEmitter {
 
   constructor(
     private pythonPath: string,
-    private claudePath: string,
+    private codexPath: string,
     private autoBuildSourcePath: string,
     private autoBuildEnv: Record<string, string>,
     debugEnabled: boolean
@@ -40,7 +40,7 @@ export class ChangelogGenerator extends EventEmitter {
   }
 
   /**
-   * Generate changelog using Claude AI
+   * Generate changelog using Codex AI
    * Supports multiple source modes: tasks (specs), git-history, or branch-diff
    */
   async generate(
@@ -125,13 +125,13 @@ export class ChangelogGenerator extends EventEmitter {
     });
 
     // Create Python script
-    const script = createGenerationScript(prompt, this.claudePath);
+    const script = createGenerationScript(prompt, this.codexPath);
     this.debug('Python script created', { scriptLength: script.length });
 
     this.emitProgress(projectId, {
       stage: 'generating',
       progress: 30,
-      message: 'Generating changelog with Claude AI...'
+      message: 'Generating changelog with Codex AI...'
     });
 
     const startTime = Date.now();
@@ -249,11 +249,11 @@ export class ChangelogGenerator extends EventEmitter {
     // Build PATH with platform-appropriate separator and locations
     const pathAdditions = isWindows
       ? [
-          path.join(homeDir, 'AppData', 'Local', 'Programs', 'claude'),
+          path.join(homeDir, 'AppData', 'Local', 'Programs', 'codex'),
           path.join(homeDir, 'AppData', 'Roaming', 'npm'),
           path.join(homeDir, '.local', 'bin'),
-          'C:\\Program Files\\Claude',
-          'C:\\Program Files (x86)\\Claude'
+          'C:\\Program Files\\Codex',
+          'C:\\Program Files (x86)\\Codex'
         ]
       : [
           '/usr/local/bin',
@@ -262,23 +262,23 @@ export class ChangelogGenerator extends EventEmitter {
           path.join(homeDir, 'bin')
         ];
 
-    // Get active Claude profile environment (OAuth token preferred, falls back to CLAUDE_CONFIG_DIR)
+    // Get active Codex profile environment (OAuth token preferred, falls back to CODEX_CONFIG_DIR)
     const profileEnv = getProfileEnv();
     this.debug('Active profile environment', {
-      hasOAuthToken: !!profileEnv.CLAUDE_CODE_OAUTH_TOKEN,
-      hasConfigDir: !!profileEnv.CLAUDE_CONFIG_DIR,
-      authMethod: profileEnv.CLAUDE_CODE_OAUTH_TOKEN ? 'oauth-token' : (profileEnv.CLAUDE_CONFIG_DIR ? 'config-dir' : 'default')
+      hasOAuthToken: !!profileEnv.CODEX_CODE_OAUTH_TOKEN,
+      hasConfigDir: !!profileEnv.CODEX_CONFIG_DIR,
+      authMethod: profileEnv.CODEX_CODE_OAUTH_TOKEN ? 'oauth-token' : (profileEnv.CODEX_CONFIG_DIR ? 'config-dir' : 'default')
     });
 
     const spawnEnv: Record<string, string> = {
       ...process.env as Record<string, string>,
       ...this.autoBuildEnv,
-      ...profileEnv, // Include active Claude profile config
-      // Ensure critical env vars are set for claude CLI
+      ...profileEnv, // Include active Codex profile config
+      // Ensure critical env vars are set for codex CLI
       // Use USERPROFILE on Windows, HOME on Unix
       ...(isWindows ? { USERPROFILE: homeDir } : { HOME: homeDir }),
       USER: process.env.USER || process.env.USERNAME || 'user',
-      // Add common binary locations to PATH for claude CLI
+      // Add common binary locations to PATH for codex CLI
       PATH: [process.env.PATH || '', ...pathAdditions].filter(Boolean).join(path.delimiter),
       PYTHONUNBUFFERED: '1',
       PYTHONIOENCODING: 'utf-8',
@@ -289,7 +289,7 @@ export class ChangelogGenerator extends EventEmitter {
       HOME: spawnEnv.HOME,
       USER: spawnEnv.USER,
       pathDirs: spawnEnv.PATH?.split(':').length,
-      authMethod: spawnEnv.CLAUDE_CODE_OAUTH_TOKEN ? 'oauth-token' : (spawnEnv.CLAUDE_CONFIG_DIR ? `config-dir:${spawnEnv.CLAUDE_CONFIG_DIR}` : 'default')
+      authMethod: spawnEnv.CODEX_CODE_OAUTH_TOKEN ? 'oauth-token' : (spawnEnv.CODEX_CONFIG_DIR ? `config-dir:${spawnEnv.CODEX_CONFIG_DIR}` : 'default')
     });
 
     return spawnEnv;
