@@ -16,7 +16,7 @@ from typing import Any, Dict, List
 from unittest.mock import MagicMock
 
 # =============================================================================
-# MOCK SETUP - Must happen before ANY imports from auto-claude
+# MOCK SETUP - Must happen before ANY imports from auto-codex
 # =============================================================================
 
 # Store original modules for cleanup
@@ -33,7 +33,7 @@ _mocked_module_names: List[str] = [
 def setup_qa_report_mocks() -> None:
     """Set up all required mocks for qa/report.py testing.
 
-    This function must be called before importing any auto-claude modules.
+    This function must be called before importing any auto-codex modules.
     """
     global _original_modules
 
@@ -95,8 +95,8 @@ def setup_qa_report_mocks() -> None:
     mock_linear.linear_qa_max_iterations = MagicMock()
     sys.modules['linear_updater'] = mock_linear
 
-    # Add auto-claude path for imports
-    sys.path.insert(0, str(Path(__file__).parent.parent / "auto-claude"))
+    # Add auto-codex path for imports
+    sys.path.insert(0, str(Path(__file__).parent.parent / "auto-codex"))
 
 
 def cleanup_qa_report_mocks() -> None:

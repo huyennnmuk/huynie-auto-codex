@@ -8,8 +8,8 @@ Auto-Codex is a multi-agent autonomous coding framework that builds software thr
 
 Note on naming:
 - Repo/app name: Auto-Codex
-- Python backend directory: `auto-claude/` (legacy folder name)
-- Desktop UI directory: `auto-claude-ui/`
+- Python backend directory: `auto-codex/`
+- Desktop UI directory: `auto-codex-ui/`
 - Per-project working data: `.auto-codex/` (created inside your target project)
 - Work branches/worktrees: `auto-codex/*`
 
@@ -17,8 +17,8 @@ Note on naming:
 
 ### Setup
 ```bash
-# Install dependencies (from auto-claude/)
-cd auto-claude
+# Install dependencies (from auto-codex/)
+cd auto-codex
 uv venv && uv pip install -r requirements.txt
 # Or: python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt
 
@@ -29,69 +29,69 @@ npm install -g @openai/codex-cli
 codex auth login
 # Or set OPENAI_API_KEY in your shell or .env file
 export OPENAI_API_KEY=your-key
-# Or add to auto-claude/.env: OPENAI_API_KEY=your-key
+# Or add to auto-codex/.env: OPENAI_API_KEY=your-key
 ```
 
 ### Creating and Running Specs
 ```bash
 # Create a spec interactively
-python auto-claude/runners/spec_runner.py --interactive
+python auto-codex/runners/spec_runner.py --interactive
 
 # Create spec from task description
-python auto-claude/runners/spec_runner.py --task "Add user authentication"
+python auto-codex/runners/spec_runner.py --task "Add user authentication"
 
 # Force complexity level (simple/standard/complex)
-python auto-claude/runners/spec_runner.py --task "Fix button" --complexity simple
+python auto-codex/runners/spec_runner.py --task "Fix button" --complexity simple
 
 # Run autonomous build
-python auto-claude/run.py --spec 001
+python auto-codex/run.py --spec 001
 
 # List all specs
-python auto-claude/run.py --list
+python auto-codex/run.py --list
 ```
 
 ### Workspace Management
 ```bash
 # Review changes in isolated worktree
-python auto-claude/run.py --spec 001 --review
+python auto-codex/run.py --spec 001 --review
 
 # Merge completed build into project
-python auto-claude/run.py --spec 001 --merge
+python auto-codex/run.py --spec 001 --merge
 
 # Discard build
-python auto-claude/run.py --spec 001 --discard
+python auto-codex/run.py --spec 001 --discard
 ```
 
 ### QA Validation
 ```bash
 # Run QA manually
-python auto-claude/run.py --spec 001 --qa
+python auto-codex/run.py --spec 001 --qa
 
 # Check QA status
-python auto-claude/run.py --spec 001 --qa-status
+python auto-codex/run.py --spec 001 --qa-status
 ```
 
 ### Testing
 ```bash
 # Install test dependencies (required first time)
-cd auto-claude && uv pip install -r ../tests/requirements-test.txt
+cd auto-codex && uv pip install -r ../tests/requirements-test.txt
 
 # Run all tests (use virtual environment pytest)
-auto-claude/.venv/bin/python -m pytest -v
+auto-codex/.venv/bin/python -m pytest -v
 
 # Run single test file
-auto-claude/.venv/bin/python -m pytest tests/test_security.py -v
+auto-codex/.venv/bin/python -m pytest tests/test_security.py -v
 
 # Run specific test
-auto-claude/.venv/bin/python -m pytest tests/test_security.py::test_bash_command_validation -v
+auto-codex/.venv/bin/python -m pytest tests/test_security.py::test_bash_command_validation -v
 
 # Skip slow tests
-auto-claude/.venv/bin/python -m pytest -m "not slow"
+auto-codex/.venv/bin/python -m pytest -m "not slow"
 ```
 
 ### Spec Validation
 ```bash
-python auto-claude/spec/validate_spec.py --spec-dir /path/to/your-project/.auto-codex/specs/001-feature --checkpoint all
+python auto-codex/spec/validate_spec.py --spec-dir /path/to/your-project/.auto-codex/specs/001-feature --checkpoint all
 ```
 
 ### Releases
@@ -135,7 +135,7 @@ See [RELEASE.md](RELEASE.md) for detailed release process documentation.
 - **graphiti_config.py** - Configuration and validation for Graphiti integration
 - **linear_updater.py** - Optional Linear integration for progress tracking
 
-### Agent Prompts (auto-claude/prompts/)
+### Agent Prompts (auto-codex/prompts/)
 
 | Prompt | Purpose |
 |--------|---------|
@@ -216,14 +216,14 @@ Auto Codex can be used in two ways:
 
 **As a standalone CLI tool**:
 ```bash
-python auto-claude/run.py --spec 001
+python auto-codex/run.py --spec 001
 ```
 
-**With the optional Electron frontend** (`auto-claude-ui/`):
+**With the optional Electron frontend** (`auto-codex-ui/`):
 - Provides a GUI for task management and progress tracking
 - Wraps the CLI commands - the backend works independently
 
 **Directory layout:**
-- `auto-claude/` - Python backend/CLI (the framework code)
-- `auto-claude-ui/` - Optional Electron frontend
+- `auto-codex/` - Python backend/CLI (the framework code)
+- `auto-codex-ui/` - Optional Electron frontend
 - `.auto-codex/specs/` - Per-project data (specs, plans, QA reports) - gitignored

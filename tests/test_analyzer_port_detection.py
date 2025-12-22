@@ -17,7 +17,7 @@ import sys
 import json
 
 # Add parent directory to path to import analyzer
-sys.path.insert(0, str(Path(__file__).parent.parent / "auto-claude"))
+sys.path.insert(0, str(Path(__file__).parent.parent / "auto-codex"))
 
 from analyzer import ServiceAnalyzer
 

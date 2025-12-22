@@ -1,6 +1,6 @@
 # Docker & FalkorDB Setup Guide
 
-This guide covers installing and troubleshooting Docker for Auto Claude's Memory Layer. The Memory Layer uses FalkorDB (a graph database) to provide persistent cross-session memory for AI agents.
+This guide covers installing and troubleshooting Docker for Auto-Codex's Memory Layer. The Memory Layer uses FalkorDB (a graph database) to provide persistent cross-session memory for AI agents.
 
 > **Good news!** If you're using the Desktop UI, it automatically detects Docker and FalkorDB status and offers one-click setup. This guide is for manual setup or troubleshooting.
 
@@ -26,7 +26,7 @@ If Docker Desktop is already installed and running:
 
 ```bash
 # Start FalkorDB
-docker run -d --name auto-claude-falkordb -p 6379:6379 falkordb/falkordb:latest
+docker run -d --name auto-codex-falkordb -p 6379:6379 falkordb/falkordb:latest
 
 # Verify it's running
 docker ps | grep falkordb
@@ -42,7 +42,7 @@ Docker is a tool that runs applications in isolated "containers". Think of it as
 - **Makes setup easy** - One command to start, no complex installation
 - **Works everywhere** - Same setup on Mac, Windows, and Linux
 
-**You don't need to understand Docker** - just install Docker Desktop and Auto Claude handles the rest.
+**You don't need to understand Docker** - just install Docker Desktop and Auto-Codex handles the rest.
 
 ---
 
@@ -175,7 +175,7 @@ sudo usermod -aG docker $USER
 
 ### Option 1: Using Docker Compose (Recommended)
 
-From the Auto Claude root directory:
+From the Auto-Codex root directory:
 
 ```bash
 # Start FalkorDB only (for Python library integration)
@@ -191,7 +191,7 @@ This uses the project's `docker-compose.yml` which is pre-configured.
 
 ```bash
 docker run -d \
-  --name auto-claude-falkordb \
+  --name auto-codex-falkordb \
   -p 6379:6379 \
   --restart unless-stopped \
   falkordb/falkordb:latest
@@ -199,7 +199,7 @@ docker run -d \
 
 ### Option 3: Let the Desktop UI Handle It
 
-If you're using the Auto Claude Desktop UI:
+If you're using the Auto-Codex Desktop UI:
 
 1. Go to Project Settings → Memory Backend
 2. Enable "Use Graphiti"
@@ -219,7 +219,7 @@ The Graphiti MCP server allows Codex agents to directly search and add to the kn
 
 ### Setup
 
-**For CLI users** - The API key is read from `auto-claude/.env`:
+**For CLI users** - The API key is read from `auto-codex/.env`:
 
 ```bash
 docker-compose up -d
@@ -248,10 +248,10 @@ docker ps | grep graphiti-mcp
 curl http://localhost:8000/health
 
 # View logs if there are issues
-docker logs auto-claude-graphiti-mcp
+docker logs auto-codex-graphiti-mcp
 ```
 
-### Configure Auto Claude to Use MCP
+### Configure Auto-Codex to Use MCP
 
 In Project Settings → Memory Backend:
 - Enable "Enable Agent Memory Access"
@@ -278,14 +278,14 @@ docker ps | grep falkordb
 ### Test FalkorDB Connection
 
 ```bash
-docker exec auto-claude-falkordb redis-cli PING
+docker exec auto-codex-falkordb redis-cli PING
 # Expected response: PONG
 ```
 
 ### Check Logs (if something seems wrong)
 
 ```bash
-docker logs auto-claude-falkordb
+docker logs auto-codex-falkordb
 ```
 
 ---
@@ -308,9 +308,9 @@ docker logs auto-claude-falkordb
 | Problem | Solution |
 |---------|----------|
 | **Container won't start** | Check if port 6379 is in use: `lsof -i :6379` (Mac/Linux) or `netstat -ano | findstr 6379` (Windows) |
-| **"port is already allocated"** | Stop conflicting container: `docker stop auto-claude-falkordb && docker rm auto-claude-falkordb` |
+| **"port is already allocated"** | Stop conflicting container: `docker stop auto-codex-falkordb && docker rm auto-codex-falkordb` |
 | **Connection refused** | Verify container is running: `docker ps`. If not listed, start it again. |
-| **Container crashes immediately** | Check logs: `docker logs auto-claude-falkordb`. May need more memory. |
+| **Container crashes immediately** | Check logs: `docker logs auto-codex-falkordb`. May need more memory. |
 
 ### Graphiti MCP Server Issues
 
@@ -318,7 +318,7 @@ docker logs auto-claude-falkordb
 |---------|----------|
 | **"OPENAI_API_KEY must be set"** | Create `.env` file with your API key: `echo "OPENAI_API_KEY=sk-your-key" > .env` |
 | **"DATABASE_TYPE must be set"** | Using old docker run command. Use `docker-compose up -d` instead. |
-| **Container keeps restarting** | Check logs: `docker logs auto-claude-graphiti-mcp`. Usually missing API key. |
+| **Container keeps restarting** | Check logs: `docker logs auto-codex-graphiti-mcp`. Usually missing API key. |
 | **Platform warning on Apple Silicon** | This is normal - the image runs via Rosetta emulation. It may be slower but works. |
 | **Health check fails** | Wait 30 seconds for startup. Check: `curl http://localhost:8000/health` |
 
@@ -328,13 +328,13 @@ docker logs auto-claude-falkordb
 |---------|----------|
 | **Docker using too much memory** | Open Docker Desktop → Settings → Resources → Memory. Reduce to 2-4GB. |
 | **Docker using too much disk** | Run `docker system prune -a` to clean unused images and containers. |
-| **Computer running slow** | Quit Docker Desktop when not using Auto Claude. FalkorDB only needs to run during active sessions. |
+| **Computer running slow** | Quit Docker Desktop when not using Auto-Codex. FalkorDB only needs to run during active sessions. |
 
 ### Network Issues
 
 | Problem | Solution |
 |---------|----------|
-| **"network not found"** | Run `docker network create auto-claude-network` or use `docker-compose up` |
+| **"network not found"** | Run `docker network create auto-codex-network` or use `docker-compose up` |
 | **Can't connect from app** | Ensure port 6379 is exposed. Check firewall isn't blocking localhost connections. |
 
 ---
@@ -347,10 +347,10 @@ If port 6379 is in use, change it:
 
 ```bash
 # Using docker run
-docker run -d --name auto-claude-falkordb -p 6381:6379 falkordb/falkordb:latest
+docker run -d --name auto-codex-falkordb -p 6381:6379 falkordb/falkordb:latest
 ```
 
-Then update Auto Claude settings to use port 6381.
+Then update Auto-Codex settings to use port 6381.
 
 ### Persistent Data
 
@@ -358,9 +358,9 @@ To persist FalkorDB data between container restarts:
 
 ```bash
 docker run -d \
-  --name auto-claude-falkordb \
+  --name auto-codex-falkordb \
   -p 6379:6379 \
-  -v auto-claude-falkordb-data:/data \
+  -v auto-codex-falkordb-data:/data \
   --restart unless-stopped \
   falkordb/falkordb:latest
 ```
@@ -371,7 +371,7 @@ To limit FalkorDB memory usage:
 
 ```bash
 docker run -d \
-  --name auto-claude-falkordb \
+  --name auto-codex-falkordb \
   -p 6379:6379 \
   --memory=2g \
   --restart unless-stopped \
@@ -387,7 +387,7 @@ If running Docker on a different machine:
    docker run -d -p 0.0.0.0:6379:6379 falkordb/falkordb:latest
    ```
 
-2. Update Auto Claude settings:
+2. Update Auto-Codex settings:
    - Set `GRAPHITI_FALKORDB_HOST=your-server-ip`
    - Set `GRAPHITI_FALKORDB_PORT=6379`
 
@@ -398,8 +398,8 @@ If running Docker on a different machine:
 ### Stop and Remove FalkorDB
 
 ```bash
-docker stop auto-claude-falkordb
-docker rm auto-claude-falkordb
+docker stop auto-codex-falkordb
+docker rm auto-codex-falkordb
 ```
 
 ### Remove FalkorDB Image
@@ -426,7 +426,7 @@ docker system prune -a --volumes
 
 If you're still having issues:
 
-1. Check the [Auto Claude GitHub Issues](https://github.com/auto-claude/auto-claude/issues)
+1. Check the [Auto-Codex GitHub Issues](https://github.com/auto-codex/auto-codex/issues)
 2. Search for your error message
 3. Create a new issue with:
    - Your operating system and version

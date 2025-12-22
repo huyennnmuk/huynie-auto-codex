@@ -100,7 +100,7 @@ function checkGitStatus() {
 
 // Update package.json version
 function updatePackageJson(newVersion) {
-  const packagePath = path.join(__dirname, '..', 'auto-claude-ui', 'package.json');
+  const packagePath = path.join(__dirname, '..', 'auto-codex-ui', 'package.json');
 
   if (!fs.existsSync(packagePath)) {
     error(`package.json not found at ${packagePath}`);
@@ -125,7 +125,7 @@ function main() {
           'Usage: node scripts/bump-version.js <major|minor|patch|x.y.z>');
   }
 
-  log('\n🚀 Auto Claude Version Bump\n', colors.cyan);
+  log('\n🚀 Auto-Codex Version Bump\n', colors.cyan);
 
   // 1. Check git status
   info('Checking git status...');
@@ -133,7 +133,7 @@ function main() {
   success('Git working directory is clean');
 
   // 2. Read current version
-  const packagePath = path.join(__dirname, '..', 'auto-claude-ui', 'package.json');
+  const packagePath = path.join(__dirname, '..', 'auto-codex-ui', 'package.json');
   const packageJson = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
   const currentVersion = packageJson.version;
   info(`Current version: ${currentVersion}`);
@@ -153,7 +153,7 @@ function main() {
 
   // 5. Create git commit
   info('Creating git commit...');
-  exec('git add auto-claude-ui/package.json');
+  exec('git add auto-codex-ui/package.json');
   exec(`git commit -m "chore: bump version to ${newVersion}"`);
   success(`Created commit: "chore: bump version to ${newVersion}"`);
 

@@ -46,7 +46,7 @@ async def test_codex_adapter_translates_events() -> None:
 
 
 def test_no_legacy_sdk_imports() -> None:
-    root = Path(__file__).parent.parent / "auto-claude"
+    root = Path(__file__).parent.parent / "auto-codex"
     patterns = [
         re.compile(r"claude_agent_sdk"),
         re.compile(r"ClaudeSDKClient"),

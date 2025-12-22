@@ -1,29 +1,29 @@
 repos:
-  # Python linting (auto-claude/)
+  # Python linting (auto-codex/)
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.8.3
     hooks:
       - id: ruff
         args: [--fix]
-        files: ^auto-claude/
+        files: ^auto-codex/
       - id: ruff-format
-        files: ^auto-claude/
+        files: ^auto-codex/
 
-  # Frontend linting (auto-claude-ui/)
+  # Frontend linting (auto-codex-ui/)
   - repo: local
     hooks:
       - id: eslint
         name: ESLint
-        entry: bash -c 'cd auto-claude-ui && pnpm lint'
+        entry: bash -c 'cd auto-codex-ui && pnpm lint'
         language: system
-        files: ^auto-claude-ui/.*\.(ts|tsx|js|jsx)$
+        files: ^auto-codex-ui/.*\.(ts|tsx|js|jsx)$
         pass_filenames: false
 
       - id: typecheck
         name: TypeScript Check
-        entry: bash -c 'cd auto-claude-ui && pnpm typecheck'
+        entry: bash -c 'cd auto-codex-ui && pnpm typecheck'
         language: system
-        files: ^auto-claude-ui/.*\.(ts|tsx)$
+        files: ^auto-codex-ui/.*\.(ts|tsx)$
         pass_filenames: false
 
   # General checks

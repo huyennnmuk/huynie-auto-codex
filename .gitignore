@@ -72,16 +72,15 @@ dmypy.json
 
 # Auto-build generated files
 .auto-build-security.json
-.auto-claude-security.json
 .auto-codex-security.json
-.auto-claude-status
+.auto-codex-status
 .claude_settings.json
 .update-metadata.json
 
 # Development of Auto Build with Auto Build
 dev/
 
-.auto-claude/
+.auto-codex/
 
 /docs
 

@@ -21,8 +21,8 @@ from pathlib import Path
 
 import pytest
 
-# Add auto-claude directory to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent / "auto-claude"))
+# Add auto-codex directory to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent / "auto-codex"))
 
 
 class TestNoExternalParallelism:
@@ -30,7 +30,7 @@ class TestNoExternalParallelism:
 
     def test_no_coordinator_module(self):
         """No external coordinator module should exist."""
-        coordinator_path = Path(__file__).parent.parent / "auto-claude" / "coordinator.py"
+        coordinator_path = Path(__file__).parent.parent / "auto-codex" / "coordinator.py"
         assert not coordinator_path.exists(), (
             "coordinator.py should not exist. Parallel orchestration is handled "
             "internally by the agent using Claude Code's Task tool."
@@ -38,7 +38,7 @@ class TestNoExternalParallelism:
 
     def test_no_task_tool_module(self):
         """No task_tool wrapper module should exist."""
-        task_tool_path = Path(__file__).parent.parent / "auto-claude" / "task_tool.py"
+        task_tool_path = Path(__file__).parent.parent / "auto-codex" / "task_tool.py"
         assert not task_tool_path.exists(), (
             "task_tool.py should not exist. The agent spawns subagents directly "
             "using Claude Code's built-in Task tool."
@@ -58,7 +58,7 @@ class TestCLIInterface:
 
     def test_no_parallel_flag(self):
         """CLI should not have --parallel argument."""
-        run_py_path = Path(__file__).parent.parent / "auto-claude" / "run.py"
+        run_py_path = Path(__file__).parent.parent / "auto-codex" / "run.py"
         content = run_py_path.read_text()
 
         # Check that --parallel is not defined as an argument
@@ -73,7 +73,7 @@ class TestCLIInterface:
 
     def test_no_parallel_examples_in_docs(self):
         """CLI documentation should not mention parallel mode."""
-        run_py_path = Path(__file__).parent.parent / "auto-claude" / "run.py"
+        run_py_path = Path(__file__).parent.parent / "auto-codex" / "run.py"
         content = run_py_path.read_text()
 
         # The docstring should not have --parallel examples
@@ -125,7 +125,7 @@ class TestAgentPrompt:
 
     def test_mentions_subagents(self):
         """Agent prompt mentions subagent capability."""
-        coder_prompt_path = Path(__file__).parent.parent / "auto-claude" / "prompts" / "coder.md"
+        coder_prompt_path = Path(__file__).parent.parent / "auto-codex" / "prompts" / "coder.md"
         content = coder_prompt_path.read_text()
 
         assert "subagent" in content.lower(), (
@@ -134,7 +134,7 @@ class TestAgentPrompt:
 
     def test_mentions_parallel_capability(self):
         """Agent prompt mentions parallel/concurrent capability."""
-        coder_prompt_path = Path(__file__).parent.parent / "auto-claude" / "prompts" / "coder.md"
+        coder_prompt_path = Path(__file__).parent.parent / "auto-codex" / "prompts" / "coder.md"
         content = coder_prompt_path.read_text()
 
         has_task_tool = "task tool" in content.lower() or "Task tool" in content
@@ -158,7 +158,7 @@ class TestModuleIntegrity:
 
     def test_run_module_valid_syntax(self):
         """Run module has valid Python syntax."""
-        run_py_path = Path(__file__).parent.parent / "auto-claude" / "run.py"
+        run_py_path = Path(__file__).parent.parent / "auto-codex" / "run.py"
         content = run_py_path.read_text()
 
         try:
@@ -169,7 +169,7 @@ class TestModuleIntegrity:
     def test_no_coordinator_imports(self):
         """Core modules don't import coordinator."""
         for filename in ["run.py", "core/agent.py"]:
-            filepath = Path(__file__).parent.parent / "auto-claude" / filename
+            filepath = Path(__file__).parent.parent / "auto-codex" / filename
             content = filepath.read_text()
 
             assert "from coordinator import" not in content, (
@@ -182,7 +182,7 @@ class TestModuleIntegrity:
     def test_no_task_tool_imports(self):
         """Core modules don't import task_tool."""
         for filename in ["run.py", "core/agent.py"]:
-            filepath = Path(__file__).parent.parent / "auto-claude" / filename
+            filepath = Path(__file__).parent.parent / "auto-codex" / filename
             content = filepath.read_text()
 
             assert "from task_tool import" not in content, (
@@ -305,7 +305,7 @@ class TestSubtaskTerminology:
 
     def test_implementation_plan_uses_subtask_class(self):
         """Implementation plan uses Subtask class."""
-        impl_plan_path = Path(__file__).parent.parent / "auto-claude" / "implementation_plan" / "main.py"
+        impl_plan_path = Path(__file__).parent.parent / "auto-codex" / "implementation_plan" / "main.py"
         content = impl_plan_path.read_text()
 
         # Check that it re-exports or imports Subtask and SubtaskStatus
@@ -318,7 +318,7 @@ class TestSubtaskTerminology:
 
     def test_progress_uses_subtask_terminology(self):
         """Progress module uses subtask terminology."""
-        progress_path = Path(__file__).parent.parent / "auto-claude" / "core" / "progress.py"
+        progress_path = Path(__file__).parent.parent / "auto-codex" / "core" / "progress.py"
         content = progress_path.read_text()
 
         assert "subtask" in content.lower(), (

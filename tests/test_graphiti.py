@@ -4,9 +4,9 @@ import pytest
 from pathlib import Path
 from unittest.mock import patch, MagicMock
 
-# Add auto-claude to path
+# Add auto-codex to path
 import sys
-sys.path.insert(0, str(Path(__file__).parent.parent / "auto-claude"))
+sys.path.insert(0, str(Path(__file__).parent.parent / "auto-codex"))
 
 from graphiti_config import is_graphiti_enabled, get_graphiti_status, GraphitiConfig
 

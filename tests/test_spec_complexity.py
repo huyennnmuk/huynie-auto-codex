@@ -3,7 +3,7 @@
 Tests for Complexity Assessment Module
 ======================================
 
-Tests the auto-claude/spec/complexity.py module functionality including:
+Tests the auto-codex/spec/complexity.py module functionality including:
 - Complexity enum values
 - ComplexityAssessment dataclass
 - ComplexityAnalyzer class methods
@@ -35,8 +35,8 @@ mock_core_client = types.SimpleNamespace(
 )
 sys.modules['core.client'] = mock_core_client
 
-# Add auto-claude directory to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent / "auto-claude"))
+# Add auto-codex directory to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent / "auto-codex"))
 
 from spec.complexity import (
     Complexity,

@@ -1,4 +1,4 @@
-# Docker Compose for Auto Claude
+# Docker Compose for Auto-Codex
 # ===============================
 #
 # Services:
@@ -15,17 +15,17 @@
 # API Key Configuration:
 #   The graphiti-mcp service requires OPENAI_API_KEY. It will be read from:
 #
-#   1. CLI users: Set in auto-claude/.env (auto-loaded)
+#   1. CLI users: Set in auto-codex/.env (auto-loaded)
 #   2. Frontend users: Set in .env in this directory, or:
-#      - Copy from your project: cp /path/to/your-project/auto-claude/.env .env
+#      - Copy from your project: cp /path/to/your-project/auto-codex/.env .env
 #      - Or export before running: export OPENAI_API_KEY=sk-... && docker-compose up -d
 
-name: auto-claude
+name: auto-codex
 
 services:
   falkordb:
     image: falkordb/falkordb:latest
-    container_name: auto-claude-falkordb
+    container_name: auto-codex-falkordb
     ports:
       - "${GRAPHITI_FALKORDB_PORT:-6380}:6379"
     volumes:
@@ -41,14 +41,14 @@ services:
 
   graphiti-mcp:
     image: falkordb/graphiti-knowledge-graph-mcp:latest
-    container_name: auto-claude-graphiti-mcp
+    container_name: auto-codex-graphiti-mcp
     platform: linux/amd64  # Required: image only available for amd64
     ports:
       - "${GRAPHITI_MCP_PORT:-8000}:8000"
     env_file:
-      # Load API keys from auto-claude/.env (CLI users) or .env (Frontend users)
+      # Load API keys from auto-codex/.env (CLI users) or .env (Frontend users)
       # Note: Only OPENAI_API_KEY is needed from these files
-      - path: auto-claude/.env
+      - path: auto-codex/.env
         required: false
       - path: .env
         required: false

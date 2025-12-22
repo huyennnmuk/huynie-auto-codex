@@ -16,9 +16,9 @@ from pathlib import Path
 
 import pytest
 
-# Add auto-claude to path for imports
+# Add auto-codex to path for imports
 import sys
-sys.path.insert(0, str(Path(__file__).parent.parent / "auto-claude"))
+sys.path.insert(0, str(Path(__file__).parent.parent / "auto-codex"))
 
 from test_discovery import (
     TestFramework,

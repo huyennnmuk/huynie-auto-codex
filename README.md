@@ -61,7 +61,7 @@ codex login
 # Shell env (one-off)
 export OPENAI_API_KEY=sk-...
 
-# Or add to auto-claude/.env for repeat usage
+# Or add to auto-codex/.env for repeat usage
 OPENAI_API_KEY=sk-...
 ```
 
@@ -106,7 +106,7 @@ Docker runs the FalkorDB database that powers Auto-Codex's cross-session memory.
 The Desktop UI runs Python scripts behind the scenes. Set up the Python environment:
 
 ```bash
-cd auto-claude
+cd auto-codex
 
 # Using uv (recommended)
 uv venv && uv pip install -r requirements.txt
@@ -127,7 +127,7 @@ docker-compose up -d falkordb
 ### Step 3: Install and Launch the Desktop UI
 
 ```bash
-cd auto-claude-ui
+cd auto-codex-ui
 
 # Install dependencies (pnpm recommended, npm works too)
 pnpm install
@@ -295,17 +295,17 @@ The Memory Layer is a **hybrid RAG system** combining graph nodes with semantic 
 ```
 your-project/
 ├── .worktrees/               # Created during build (git-ignored)
-│   └── auto-claude/          # Isolated workspace for AI coding
+│   └── auto-codex/          # Isolated workspace for AI coding
 ├── .auto-codex/              # Per-project data (specs, plans, QA reports)
 │   ├── specs/                # Task specifications
 │   ├── roadmap/              # Project roadmap
 │   └── ideation/             # Ideas and planning
-├── auto-claude/              # Python backend (framework code)
+├── auto-codex/              # Python backend (framework code)
 │   ├── run.py                # Build entry point
 │   ├── spec_runner.py        # Spec creation orchestrator
 │   ├── prompts/              # Agent prompt templates
 │   └── ...
-├── auto-claude-ui/           # Electron desktop application
+├── auto-codex-ui/           # Electron desktop application
 │   └── ...
 └── docker-compose.yml        # FalkorDB for Memory Layer
 ```
@@ -314,21 +314,21 @@ your-project/
 
 **You don't create these folders manually** - they serve different purposes:
 
-- **`auto-claude/`** - The framework repository itself (clone this once from GitHub)
+- **`auto-codex/`** - The framework repository itself (clone this once from GitHub)
 - **`.auto-codex/`** - Created automatically in YOUR project when you run Auto-Codex (stores specs, plans, QA reports)
 - **`.worktrees/`** - Temporary isolated workspaces created during builds (git-ignored, deleted after merge)
 
 **When using Auto-Codex on your project:**
 ```bash
 cd your-project/              # Your own project directory
-python /path/to/auto-claude/run.py --spec 001
+python /path/to/auto-codex/run.py --spec 001
 # Auto-Codex creates .auto-codex/ automatically in your-project/
 ```
 
 **When developing Auto-Codex itself:**
 ```bash
-git clone https://github.com/yourusername/auto-claude
-cd auto-claude/               # You're working in the framework repo
+git clone https://github.com/yourusername/auto-codex
+cd auto-codex/               # You're working in the framework repo
 ```
 
 The `.auto-codex/` directory is gitignored and project-specific - you'll have one per project you use Auto-Codex on.
@@ -350,7 +350,7 @@ Existing users migrating from Claude SDK should read `MIGRATION.md`.
 | `VOYAGE_API_KEY` | For Voyage | Required for Voyage embeddings |
 | `GOOGLE_API_KEY` | For Google | Required for Google AI (Gemini) provider |
 
-See `auto-claude/.env.example` for complete configuration options.
+See `auto-codex/.env.example` for complete configuration options.
 
 ## 💬 Community
 

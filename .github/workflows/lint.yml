@@ -23,10 +23,10 @@ jobs:
         run: pip install ruff
 
       - name: Run ruff check
-        run: ruff check auto-claude/ --output-format=github
+        run: ruff check auto-codex/ --output-format=github
 
       - name: Run ruff format check
-        run: ruff format auto-claude/ --check --diff
+        run: ruff format auto-codex/ --check --diff
 
   # TypeScript/React linting
   frontend:
@@ -46,13 +46,13 @@ jobs:
           version: 9
 
       - name: Install dependencies
-        working-directory: auto-claude-ui
+        working-directory: auto-codex-ui
         run: pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Run ESLint
-        working-directory: auto-claude-ui
+        working-directory: auto-codex-ui
         run: pnpm lint
 
       - name: Run TypeScript check
-        working-directory: auto-claude-ui
+        working-directory: auto-codex-ui
         run: pnpm typecheck

@@ -21,7 +21,7 @@ body:
     attributes:
       label: Proposed Solution
       description: Describe the solution you'd like to see.
-      placeholder: I would like Auto Claude to...
+      placeholder: I would like Auto-Codex to...
     validations:
       required: true
 
@@ -36,10 +36,10 @@ body:
     id: component
     attributes:
       label: Component
-      description: Which part of Auto Claude would this affect?
+      description: Which part of Auto-Codex would this affect?
       options:
-        - Python Backend (auto-claude/)
-        - Electron UI (auto-claude-ui/)
+        - Python Backend (auto-codex/)
+        - Electron UI (auto-codex-ui/)
         - Both
         - New component
         - Not sure

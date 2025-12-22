@@ -1,6 +1,6 @@
 # Release Process
 
-This document describes how to create a new release of Auto Claude.
+This document describes how to create a new release of Auto-Codex.
 
 ## Automated Release Process (Recommended)
 
@@ -30,7 +30,7 @@ We provide an automated script that handles version bumping, git commits, and ta
    ```
 
    This script will:
-   - ✅ Update `auto-claude-ui/package.json` with the new version
+   - ✅ Update `auto-codex-ui/package.json` with the new version
    - ✅ Create a git commit with the version change
    - ✅ Create a git tag (e.g., `v2.5.6`)
    - ⚠️  **NOT** push to remote (you control when to push)
@@ -54,7 +54,7 @@ We provide an automated script that handles version bumping, git commits, and ta
 
 4. **Create GitHub Release:**
 
-   - Go to [GitHub Releases](https://github.com/AndyMik90/Auto-Claude/releases)
+   - Go to [GitHub Releases](https://github.com/tytsxai/Auto-Codex/releases)
    - Click "Draft a new release"
    - Select the tag you just pushed (e.g., `v2.5.6`)
    - Add release notes (describe what changed)
@@ -71,7 +71,7 @@ We provide an automated script that handles version bumping, git commits, and ta
 
 If you need to create a release manually, follow these steps **carefully** to avoid version mismatches:
 
-1. **Update `auto-claude-ui/package.json`:**
+1. **Update `auto-codex-ui/package.json`:**
 
    ```json
    {
@@ -82,7 +82,7 @@ If you need to create a release manually, follow these steps **carefully** to av
 2. **Commit the change:**
 
    ```bash
-   git add auto-claude-ui/package.json
+   git add auto-codex-ui/package.json
    git commit -m "chore: bump version to 2.5.6"
    ```
 
@@ -170,7 +170,7 @@ When you create a release, the following are built and published:
 
 1. **Native module prebuilds** - Windows node-pty binaries
 2. **Electron app packages** - Desktop installers (triggered manually or via electron-builder)
-3. **Discord notification** - Sent to the Auto Claude community
+3. **Discord notification** - Sent to the Auto-Codex community
 
 ## Version Numbering
 

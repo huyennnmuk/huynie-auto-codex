@@ -19,8 +19,8 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-# Add auto-claude directory to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent / "auto-claude"))
+# Add auto-codex directory to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent / "auto-codex"))
 
 # Store original modules for cleanup
 _original_modules = {}
@@ -106,7 +106,7 @@ class TestGetSpecsDir:
             assert result == temp_dir / ".auto-codex" / "specs"
 
     def test_calls_init_auto_codex_dir(self, temp_dir: Path):
-        """Initializes auto-claude directory."""
+        """Initializes auto-codex directory."""
         with patch('spec.pipeline.models.init_auto_codex_dir') as mock_init:
             mock_init.return_value = (temp_dir / ".auto-codex", False)
 

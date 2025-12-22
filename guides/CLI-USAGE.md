@@ -1,12 +1,12 @@
-# Auto Claude CLI Usage
+# Auto-Codex CLI Usage
 
-This document covers terminal-only usage of Auto Claude. **For most users, we recommend using the [Desktop UI](#) instead** - it provides a better experience with visual task management, progress tracking, and automatic Python environment setup.
+This document covers terminal-only usage of Auto-Codex. **For most users, we recommend using the [Desktop UI](#) instead** - it provides a better experience with visual task management, progress tracking, and automatic Python environment setup.
 
 ## When to Use CLI
 
 - You prefer terminal workflows
 - You're running on a headless server
-- You're integrating Auto Claude into scripts or CI/CD
+- You're integrating Auto-Codex into scripts or CI/CD
 
 ## Prerequisites
 
@@ -15,10 +15,10 @@ This document covers terminal-only usage of Auto Claude. **For most users, we re
 
 ## Setup
 
-**Step 1:** Navigate to the auto-claude directory
+**Step 1:** Navigate to the auto-codex directory
 
 ```bash
-cd auto-claude
+cd auto-codex
 ```
 
 **Step 2:** Set up Python environment
@@ -106,11 +106,11 @@ The QA validation loop:
 
 ## Workspace Management
 
-Auto Claude uses Git worktrees for isolated builds:
+Auto-Codex uses Git worktrees for isolated builds:
 
 ```bash
 # Test the feature in the isolated workspace
-cd .worktrees/auto-claude/
+cd .worktrees/auto-codex/
 npm run dev  # or your project's run command
 
 # See what was changed
@@ -157,14 +157,14 @@ python validate_spec.py --spec-dir specs/001-feature --checkpoint all
 | `OPENAI_API_KEY` | Yes | OpenAI API key for Codex CLI |
 | `AUTO_BUILD_MODEL` | No | Model override (default: gpt-5.2-codex) |
 
-## Auto Claude Memory Layer (Optional)
+## Auto-Codex Memory Layer (Optional)
 
 For cross-session context retention, see the main README for Memory Layer setup instructions.
 
 ### Verifying Memory Layer
 
 ```bash
-cd auto-claude
+cd auto-codex
 source .venv/bin/activate
 python test_graphiti_memory.py
 ```

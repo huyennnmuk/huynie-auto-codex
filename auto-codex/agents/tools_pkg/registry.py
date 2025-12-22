@@ -1,0 +1,61 @@
+"""
+Tool Registry
+=============
+
+Central registry for creating and managing auto-codex MCP tools.
+"""
+
+from pathlib import Path
+
+SDK_TOOLS_AVAILABLE = False
+
+from .tools import (
+    create_memory_tools,
+    create_progress_tools,
+    create_qa_tools,
+    create_subtask_tools,
+)
+
+
+def create_all_tools(spec_dir: Path, project_dir: Path) -> list:
+    """
+    Create all custom tools with the given spec and project directories.
+
+    Args:
+        spec_dir: Path to the spec directory
+        project_dir: Path to the project root
+
+    Returns:
+        List of all tool functions
+    """
+    if not SDK_TOOLS_AVAILABLE:
+        return []
+
+    all_tools = []
+
+    # Create tools by category
+    all_tools.extend(create_subtask_tools(spec_dir, project_dir))
+    all_tools.extend(create_progress_tools(spec_dir, project_dir))
+    all_tools.extend(create_memory_tools(spec_dir, project_dir))
+    all_tools.extend(create_qa_tools(spec_dir, project_dir))
+
+    return all_tools
+
+
+def create_auto_claude_mcp_server(spec_dir: Path, project_dir: Path):
+    """
+    Create an MCP server with auto-codex custom tools.
+
+    Args:
+        spec_dir: Path to the spec directory
+        project_dir: Path to the project root
+
+    Returns:
+        MCP server instance, or None if SDK tools not available
+    """
+    return None
+
+
+def is_tools_available() -> bool:
+    """Check if SDK tools functionality is available."""
+    return SDK_TOOLS_AVAILABLE

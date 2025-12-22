@@ -24,7 +24,7 @@ from unittest.mock import MagicMock
 import pytest
 
 # =============================================================================
-# MOCK SETUP - Must happen before ANY imports from auto-claude
+# MOCK SETUP - Must happen before ANY imports from auto-codex
 # =============================================================================
 
 # Store original modules for cleanup
@@ -100,8 +100,8 @@ mock_linear.linear_qa_rejected = MagicMock()
 mock_linear.linear_qa_max_iterations = MagicMock()
 sys.modules['linear_updater'] = mock_linear
 
-# Now we can safely add the auto-claude path and import
-sys.path.insert(0, str(Path(__file__).parent.parent / "auto-claude"))
+# Now we can safely add the auto-codex path and import
+sys.path.insert(0, str(Path(__file__).parent.parent / "auto-codex"))
 
 # Import criteria functions directly to avoid going through qa/__init__.py
 # which imports reviewer and fixer that need the SDK

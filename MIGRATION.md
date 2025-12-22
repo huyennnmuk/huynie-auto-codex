@@ -14,7 +14,7 @@ codex --version
 1. Copy the example file if you have not already:
 
 ```bash
-cd auto-claude
+cd auto-codex
 cp .env.example .env
 ```
 
@@ -45,7 +45,7 @@ You should see JSON output with a message event.
 ## 4) Run Auto-Codex
 
 ```bash
-python auto-claude/run.py --spec 001
+python auto-codex/run.py --spec 001
 ```
 
 ## Environment Variable Changes
@@ -67,7 +67,7 @@ python auto-claude/run.py --spec 001
 No. Codex CLI uses OpenAI credentials only.
 
 **Q: Where do I put the OpenAI API key?**
-Set `OPENAI_API_KEY` in `auto-claude/.env` or export it in your shell.
+Set `OPENAI_API_KEY` in `auto-codex/.env` or export it in your shell.
 
 **Q: Can I keep my old `.env` file?**
 Yes, but remove `CLAUDE_CODE_OAUTH_TOKEN` and add `OPENAI_API_KEY`.

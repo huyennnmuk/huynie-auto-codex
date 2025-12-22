@@ -79,7 +79,7 @@ pytest tests/test_merge_*.py -v
 pytest tests/test_merge_types.py -v
 
 # Run with coverage
-pytest tests/test_merge_*.py --cov=auto-claude/merge --cov-report=html
+pytest tests/test_merge_*.py --cov=auto-codex/merge --cov-report=html
 ```
 
 ## File Structure

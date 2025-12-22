@@ -28,14 +28,14 @@ jobs:
           version: "latest"
 
       - name: Install dependencies
-        working-directory: auto-claude
+        working-directory: auto-codex
         run: |
           uv venv
           uv pip install -r requirements.txt
           uv pip install -r ../tests/requirements-test.txt
 
       - name: Run tests
-        working-directory: auto-claude
+        working-directory: auto-codex
         run: |
           source .venv/bin/activate
           pytest ../tests/ -v --tb=short
@@ -58,9 +58,9 @@ jobs:
           version: 9
 
       - name: Install dependencies
-        working-directory: auto-claude-ui
+        working-directory: auto-codex-ui
         run: pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Run tests
-        working-directory: auto-claude-ui
+        working-directory: auto-codex-ui
         run: pnpm test

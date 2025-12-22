@@ -34,14 +34,14 @@ Before contributing, ensure you have the following installed:
 
 The project consists of two main components:
 
-1. **Python Backend** (`auto-claude/`) - The core autonomous coding framework
-2. **Electron Frontend** (`auto-claude-ui/`) - Optional desktop UI
+1. **Python Backend** (`auto-codex/`) - The core autonomous coding framework
+2. **Electron Frontend** (`auto-codex-ui/`) - Optional desktop UI
 
 ### Python Backend
 
 ```bash
-# Navigate to the auto-claude directory
-cd auto-claude
+# Navigate to the auto-codex directory
+cd auto-codex
 
 # Create virtual environment (using uv - recommended)
 uv venv
@@ -67,7 +67,7 @@ npm install -g @openai/codex-cli
 
 ```bash
 # Navigate to the UI directory
-cd auto-claude-ui
+cd auto-codex-ui
 
 # Install dependencies
 pnpm install
@@ -102,10 +102,10 @@ When you commit, the following checks run automatically:
 
 | Check | Scope | Description |
 |-------|-------|-------------|
-| **ruff** | `auto-claude/` | Python linter with auto-fix |
-| **ruff-format** | `auto-claude/` | Python code formatter |
-| **eslint** | `auto-claude-ui/` | TypeScript/React linter |
-| **typecheck** | `auto-claude-ui/` | TypeScript type checking |
+| **ruff** | `auto-codex/` | Python linter with auto-fix |
+| **ruff-format** | `auto-codex/` | Python code formatter |
+| **eslint** | `auto-codex-ui/` | TypeScript/React linter |
+| **typecheck** | `auto-codex-ui/` | TypeScript type checking |
 | **trailing-whitespace** | All files | Removes trailing whitespace |
 | **end-of-file-fixer** | All files | Ensures files end with newline |
 | **check-yaml** | All files | Validates YAML syntax |
@@ -162,7 +162,7 @@ def gnc(sd):
 ### TypeScript/React
 
 - Use TypeScript strict mode
-- Follow the existing component patterns in `auto-claude-ui/src/`
+- Follow the existing component patterns in `auto-codex-ui/src/`
 - Use functional components with hooks
 - Prefer named exports over default exports
 - Use the UI components from `src/renderer/components/ui/`
@@ -205,7 +205,7 @@ pytest tests/test_security.py::test_bash_command_validation -v
 pytest tests/ -m "not slow"
 
 # Run with coverage
-pytest tests/ --cov=auto-claude --cov-report=html
+pytest tests/ --cov=auto-codex --cov-report=html
 ```
 
 Test configuration is in `tests/pytest.ini`.
@@ -213,7 +213,7 @@ Test configuration is in `tests/pytest.ini`.
 ### Frontend Tests
 
 ```bash
-cd auto-claude-ui
+cd auto-codex-ui
 
 # Run unit tests
 pnpm test
@@ -270,12 +270,12 @@ Before a PR can be merged:
 
 ```bash
 # Python tests
-cd auto-claude
+cd auto-codex
 source .venv/bin/activate
 pytest ../tests/ -v
 
 # Frontend tests
-cd auto-claude-ui
+cd auto-codex-ui
 pnpm test
 pnpm lint
 pnpm typecheck
@@ -338,7 +338,7 @@ git commit -m "WIP"
    pytest tests/ -v
 
    # Frontend
-   cd auto-claude-ui && pnpm test && pnpm lint && pnpm typecheck
+   cd auto-codex-ui && pnpm test && pnpm lint && pnpm typecheck
    ```
 
 4. **Update documentation** if your changes affect:
@@ -397,7 +397,7 @@ When requesting a feature:
 
 Auto-Codex consists of two main parts:
 
-### Python Backend (`auto-claude/`)
+### Python Backend (`auto-codex/`)
 
 The core autonomous coding framework:
 
@@ -407,7 +407,7 @@ The core autonomous coding framework:
 - **Memory**: `memory.py` (file-based), `graphiti_memory.py` (graph-based)
 - **QA**: `qa_loop.py`, `prompts/qa_*.md`
 
-### Electron Frontend (`auto-claude-ui/`)
+### Electron Frontend (`auto-codex-ui/`)
 
 Optional desktop interface:
 

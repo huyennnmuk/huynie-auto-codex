@@ -25,7 +25,7 @@ def test_commit_message_uses_provider(provider_switch, tmp_path: Path):
         project_dir=tmp_path,
         spec_name="spec-001",
         diff_summary="1 file changed",
-        files_changed=["auto-claude/core/client.py"],
+        files_changed=["auto-codex/core/client.py"],
     )
 
     assert result.startswith("feat(core): add provider adapter")

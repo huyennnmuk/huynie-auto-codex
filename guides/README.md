@@ -1,6 +1,6 @@
-# Auto Claude Guides
+# Auto-Codex Guides
 
-Detailed documentation for Auto Claude setup and usage.
+Detailed documentation for Auto-Codex setup and usage.
 
 ## Available Guides
 
@@ -12,5 +12,5 @@ Detailed documentation for Auto Claude setup and usage.
 ## Quick Links
 
 - [Main README](../README.md) - Getting started with the Desktop UI
-- [Contributing](../CONTRIBUTING.md) - How to contribute to Auto Claude
+- [Contributing](../CONTRIBUTING.md) - How to contribute to Auto-Codex
 - [Changelog](../CHANGELOG.md) - Release history
