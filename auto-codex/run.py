@@ -23,7 +23,7 @@ Usage:
     python auto-codex/run.py --spec 001 --discard   # Delete build (requires confirmation)
 
 Prerequisites:
-    - OPENAI_API_KEY environment variable set (OpenAI Codex access)
+    - Codex authentication configured (OPENAI_API_KEY, CODEX_CODE_OAUTH_TOKEN, or CODEX_CONFIG_DIR)
     - Spec created via: codex /spec
     - Codex Code CLI installed
 """

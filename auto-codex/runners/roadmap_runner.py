@@ -15,6 +15,7 @@ Usage:
 
 import asyncio
 import sys
+import traceback
 from pathlib import Path
 
 # Add auto-codex to path
@@ -28,6 +29,7 @@ if env_file.exists():
     load_dotenv(env_file)
 
 from debug import debug, debug_error, debug_warning
+from core.debug import is_debug_enabled
 
 # Import from refactored roadmap package
 from runners.roadmap import RoadmapOrchestrator
@@ -55,8 +57,8 @@ def main():
     parser.add_argument(
         "--model",
         type=str,
-        default="gpt-5.2-codex",
-        help="Model to use (default: gpt-5.2-codex)",
+        default="gpt-5.2-codex-xhigh",
+        help="Model to use (default: gpt-5.2-codex-xhigh)",
     )
     parser.add_argument(
         "--thinking-level",
@@ -126,6 +128,12 @@ def main():
     except KeyboardInterrupt:
         debug_warning("roadmap_runner", "Roadmap generation interrupted by user")
         print("\n\nRoadmap generation interrupted.")
+        sys.exit(1)
+    except Exception as e:
+        debug_error("roadmap_runner", "Roadmap generation failed", error=str(e))
+        if is_debug_enabled():
+            traceback.print_exc()
+        print(str(e), file=sys.stderr)
         sys.exit(1)
 
 

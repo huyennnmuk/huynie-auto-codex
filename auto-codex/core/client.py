@@ -152,7 +152,7 @@ def create_client(
     codex_security_args = codex_security_config.to_codex_args()
 
     client = CodexCliClient(
-        model=model or "gpt-5.2-codex",
+        model=model or "gpt-5.2-codex-xhigh",
         workdir=str(resolved_project_dir),
         timeout=600,
         bypass_sandbox=False,
@@ -170,7 +170,7 @@ def get_client(provider: str = "codex", **kwargs) -> LLMClientProtocol:
     project_dir = kwargs.get("project_dir")
     workdir = str(project_dir) if project_dir is not None else None
     return CodexCliClient(
-        model=kwargs.get("model", "gpt-5.2-codex"),
+        model=kwargs.get("model", "gpt-5.2-codex-xhigh"),
         workdir=workdir,
         timeout=kwargs.get("timeout", 600),
         bypass_sandbox=kwargs.get("bypass_sandbox", True),

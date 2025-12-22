@@ -94,8 +94,8 @@ def main():
     parser.add_argument(
         "--model",
         type=str,
-        default="gpt-5.2-codex",
-        help="Model to use (default: gpt-5.2-codex)",
+        default="gpt-5.2-codex-xhigh",
+        help="Model to use (default: gpt-5.2-codex-xhigh)",
     )
     parser.add_argument(
         "--thinking-level",

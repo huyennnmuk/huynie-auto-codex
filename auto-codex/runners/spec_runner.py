@@ -91,7 +91,7 @@ if env_file.exists():
 elif dev_env_file.exists():
     load_dotenv(dev_env_file)
 
-from core.auth import get_deprecated_auth_token, is_valid_openai_api_key
+from core.auth import require_auth_token
 from debug import debug, debug_error, debug_section, debug_success
 from phase_config import resolve_model_id
 from review import ReviewState
@@ -163,8 +163,8 @@ Examples:
     parser.add_argument(
         "--model",
         type=str,
-        default="sonnet",
-        help="Model to use for agent phases (haiku, sonnet, opus, or full model ID)",
+        default="codex",
+        help="Model to use for agent phases (codex or full model ID)",
     )
     parser.add_argument(
         "--thinking-level",
@@ -202,19 +202,10 @@ Examples:
     args = parser.parse_args()
 
     # Validate authentication early for clearer UX
-    openai_key = os.environ.get("OPENAI_API_KEY", "")
-    if not openai_key:
-        if get_deprecated_auth_token():
-            print("Error: Detected deprecated CLAUDE_CODE_OAUTH_TOKEN")
-            print("Auto Codex requires OPENAI_API_KEY.")
-            print("Migrate by setting OPENAI_API_KEY in your .env file.")
-        else:
-            print("Error: No OpenAI API key found")
-            print("Set OPENAI_API_KEY in your .env file or environment.")
-        sys.exit(1)
-    if not is_valid_openai_api_key(openai_key):
-        print("Error: Invalid OPENAI_API_KEY format")
-        print("Expected a key starting with 'sk-' (e.g., sk-...).")
+    try:
+        require_auth_token()
+    except ValueError as exc:
+        print(f"Error: {exc}")
         sys.exit(1)
 
     # Handle task from file if provided

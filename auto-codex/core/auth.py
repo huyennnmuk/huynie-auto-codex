@@ -8,11 +8,16 @@ for legacy LLM OAuth tokens, plus SDK environment variable passthrough.
 import os
 import re
 
-# Priority order for auth token resolution
-# NOTE: Auto Codex targets OpenAI Codex and requires an OpenAI API key.
-AUTH_TOKEN_ENV_VARS = [
-    "OPENAI_API_KEY",
-]
+# Priority order for auth token resolution.
+#
+# Auto Codex primarily targets Codex CLI. Authentication can come from:
+# - OPENAI_API_KEY (API key auth)
+# - CODEX_CODE_OAUTH_TOKEN (desktop/profile OAuth token)
+# - CODEX_CONFIG_DIR (Codex CLI config directory with credentials)
+#
+# Some call sites still refer to this as a "token"; for config-dir based
+# authentication we return the config-dir string as a truthy marker.
+AUTH_TOKEN_ENV_VARS = ["OPENAI_API_KEY", "CODEX_CODE_OAUTH_TOKEN", "CODEX_CONFIG_DIR"]
 
 # Legacy environment variables that should be migrated
 DEPRECATED_AUTH_ENV_VARS = [
@@ -22,6 +27,8 @@ DEPRECATED_AUTH_ENV_VARS = [
 # Environment variables to pass through to SDK subprocess
 SDK_ENV_VARS = [
     "OPENAI_API_KEY",
+    "CODEX_CODE_OAUTH_TOKEN",
+    "CODEX_CONFIG_DIR",
     "NO_PROXY",
     "DISABLE_TELEMETRY",
     "DISABLE_COST_WARNINGS",
@@ -34,6 +41,23 @@ _OPENAI_KEY_PATTERN = re.compile(r"^sk-[A-Za-z0-9-]{20,}$")
 def is_valid_openai_api_key(token: str) -> bool:
     """Return True if the token matches expected OpenAI API key format."""
     return bool(_OPENAI_KEY_PATTERN.match(token or ""))
+
+
+def is_valid_codex_oauth_token(token: str) -> bool:
+    """
+    Return True if the token is plausibly a Codex OAuth token.
+
+    Codex OAuth tokens do not share the OPENAI_API_KEY "sk-..." pattern, so we
+    apply a conservative sanity check (non-empty, no whitespace, reasonable length).
+    """
+    t = (token or "").strip()
+    return bool(t) and (len(t) >= 20) and not any(c.isspace() for c in t)
+
+
+def is_valid_codex_config_dir(config_dir: str) -> bool:
+    """Return True if CODEX_CONFIG_DIR points to an existing directory."""
+    p = (config_dir or "").strip()
+    return bool(p) and os.path.isdir(p)
 
 
 def get_deprecated_auth_token() -> str | None:
@@ -50,22 +74,42 @@ def get_auth_token() -> str | None:
     Get authentication token from environment variables.
 
     Checks sources in priority order:
-    1. OPENAI_API_KEY (env var)
+    1. OPENAI_API_KEY (env var, validated)
+    2. CODEX_CODE_OAUTH_TOKEN (env var)
+    3. CODEX_CONFIG_DIR (env var, directory existence)
 
     Returns:
         Token string if found, None otherwise
     """
-    token = os.environ.get(AUTH_TOKEN_ENV_VARS[0], "")
-    if token and is_valid_openai_api_key(token):
-        return token
+    openai_token = os.environ.get("OPENAI_API_KEY", "")
+    if openai_token and is_valid_openai_api_key(openai_token):
+        return openai_token
+
+    oauth_token = os.environ.get("CODEX_CODE_OAUTH_TOKEN", "")
+    if oauth_token and is_valid_codex_oauth_token(oauth_token):
+        return oauth_token
+
+    config_dir = os.environ.get("CODEX_CONFIG_DIR", "")
+    if config_dir and is_valid_codex_config_dir(config_dir):
+        return config_dir
+
     return None
 
 
 def get_auth_token_source() -> str | None:
     """Get the name of the source that provided the auth token."""
-    token = os.environ.get(AUTH_TOKEN_ENV_VARS[0], "")
-    if token and is_valid_openai_api_key(token):
-        return AUTH_TOKEN_ENV_VARS[0]
+    openai_token = os.environ.get("OPENAI_API_KEY", "")
+    if openai_token and is_valid_openai_api_key(openai_token):
+        return "OPENAI_API_KEY"
+
+    oauth_token = os.environ.get("CODEX_CODE_OAUTH_TOKEN", "")
+    if oauth_token and is_valid_codex_oauth_token(oauth_token):
+        return "CODEX_CODE_OAUTH_TOKEN"
+
+    config_dir = os.environ.get("CODEX_CONFIG_DIR", "")
+    if config_dir and is_valid_codex_config_dir(config_dir):
+        return "CODEX_CONFIG_DIR"
+
     return None
 
 
@@ -80,25 +124,45 @@ def require_auth_token() -> str:
     if token:
         return token
 
-    openai_token = os.environ.get(AUTH_TOKEN_ENV_VARS[0], "")
+    openai_token = os.environ.get("OPENAI_API_KEY", "")
     if openai_token and not is_valid_openai_api_key(openai_token):
         raise ValueError(
             "Invalid OPENAI_API_KEY format.\n"
             "Expected a key starting with 'sk-' (e.g., sk-...)."
         )
 
+    oauth_token = os.environ.get("CODEX_CODE_OAUTH_TOKEN", "")
+    if oauth_token and not is_valid_codex_oauth_token(oauth_token):
+        raise ValueError(
+            "Invalid CODEX_CODE_OAUTH_TOKEN format.\n"
+            "Expected a non-empty token without whitespace."
+        )
+
+    config_dir = os.environ.get("CODEX_CONFIG_DIR", "")
+    if config_dir and not is_valid_codex_config_dir(config_dir):
+        raise ValueError(
+            "Invalid CODEX_CONFIG_DIR.\n"
+            f"Directory does not exist: {config_dir}"
+        )
+
     deprecated_token = get_deprecated_auth_token()
     if deprecated_token:
         raise ValueError(
-            "Detected CLAUDE_CODE_OAUTH_TOKEN, but Codex now requires OPENAI_API_KEY.\n"
-            "Please migrate by setting OPENAI_API_KEY in your environment and remove "
-            "CLAUDE_CODE_OAUTH_TOKEN once complete."
+            "Detected deprecated CLAUDE_CODE_OAUTH_TOKEN.\n"
+            "Please migrate to one of:\n"
+            "- OPENAI_API_KEY (API key)\n"
+            "- CODEX_CODE_OAUTH_TOKEN (OAuth token)\n"
+            "- CODEX_CONFIG_DIR (Codex config directory)\n"
+            "Then remove CLAUDE_CODE_OAUTH_TOKEN."
         )
 
     raise ValueError(
-        "No OpenAI API key found.\n\n"
-        "Auto Codex uses OpenAI Codex.\n"
-        "Set OPENAI_API_KEY in your .env file or environment."
+        "No Codex authentication found.\n\n"
+        "Configure one of:\n"
+        "- OPENAI_API_KEY (API key)\n"
+        "- CODEX_CODE_OAUTH_TOKEN (OAuth token)\n"
+        "- CODEX_CONFIG_DIR (Codex config directory)\n\n"
+        "In Auto Codex Desktop: Settings > Codex Profiles."
     )
 
 
@@ -120,7 +184,7 @@ def get_sdk_env_vars() -> dict[str, str]:
 
 
 def ensure_openai_api_key() -> None:
-    """Ensure a valid OPENAI_API_KEY is set, raising a helpful error if not."""
+    """Ensure Codex authentication is configured, raising a helpful error if not."""
     require_auth_token()
 
 
@@ -128,6 +192,6 @@ def ensure_claude_code_oauth_token() -> None:
     """
     Deprecated shim for legacy call sites.
 
-    Ensures a valid OPENAI_API_KEY is set, and raises a helpful error if not.
+    Ensures Codex authentication is configured, and raises a helpful error if not.
     """
     ensure_openai_api_key()

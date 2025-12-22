@@ -6,6 +6,7 @@ import uuid
 from dataclasses import dataclass
 from typing import Any, AsyncIterator, Optional
 
+from core.auth import get_auth_token
 from core.protocols import EventType, LLMClientProtocol, LLMEvent
 
 
@@ -24,7 +25,7 @@ class CodexCliClient(LLMClientProtocol):
 
     def __init__(
         self,
-        model: str = "gpt-5.2-codex",
+        model: str = "gpt-5.2-codex-xhigh",
         workdir: Optional[str] = None,
         timeout: int = 600,
         bypass_sandbox: bool = True,
@@ -38,8 +39,15 @@ class CodexCliClient(LLMClientProtocol):
         self._sessions: dict[str, CodexSession] = {}
 
     def is_available(self) -> bool:
-        """Check if codex CLI is installed and OPENAI_API_KEY is set."""
-        return bool(shutil.which("codex")) and bool(os.environ.get("OPENAI_API_KEY"))
+        """
+        Check if codex CLI is installed and authentication is configured.
+
+        Codex can authenticate via:
+        - OPENAI_API_KEY
+        - CODEX_CODE_OAUTH_TOKEN
+        - CODEX_CONFIG_DIR
+        """
+        return bool(shutil.which("codex")) and bool(get_auth_token())
 
     async def start_session(self, prompt: str, **kwargs) -> str:
         """Start a new Codex CLI session."""

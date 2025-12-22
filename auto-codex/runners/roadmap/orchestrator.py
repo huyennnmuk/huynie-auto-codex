@@ -27,7 +27,7 @@ class RoadmapOrchestrator:
         self,
         project_dir: Path,
         output_dir: Path | None = None,
-        model: str = "gpt-5.2-codex",
+        model: str = "gpt-5.2-codex-xhigh",
         thinking_level: str = "medium",
         refresh: bool = False,
         enable_competitor_analysis: bool = False,

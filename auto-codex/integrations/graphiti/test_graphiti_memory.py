@@ -17,7 +17,7 @@ Usage:
     # Provider-specific credentials (set based on your chosen providers):
     # OpenAI (Codex defaults):
     export OPENAI_API_KEY=sk-...
-    export OPENAI_MODEL=gpt-5.2-codex
+    export OPENAI_MODEL=gpt-5.2-codex-xhigh
 
     # Anthropic (LLM only, needs separate embedder):
     export ANTHROPIC_API_KEY=sk-ant-...
@@ -573,7 +573,7 @@ async def main():
         print(
             "    export GRAPHITI_EMBEDDER_PROVIDER=openai  # or voyage, azure_openai, ollama"
         )
-        print("    export OPENAI_MODEL=gpt-5.2-codex")
+        print("    export OPENAI_MODEL=gpt-5.2-codex-xhigh")
         print("    # Plus provider-specific credentials (see docstring for examples)")
         print()
         if status.get("reason"):

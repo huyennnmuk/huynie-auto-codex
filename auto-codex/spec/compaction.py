@@ -18,18 +18,18 @@ async def summarize_phase_output(
     phase_output: str,
     project_dir: Path | None = None,
     spec_dir: Path | None = None,
-    model: str = "gpt-5.2-codex",
+    model: str = "gpt-5.2-codex-xhigh",
     target_words: int = 500,
 ) -> str:
     """
     Summarize phase output to a concise summary for subsequent phases.
 
-    Uses Sonnet for cost efficiency since this is a simple summarization task.
+    Uses the configured Codex model for summarization (defaults to gpt-5.2-codex-xhigh).
 
     Args:
         phase_name: Name of the completed phase (e.g., 'discovery', 'requirements')
         phase_output: Full output content from the phase (file contents, decisions)
-        model: Model to use for summarization (defaults to Sonnet for efficiency)
+        model: Model to use for summarization (defaults to gpt-5.2-codex-xhigh)
         target_words: Target summary length in words (~500-1000 recommended)
 
     Returns:

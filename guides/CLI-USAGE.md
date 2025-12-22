@@ -36,8 +36,10 @@ python3 -m venv .venv && source .venv/bin/activate && pip install -r requirement
 ```bash
 cp .env.example .env
 
-# Add your OpenAI API key
+# Add one Codex auth option
 # OPENAI_API_KEY=sk-...
+# CODEX_CODE_OAUTH_TOKEN=... (from `codex setup-token`)
+# CODEX_CONFIG_DIR=/path/to/codex/config
 ```
 
 ## Creating Specs
@@ -154,8 +156,10 @@ python validate_spec.py --spec-dir specs/001-feature --checkpoint all
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `OPENAI_API_KEY` | Yes | OpenAI API key for Codex CLI |
-| `AUTO_BUILD_MODEL` | No | Model override (default: gpt-5.2-codex) |
+| `OPENAI_API_KEY` | One of | OpenAI API key for Codex CLI |
+| `CODEX_CODE_OAUTH_TOKEN` | One of | OAuth token from `codex setup-token` |
+| `CODEX_CONFIG_DIR` | One of | Path to Codex CLI config directory |
+| `AUTO_BUILD_MODEL` | No | Model override (default: gpt-5.2-codex-xhigh) |
 
 ## Auto-Codex Memory Layer (Optional)
 

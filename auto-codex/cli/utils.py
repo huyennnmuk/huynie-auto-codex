@@ -15,8 +15,11 @@ if str(_PARENT_DIR) not in sys.path:
     sys.path.insert(0, str(_PARENT_DIR))
 
 from core.auth import (
+    get_auth_token,
     get_auth_token_source,
     get_deprecated_auth_token,
+    is_valid_codex_config_dir,
+    is_valid_codex_oauth_token,
     is_valid_openai_api_key,
 )
 from dotenv import load_dotenv
@@ -33,7 +36,7 @@ from ui import (
 )
 
 # Configuration
-DEFAULT_MODEL = "gpt-5.2-codex"
+DEFAULT_MODEL = "gpt-5.2-codex-xhigh"
 
 
 def setup_environment() -> Path:
@@ -100,26 +103,51 @@ def validate_environment(spec_dir: Path) -> bool:
     """
     valid = True
 
-    # Check for OpenAI API key (Codex)
+    # Check for Codex authentication
     openai_key = os.environ.get("OPENAI_API_KEY", "")
-    if not openai_key:
+    oauth_token = os.environ.get("CODEX_CODE_OAUTH_TOKEN", "")
+    codex_config_dir = os.environ.get("CODEX_CONFIG_DIR", "")
+    auth_token = get_auth_token()
+    source = get_auth_token_source()
+
+    if openai_key and not is_valid_openai_api_key(openai_key):
+        if not auth_token or source == "OPENAI_API_KEY":
+            print("Error: Invalid OPENAI_API_KEY format")
+            print("Expected a key starting with 'sk-' (e.g., sk-...).")
+            valid = False
+        else:
+            print("Warning: Invalid OPENAI_API_KEY format ignored (another auth source is configured).")
+
+    if oauth_token and not is_valid_codex_oauth_token(oauth_token):
+        if not auth_token or source == "CODEX_CODE_OAUTH_TOKEN":
+            print("Error: Invalid CODEX_CODE_OAUTH_TOKEN format")
+            print("Expected a non-empty token without whitespace.")
+            valid = False
+        else:
+            print("Warning: Invalid CODEX_CODE_OAUTH_TOKEN ignored (another auth source is configured).")
+
+    if codex_config_dir and not is_valid_codex_config_dir(codex_config_dir):
+        if not auth_token or source == "CODEX_CONFIG_DIR":
+            print("Error: Invalid CODEX_CONFIG_DIR")
+            print(f"Directory does not exist: {codex_config_dir}")
+            valid = False
+        else:
+            print("Warning: CODEX_CONFIG_DIR does not exist (another auth source is configured).")
+
+    if not auth_token:
         deprecated_token = get_deprecated_auth_token()
         if deprecated_token:
             print("Error: Detected legacy OAuth token (CLAUDE_CODE_OAUTH_TOKEN)")
-            print("This CLI now uses OpenAI Codex and requires OPENAI_API_KEY.")
-            print("Please migrate by setting OPENAI_API_KEY in your .env file.")
+            print("Please migrate to one of: OPENAI_API_KEY, CODEX_CODE_OAUTH_TOKEN, or CODEX_CONFIG_DIR.")
         else:
-            print("Error: No OpenAI API key found")
-            print("\nThis CLI now uses OpenAI Codex.")
-            print("Set OPENAI_API_KEY in your .env file or environment.")
-        valid = False
-    elif not is_valid_openai_api_key(openai_key):
-        print("Error: Invalid OPENAI_API_KEY format")
-        print("Expected a key starting with 'sk-' (e.g., sk-...).")
+            print("Error: No Codex authentication found")
+            print("\nConfigure one of:")
+            print("- OPENAI_API_KEY (API key)")
+            print("- CODEX_CODE_OAUTH_TOKEN (OAuth token)")
+            print("- CODEX_CONFIG_DIR (Codex config directory)")
         valid = False
     else:
         # Show which auth source is being used
-        source = get_auth_token_source()
         if source:
             print(f"Auth: {source}")
 

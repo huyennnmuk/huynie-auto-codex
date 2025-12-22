@@ -56,7 +56,7 @@ class IdeationGenerator:
         self,
         project_dir: Path,
         output_dir: Path,
-        model: str = "gpt-5.2-codex",
+        model: str = "gpt-5.2-codex-xhigh",
         thinking_level: str = "medium",
         max_ideas_per_type: int = 5,
     ):

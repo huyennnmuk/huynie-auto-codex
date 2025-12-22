@@ -18,26 +18,28 @@ cd auto-codex
 cp .env.example .env
 ```
 
-2. Replace the old token with your OpenAI API key:
+2. Replace the old token with a Codex auth option:
 
 ```bash
 # Remove this (old)
 # CLAUDE_CODE_OAUTH_TOKEN=...
 
-# Add this (new)
+# Add one of these (new)
 OPENAI_API_KEY=sk-...
+# or CODEX_CODE_OAUTH_TOKEN=... (from `codex setup-token`)
+# or CODEX_CONFIG_DIR=/path/to/codex/config
 ```
 
 3. (Optional) Set a Codex model override:
 
 ```bash
-AUTO_BUILD_MODEL=gpt-5.2-codex
+AUTO_BUILD_MODEL=gpt-5.2-codex-xhigh
 ```
 
 ## 3) Verify Codex CLI Works
 
 ```bash
-printf "Hello from Codex\n" | codex exec --json -m gpt-5.2-codex -
+printf "Hello from Codex\n" | codex exec --json -m gpt-5.2-codex-xhigh -
 ```
 
 You should see JSON output with a message event.
@@ -50,27 +52,29 @@ python auto-codex/run.py --spec 001
 
 ## Environment Variable Changes
 
-- `CLAUDE_CODE_OAUTH_TOKEN` → removed
-- `OPENAI_API_KEY` → required for Codex CLI
-- `AUTO_BUILD_MODEL` → optional model override (default: `gpt-5.2-codex`)
+- `CLAUDE_CODE_OAUTH_TOKEN` → removed (legacy Claude token)
+- `OPENAI_API_KEY` → supported for Codex CLI
+- `CODEX_CODE_OAUTH_TOKEN` → supported (OAuth token)
+- `CODEX_CONFIG_DIR` → supported (Codex CLI config directory)
+- `AUTO_BUILD_MODEL` → optional model override (default: `gpt-5.2-codex-xhigh`)
 
 ## API/Behavior Differences
 
 - **Provider**: Claude SDK calls are replaced with Codex CLI subprocess calls.
-- **Auth**: OAuth token flow is removed; use `OPENAI_API_KEY`.
+- **Auth**: Use `OPENAI_API_KEY`, `CODEX_CODE_OAUTH_TOKEN`, or `CODEX_CONFIG_DIR`.
 - **Execution**: Codex CLI runs as a local process (`codex exec --json`) with streamed JSON events.
-- **Models**: Model IDs now use Codex-compatible names (default `gpt-5.2-codex`).
+- **Models**: Model IDs now use Codex-compatible names (default `gpt-5.2-codex-xhigh`).
 
 ## FAQ
 
 **Q: Do I still need a Claude subscription?**
 No. Codex CLI uses OpenAI credentials only.
 
-**Q: Where do I put the OpenAI API key?**
-Set `OPENAI_API_KEY` in `auto-codex/.env` or export it in your shell.
+**Q: Where do I put authentication?**
+Set `OPENAI_API_KEY` or `CODEX_CODE_OAUTH_TOKEN` in `auto-codex/.env`, or export them in your shell. You can also set `CODEX_CONFIG_DIR` to point at an existing Codex CLI profile.
 
 **Q: Can I keep my old `.env` file?**
-Yes, but remove `CLAUDE_CODE_OAUTH_TOKEN` and add `OPENAI_API_KEY`.
+Yes, but remove `CLAUDE_CODE_OAUTH_TOKEN` and add one of `OPENAI_API_KEY`, `CODEX_CODE_OAUTH_TOKEN`, or `CODEX_CONFIG_DIR`.
 
 **Q: How do I confirm the CLI is available?**
 Run `codex --version` or the JSON test command above.

@@ -124,7 +124,7 @@ async def run_with_client(
     project_dir: str,
     message: str,
     history: list,
-    model: str = "gpt-5.2-codex",
+    model: str = "gpt-5.2-codex-xhigh",
     thinking_level: str = "medium",
 ) -> None:
     """Run the chat using the Codex client adapter with streaming."""
@@ -133,7 +133,7 @@ async def run_with_client(
             "No authentication token found, falling back to simple mode",
             file=sys.stderr,
         )
-        run_simple(project_dir, message, history)
+        run_simple(project_dir, message, history, model)
         return
 
     system_prompt = build_system_prompt(project_dir)
@@ -247,10 +247,10 @@ Current question: {message}"""
         import traceback
 
         traceback.print_exc(file=sys.stderr)
-        run_simple(project_dir, message, history)
+        run_simple(project_dir, message, history, model)
 
 
-def run_simple(project_dir: str, message: str, history: list) -> None:
+def run_simple(project_dir: str, message: str, history: list, model: str | None = None) -> None:
     """Simple fallback mode without Codex client - uses subprocess to call codex."""
     import subprocess
 
@@ -272,9 +272,20 @@ User: {message}
 Assistant:"""
 
     try:
-        # Try to use codex CLI with JSON output for simple text
+        # Use Codex CLI in non-interactive mode. The Electron UI expects plain text
+        # on stdout (it does not parse Codex JSONL events).
+        cmd = [
+            "codex",
+            "exec",
+            "--skip-git-repo-check",
+            "-C",
+            project_dir,
+        ]
+        if model:
+            cmd.extend(["-m", model])
+        cmd.append("-")
         result = subprocess.run(
-            ["codex", "exec", "--json", "-"],
+            cmd,
             capture_output=True,
             text=True,
             cwd=project_dir,
@@ -283,24 +294,28 @@ Assistant:"""
         )
 
         if result.returncode == 0:
-            print(result.stdout)
+            # Print assistant response only (no JSONL / markers).
+            print(result.stdout, end="")
         else:
-            # Fallback response if codex CLI fails
+            # Fallback response if codex CLI fails (include a brief, non-sensitive error).
+            err = (result.stderr or "").strip()
+            if err:
+                err = "\n".join(err.splitlines()[-8:])  # keep tail; avoids huge dumps
+                err = f"\n\nCodex CLI error (tail):\n{err}"
             print(
-                f"I apologize, but I encountered an issue processing your request. "
-                f"Please ensure Codex CLI is properly configured.\n\n"
+                "Sorry, I could not reach Codex to handle your request.\n\n"
                 f"Your question was: {message}\n\n"
-                f"Based on the project context available, I can help you with:\n"
-                f"- Understanding the codebase structure\n"
-                f"- Suggesting improvements\n"
-                f"- Planning new features\n\n"
-                f"Please try again or check your Codex CLI configuration."
+                "Please check:\n"
+                "- Codex authentication (OPENAI_API_KEY, CODEX_CODE_OAUTH_TOKEN, or CODEX_CONFIG_DIR)\n"
+                "- Codex CLI is installed and available on PATH\n"
+                "- If this is a new directory, initialize git (optional)\n"
+                f"{err}"
             )
 
     except subprocess.TimeoutExpired:
-        print("Request timed out. Please try a shorter query.")
+        print("Request timed out. Try a shorter question or retry later.")
     except FileNotFoundError:
-        print("Codex CLI not found. Please ensure it is installed and in your PATH.")
+        print("Codex CLI not found. Please install `codex` and ensure it is on PATH.")
     except Exception as e:
         print(f"Error: {e}")
 
@@ -315,8 +330,8 @@ def main():
     )
     parser.add_argument(
         "--model",
-        default="gpt-5.2-codex",
-        help="Codex model ID (default: gpt-5.2-codex)",
+        default="gpt-5.2-codex-xhigh",
+        help="Codex model ID (default: gpt-5.2-codex-xhigh)",
     )
     parser.add_argument(
         "--thinking-level",

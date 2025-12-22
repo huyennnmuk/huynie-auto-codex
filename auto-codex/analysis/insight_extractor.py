@@ -21,8 +21,8 @@ logger = logging.getLogger(__name__)
 from core.auth import get_auth_token
 from core.client import create_client, get_client
 
-# Default model for insight extraction (fast and cheap)
-DEFAULT_EXTRACTION_MODEL = "gpt-5.2-codex"
+# Default model for insight extraction
+DEFAULT_EXTRACTION_MODEL = "gpt-5.2-codex-xhigh"
 
 # Maximum diff size to send to the LLM (avoid context limits)
 MAX_DIFF_CHARS = 15000

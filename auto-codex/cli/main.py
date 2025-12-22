@@ -72,11 +72,13 @@ Examples:
   python auto-codex/run.py --spec 001 --qa-status      # Check QA validation status
 
 Prerequisites:
-  1. Create a spec first: claude /spec
-  2. Set OPENAI_API_KEY for Codex access
+  1. Create a spec first: codex /spec
+  2. Configure Codex auth (OPENAI_API_KEY, CODEX_CODE_OAUTH_TOKEN, or CODEX_CONFIG_DIR)
 
 Environment Variables:
-  OPENAI_API_KEY           Your OpenAI API key (required)
+  OPENAI_API_KEY           OpenAI API key (optional if using OAuth/config dir)
+  CODEX_CODE_OAUTH_TOKEN   Codex OAuth token (optional)
+  CODEX_CONFIG_DIR         Codex CLI config directory (optional)
   AUTO_BUILD_MODEL         Override default model (optional)
         """,
     )
@@ -112,7 +114,7 @@ Environment Variables:
         "--model",
         type=str,
         default=None,
-        help=f"Claude model to use (default: {DEFAULT_MODEL})",
+        help=f"Codex model to use (default: {DEFAULT_MODEL})",
     )
 
     parser.add_argument(

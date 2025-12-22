@@ -193,8 +193,12 @@ def test_backwards_compatibility():
     print("  ✓ agents.memory_manager.save_session_to_graphiti")
 
     assert "OPENAI_API_KEY" in auth.AUTH_TOKEN_ENV_VARS
+    assert "CODEX_CODE_OAUTH_TOKEN" in auth.AUTH_TOKEN_ENV_VARS
+    assert "CODEX_CONFIG_DIR" in auth.AUTH_TOKEN_ENV_VARS
     assert "CLAUDE_CODE_OAUTH_TOKEN" in auth.DEPRECATED_AUTH_ENV_VARS
     assert "OPENAI_API_KEY" in auth.SDK_ENV_VARS
+    assert "CODEX_CODE_OAUTH_TOKEN" in auth.SDK_ENV_VARS
+    assert "CODEX_CONFIG_DIR" in auth.SDK_ENV_VARS
     print("  ✓ core.auth env var references")
 
     print("\n✓ Backwards compatibility verified!\n")

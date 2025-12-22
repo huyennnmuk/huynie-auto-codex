@@ -12,7 +12,11 @@ from typing import Literal, TypedDict
 
 # Model shorthand to full model ID mapping
 MODEL_ID_MAP: dict[str, str] = {
-    "codex": "gpt-5.2-codex",
+    "codex": "gpt-5.2-codex-xhigh",
+    # Legacy shorthands (kept for backward compatibility)
+    "opus": "gpt-5.2-codex-xhigh",
+    "sonnet": "gpt-5.2-codex-xhigh",
+    "haiku": "gpt-5.2-codex-xhigh",
 }
 
 # Thinking level to budget tokens mapping (None = no extended thinking)

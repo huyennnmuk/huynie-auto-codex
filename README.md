@@ -42,7 +42,7 @@ The Desktop UI is the recommended way to use Auto-Codex. It provides visual task
 2. **Python 3.10+** - [Download Python](https://www.python.org/downloads/)
 3. **Docker Desktop** - Required for the Memory Layer
 4. **Codex CLI** - `npm install -g @openai/codex`
-5. **OpenAI Account** - Required for Codex CLI access (API key for non-interactive use)
+5. **OpenAI Account** - Required for Codex CLI access (API key or OAuth token for non-interactive use)
 6. **Git Repository** - Your project must be initialized as a git repository
 
 ### Codex CLI Auth (Required)
@@ -55,13 +55,19 @@ codex --version
 codex login
 ```
 
-**Headless/CI:** set an API key instead of interactive login.
+**Headless/CI:** set one of these instead of interactive login.
 
 ```bash
 # Shell env (one-off)
 export OPENAI_API_KEY=sk-...
 
-# Or add to auto-codex/.env for repeat usage
+# Or use an OAuth token from `codex setup-token`
+export CODEX_CODE_OAUTH_TOKEN=...
+
+# Or point to an existing Codex CLI config directory
+export CODEX_CONFIG_DIR=/path/to/codex/config
+
+# Or add any of the above to auto-codex/.env for repeat usage
 OPENAI_API_KEY=sk-...
 ```
 
@@ -345,8 +351,10 @@ Existing users migrating from Claude SDK should read `MIGRATION.md`.
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `OPENAI_API_KEY` | Yes | OpenAI API key for Codex CLI and OpenAI-backed memory providers |
-| `AUTO_BUILD_MODEL` | No | Model override (default: gpt-5.2-codex) |
+| `OPENAI_API_KEY` | One of | OpenAI API key for Codex CLI and OpenAI-backed memory providers |
+| `CODEX_CODE_OAUTH_TOKEN` | One of | OAuth token from `codex setup-token` (Codex CLI/desktop profiles) |
+| `CODEX_CONFIG_DIR` | One of | Path to Codex CLI config directory for profile-based auth |
+| `AUTO_BUILD_MODEL` | No | Model override (default: gpt-5.2-codex-xhigh) |
 | `GRAPHITI_ENABLED` | Recommended | Set to `true` to enable Memory Layer |
 | `GRAPHITI_LLM_PROVIDER` | For Memory | LLM provider: openai, anthropic, azure_openai, ollama, google |
 | `GRAPHITI_EMBEDDER_PROVIDER` | For Memory | Embedder: openai, voyage, azure_openai, ollama, google |
