@@ -71,7 +71,7 @@ python auto-codex/run.py --spec 001
 No. Codex CLI uses OpenAI credentials only.
 
 **Q: Where do I put authentication?**
-Set `OPENAI_API_KEY` or `CODEX_CODE_OAUTH_TOKEN` in `auto-codex/.env`, or export them in your shell. You can also set `CODEX_CONFIG_DIR` to point at an existing Codex CLI profile.
+Set `OPENAI_API_KEY` or `CODEX_CODE_OAUTH_TOKEN` in `auto-codex/.env`, or export them in your shell. You can also set `CODEX_CONFIG_DIR` to point at an existing Codex CLI profile, or rely on the default `~/.codex` config directory.
 
 **Q: Can I keep my old `.env` file?**
 Yes, but remove `CLAUDE_CODE_OAUTH_TOKEN` and add one of `OPENAI_API_KEY`, `CODEX_CODE_OAUTH_TOKEN`, or `CODEX_CONFIG_DIR`.

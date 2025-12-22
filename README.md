@@ -67,6 +67,9 @@ export CODEX_CODE_OAUTH_TOKEN=...
 # Or point to an existing Codex CLI config directory
 export CODEX_CONFIG_DIR=/path/to/codex/config
 
+# Or rely on the default Codex CLI config at ~/.codex
+# (disable with AUTO_CODEX_DISABLE_DEFAULT_CODEX_CONFIG_DIR=1)
+
 # Or add any of the above to auto-codex/.env for repeat usage
 OPENAI_API_KEY=sk-...
 ```
@@ -358,6 +361,9 @@ Existing users migrating from Claude SDK should read `MIGRATION.md`.
 | `OPENAI_API_KEY` | One of | OpenAI API key for Codex CLI and OpenAI-backed memory providers |
 | `CODEX_CODE_OAUTH_TOKEN` | One of | OAuth token from `codex setup-token` (Codex CLI/desktop profiles) |
 | `CODEX_CONFIG_DIR` | One of | Path to Codex CLI config directory for profile-based auth |
+| `AUTO_CODEX_DISABLE_DEFAULT_CODEX_CONFIG_DIR` | No | Set to `1` to ignore the default `~/.codex` config directory |
+| `AUTO_CODEX_BYPASS_CODEX_SANDBOX` | No | Set to `0` to keep Codex CLI sandboxing enabled |
+| `AUTO_CODEX_CODEXCLI_LEGACY_SECURITY_FLAGS` | No | Set to `1` to pass legacy allow/block flags to Codex CLI |
 | `AUTO_BUILD_MODEL` | No | Model override (default: gpt-5.2-codex-xhigh) |
 | `GRAPHITI_ENABLED` | Recommended | Set to `true` to enable Memory Layer |
 | `GRAPHITI_LLM_PROVIDER` | For Memory | LLM provider: openai, anthropic, azure_openai, ollama, google |
