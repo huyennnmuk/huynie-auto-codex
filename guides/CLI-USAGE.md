@@ -11,7 +11,7 @@ This document covers terminal-only usage of Auto Claude. **For most users, we re
 ## Prerequisites
 
 - Python 3.9+
-- Claude Code CLI (`npm install -g @anthropic-ai/claude-code`)
+- Codex CLI (`npm install -g @openai/codex-cli`)
 
 ## Setup
 
@@ -36,11 +36,8 @@ python3 -m venv .venv && source .venv/bin/activate && pip install -r requirement
 ```bash
 cp .env.example .env
 
-# Get your OAuth token
-claude setup-token
-
-# Add the token to .env
-# CLAUDE_CODE_OAUTH_TOKEN=your-token-here
+# Add your OpenAI API key
+# OPENAI_API_KEY=sk-...
 ```
 
 ## Creating Specs
@@ -157,8 +154,8 @@ python validate_spec.py --spec-dir specs/001-feature --checkpoint all
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `CLAUDE_CODE_OAUTH_TOKEN` | Yes | OAuth token from `claude setup-token` |
-| `AUTO_BUILD_MODEL` | No | Model override (default: claude-opus-4-5-20251101) |
+| `OPENAI_API_KEY` | Yes | OpenAI API key for Codex CLI |
+| `AUTO_BUILD_MODEL` | No | Model override (default: gpt-5.2-codex) |
 
 ## Auto Claude Memory Layer (Optional)
 

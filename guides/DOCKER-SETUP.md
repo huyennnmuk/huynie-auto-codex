@@ -210,7 +210,7 @@ If you're using the Auto Claude Desktop UI:
 
 ## Starting the Graphiti MCP Server (Optional)
 
-The Graphiti MCP server allows Claude agents to directly search and add to the knowledge graph during builds. This is optional but recommended for the best memory experience.
+The Graphiti MCP server allows Codex agents to directly search and add to the knowledge graph during builds. This is optional but recommended for the best memory experience.
 
 ### Prerequisites
 
