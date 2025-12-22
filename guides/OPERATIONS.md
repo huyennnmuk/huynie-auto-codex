@@ -61,11 +61,23 @@ Task execution logs are stored per-spec under:
 
 `<your-project>/.auto-codex/specs/<spec>/logs/`
 
+### Desktop App State (Auto-Codex UI)
+
+The UI stores persistent state in Electron's userData directory (`app.getPath('userData')`), including:
+
+- `store/projects.json` (project list + settings)
+- `config/codex-profiles.json` (profile settings; OAuth tokens are encrypted when possible)
+- `sessions/terminals.json` (recent terminal sessions)
+
+**Backup note:** safeStorage encryption is OS/user-bound. Restoring `codex-profiles.json` onto a different machine/user may require re-auth.
+
 ### Memory Layer (FalkorDB)
 
 Docker named volume:
 
 `auto-codex_falkordb_data`
+
+This is used by `docker-compose` and by the Desktop UI's auto-started FalkorDB container.
 
 ## Backup & Restore
 
@@ -82,6 +94,10 @@ Restore (destructive; stops services first):
 ### Task Logs Backup
 
 Back up `.auto-codex/` in each target project (or at least `.auto-codex/specs/**/logs`).
+
+### UI State Backup
+
+Back up the Electron userData directory noted above if you need to preserve UI settings and profiles.
 
 ## Release & Rollback
 

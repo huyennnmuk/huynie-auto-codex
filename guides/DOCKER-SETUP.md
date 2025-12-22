@@ -26,7 +26,13 @@ If Docker Desktop is already installed and running:
 
 ```bash
 # Start FalkorDB
-docker run -d --name auto-codex-falkordb -p 6379:6379 falkordb/falkordb:latest
+docker run -d \
+  --name auto-codex-falkordb \
+  -p 127.0.0.1:6380:6379 \
+  -v auto-codex_falkordb_data:/data \
+  -e FALKORDB_ARGS=--appendonly yes \
+  --restart unless-stopped \
+  falkordb/falkordb:latest
 
 # Verify it's running
 docker ps | grep falkordb
@@ -192,7 +198,9 @@ This uses the project's `docker-compose.yml` which is pre-configured.
 ```bash
 docker run -d \
   --name auto-codex-falkordb \
-  -p 6379:6379 \
+  -p 127.0.0.1:6380:6379 \
+  -v auto-codex_falkordb_data:/data \
+  -e FALKORDB_ARGS=--appendonly yes \
   --restart unless-stopped \
   falkordb/falkordb:latest
 ```
@@ -307,7 +315,7 @@ docker logs auto-codex-falkordb
 
 | Problem | Solution |
 |---------|----------|
-| **Container won't start** | Check if port 6379 is in use: `lsof -i :6379` (Mac/Linux) or `netstat -ano | findstr 6379` (Windows) |
+| **Container won't start** | Check if port 6380 is in use: `lsof -i :6380` (Mac/Linux) or `netstat -ano | findstr 6380` (Windows) |
 | **"port is already allocated"** | Stop conflicting container: `docker stop auto-codex-falkordb && docker rm auto-codex-falkordb` |
 | **Connection refused** | Verify container is running: `docker ps`. If not listed, start it again. |
 | **Container crashes immediately** | Check logs: `docker logs auto-codex-falkordb`. May need more memory. |
@@ -335,7 +343,7 @@ docker logs auto-codex-falkordb
 | Problem | Solution |
 |---------|----------|
 | **"network not found"** | Run `docker network create auto-codex-network` or use `docker-compose up` |
-| **Can't connect from app** | Ensure port 6379 is exposed. Check firewall isn't blocking localhost connections. |
+| **Can't connect from app** | Ensure port 6380 is exposed. Check firewall isn't blocking localhost connections. |
 
 ---
 
@@ -343,11 +351,17 @@ docker logs auto-codex-falkordb
 
 ### Custom Port
 
-If port 6379 is in use, change it:
+If port 6380 is in use, change it:
 
 ```bash
 # Using docker run
-docker run -d --name auto-codex-falkordb -p 6381:6379 falkordb/falkordb:latest
+docker run -d \
+  --name auto-codex-falkordb \
+  -p 127.0.0.1:6381:6379 \
+  -v auto-codex_falkordb_data:/data \
+  -e FALKORDB_ARGS=--appendonly yes \
+  --restart unless-stopped \
+  falkordb/falkordb:latest
 ```
 
 Then update Auto-Codex settings to use port 6381.
@@ -359,8 +373,9 @@ To persist FalkorDB data between container restarts:
 ```bash
 docker run -d \
   --name auto-codex-falkordb \
-  -p 6379:6379 \
-  -v auto-codex-falkordb-data:/data \
+  -p 127.0.0.1:6380:6379 \
+  -v auto-codex_falkordb_data:/data \
+  -e FALKORDB_ARGS=--appendonly yes \
   --restart unless-stopped \
   falkordb/falkordb:latest
 ```
@@ -372,7 +387,9 @@ To limit FalkorDB memory usage:
 ```bash
 docker run -d \
   --name auto-codex-falkordb \
-  -p 6379:6379 \
+  -p 127.0.0.1:6380:6379 \
+  -v auto-codex_falkordb_data:/data \
+  -e FALKORDB_ARGS=--appendonly yes \
   --memory=2g \
   --restart unless-stopped \
   falkordb/falkordb:latest
@@ -384,12 +401,18 @@ If running Docker on a different machine:
 
 1. Expose the port on the server:
    ```bash
-   docker run -d -p 0.0.0.0:6379:6379 falkordb/falkordb:latest
+   docker run -d \
+     --name auto-codex-falkordb \
+     -p 0.0.0.0:6380:6379 \
+     -v auto-codex_falkordb_data:/data \
+     -e FALKORDB_ARGS=--appendonly yes \
+     --restart unless-stopped \
+     falkordb/falkordb:latest
    ```
 
 2. Update Auto-Codex settings:
    - Set `GRAPHITI_FALKORDB_HOST=your-server-ip`
-   - Set `GRAPHITI_FALKORDB_PORT=6379`
+   - Set `GRAPHITI_FALKORDB_PORT=6380`
 
 ---
 
