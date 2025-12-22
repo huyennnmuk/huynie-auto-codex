@@ -9,13 +9,14 @@ Tests the qa/criteria.py module functionality including:
 - QA readiness checks (should_run_qa, should_run_fixes)
 - Status display functions
 
-Note: This test module mocks all dependencies to avoid importing
-the Claude SDK which is not available in the test environment.
+Note: This test module mocks dependencies to avoid importing
+provider modules that are not available in the test environment.
 """
 
 import json
 import sys
 import tempfile
+import types
 from datetime import datetime, timezone
 from pathlib import Path
 from unittest.mock import MagicMock
@@ -29,24 +30,29 @@ import pytest
 # Store original modules for cleanup
 _original_modules = {}
 _mocked_module_names = [
-    'claude_agent_sdk',
     'ui',
     'progress',
     'task_logger',
     'linear_updater',
-    'client',
+    'core.client',
 ]
 
 for name in _mocked_module_names:
     if name in sys.modules:
         _original_modules[name] = sys.modules[name]
 
-# Mock claude_agent_sdk FIRST (before any other imports)
-mock_sdk = MagicMock()
-mock_sdk.ClaudeSDKClient = MagicMock()
-mock_sdk.ClaudeAgentOptions = MagicMock()
-mock_sdk.ClaudeCodeOptions = MagicMock()
-sys.modules['claude_agent_sdk'] = mock_sdk
+# Mock core.client before importing qa package
+mock_core_client = types.SimpleNamespace(
+    create_client=MagicMock(),
+    get_client=MagicMock(),
+    CodexClientAdapter=MagicMock(),
+    TextBlock=MagicMock(),
+    ToolUseBlock=MagicMock(),
+    ToolResultBlock=MagicMock(),
+    AssistantMessage=MagicMock(),
+    UserMessage=MagicMock(),
+)
+sys.modules['core.client'] = mock_core_client
 
 # Mock UI module (used by progress)
 mock_ui = MagicMock()
@@ -94,11 +100,6 @@ mock_linear.linear_qa_rejected = MagicMock()
 mock_linear.linear_qa_max_iterations = MagicMock()
 sys.modules['linear_updater'] = mock_linear
 
-# Mock client module
-mock_client = MagicMock()
-mock_client.create_client = MagicMock()
-sys.modules['client'] = mock_client
-
 # Now we can safely add the auto-claude path and import
 sys.path.insert(0, str(Path(__file__).parent.parent / "auto-claude"))
 
@@ -116,6 +117,10 @@ from qa.criteria import (
     should_run_fixes,
     print_qa_status,
 )
+import qa.criteria as qa_criteria_module
+
+# Patch is_build_complete in the qa.criteria module to use our mock
+qa_criteria_module.is_build_complete = mock_progress.is_build_complete
 
 # Mock the qa.report import inside print_qa_status
 mock_report = MagicMock()

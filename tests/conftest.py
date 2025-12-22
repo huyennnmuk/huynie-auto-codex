@@ -18,32 +18,10 @@ from unittest.mock import MagicMock
 
 import pytest
 
-# =============================================================================
-# PRE-MOCK EXTERNAL SDK MODULES - Must happen BEFORE adding auto-claude to path
-# =============================================================================
-# These SDK modules may not be installed, so we mock them before any imports
-# that might trigger loading code that depends on them.
-
-def _create_sdk_mock():
-    """Create a comprehensive mock for SDK modules."""
-    mock = MagicMock()
-    mock.ClaudeAgentOptions = MagicMock
-    mock.ClaudeSDKClient = MagicMock
-    mock.HookMatcher = MagicMock
-    return mock
-
-# Pre-mock claude_agent_sdk if not installed
-if 'claude_agent_sdk' not in sys.modules:
-    sys.modules['claude_agent_sdk'] = _create_sdk_mock()
-    sys.modules['claude_agent_sdk.types'] = MagicMock()
-
-# Pre-mock claude_code_sdk if not installed
-if 'claude_code_sdk' not in sys.modules:
-    sys.modules['claude_code_sdk'] = _create_sdk_mock()
-    sys.modules['claude_code_sdk.types'] = MagicMock()
-
 # Add auto-claude directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent / "auto-claude"))
+
+from tests.fixtures.codex_mocks import MockCodexClient  # noqa: E402
 
 
 # =============================================================================
@@ -53,15 +31,12 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "auto-claude"))
 # List of modules that might be mocked by test files
 # These need to be cleaned up between test modules to prevent leakage
 _POTENTIALLY_MOCKED_MODULES = [
-    'claude_code_sdk',
-    'claude_code_sdk.types',
-    'claude_agent_sdk',
-    'claude_agent_sdk.types',
     'ui',
     'progress',
     'task_logger',
     'linear_updater',
     'client',
+    'core.client',
     'init',
     'review',
     'validate_spec',
@@ -102,17 +77,17 @@ def pytest_runtest_setup(item):
     # Map of which test modules mock which specific modules
     # Each test module should only preserve the mocks it installed
     module_mocks = {
-        'test_qa_criteria': {'claude_agent_sdk', 'ui', 'progress', 'task_logger', 'linear_updater', 'client'},
-        'test_qa_report': {'claude_agent_sdk', 'ui', 'progress', 'task_logger', 'linear_updater', 'client'},
-        'test_qa_report_iteration': {'claude_agent_sdk', 'ui', 'progress', 'task_logger', 'linear_updater', 'client'},
-        'test_qa_report_recurring': {'claude_agent_sdk', 'ui', 'progress', 'task_logger', 'linear_updater', 'client'},
-        'test_qa_report_project_detection': {'claude_agent_sdk', 'ui', 'progress', 'task_logger', 'linear_updater', 'client'},
-        'test_qa_report_manual_plan': {'claude_agent_sdk', 'ui', 'progress', 'task_logger', 'linear_updater', 'client'},
-        'test_qa_report_config': {'claude_agent_sdk', 'ui', 'progress', 'task_logger', 'linear_updater', 'client'},
-        'test_qa_loop': {'claude_code_sdk', 'claude_code_sdk.types', 'claude_agent_sdk', 'claude_agent_sdk.types'},
-        'test_spec_pipeline': {'claude_code_sdk', 'claude_code_sdk.types', 'init', 'client', 'review', 'task_logger', 'ui', 'validate_spec'},
-        'test_spec_complexity': {'claude_code_sdk', 'claude_code_sdk.types', 'claude_agent_sdk', 'claude_agent_sdk.types'},
-        'test_spec_phases': {'claude_code_sdk', 'claude_code_sdk.types', 'claude_agent_sdk', 'graphiti_providers', 'validate_spec', 'client'},
+        'test_qa_criteria': {'ui', 'progress', 'task_logger', 'linear_updater', 'core.client'},
+        'test_qa_report': {'ui', 'progress', 'task_logger', 'linear_updater', 'core.client'},
+        'test_qa_report_iteration': {'ui', 'progress', 'task_logger', 'linear_updater', 'core.client'},
+        'test_qa_report_recurring': {'ui', 'progress', 'task_logger', 'linear_updater', 'core.client'},
+        'test_qa_report_project_detection': {'ui', 'progress', 'task_logger', 'linear_updater', 'core.client'},
+        'test_qa_report_manual_plan': {'ui', 'progress', 'task_logger', 'linear_updater', 'core.client'},
+        'test_qa_report_config': {'ui', 'progress', 'task_logger', 'linear_updater', 'core.client'},
+        'test_qa_loop': {'core.client'},
+        'test_spec_pipeline': {'core.client', 'init', 'review', 'task_logger', 'ui', 'validate_spec'},
+        'test_spec_complexity': {'core.client'},
+        'test_spec_phases': {'core.client', 'graphiti_providers', 'validate_spec'},
     }
 
     # Get the mocks that the current test module needs to preserve
@@ -154,6 +129,45 @@ def pytest_runtest_setup(item):
                     importlib.reload(sys.modules[review_module])
                 except Exception:
                     pass
+
+
+# =============================================================================
+# PROVIDER FIXTURES
+# =============================================================================
+
+@pytest.fixture
+def codex_client() -> MockCodexClient:
+    """Return a mock Codex client with no preset responses."""
+    return MockCodexClient()
+
+
+@pytest.fixture
+def codex_client_factory():
+    """Return a factory for mock Codex clients with preset responses."""
+    def _factory(responses=None) -> MockCodexClient:
+        return MockCodexClient(responses=responses)
+    return _factory
+
+
+@pytest.fixture
+def provider_switch(monkeypatch: pytest.MonkeyPatch):
+    """Install a mock core.client module that returns a chosen provider."""
+    def _switch(provider: str = "codex", client: MockCodexClient | None = None):
+        client_instance = client or MockCodexClient()
+
+        mock_client_module = MagicMock()
+
+        def _get_client(selected: str = "codex", **kwargs):
+            if selected != provider:
+                raise ValueError(f"Unexpected provider: {selected}")
+            return client_instance
+
+        mock_client_module.get_client = _get_client
+        mock_client_module.create_client = MagicMock(return_value=client_instance)
+        monkeypatch.setitem(sys.modules, "core.client", mock_client_module)
+        return client_instance
+
+    return _switch
 
 
 # =============================================================================

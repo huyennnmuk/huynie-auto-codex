@@ -1,6 +1,6 @@
 # AI Analyzer Package
 
-A modular, well-structured package for AI-powered code analysis using Claude Agent SDK.
+A modular, well-structured package for AI-powered code analysis using Codex.
 
 ## Architecture
 
@@ -14,7 +14,7 @@ ai_analyzer/
 ├── models.py             # Data models and type definitions
 ├── runner.py             # Main orchestrator
 ├── analyzers.py          # Individual analyzer implementations
-├── claude_client.py      # Claude SDK client wrapper
+├── llm_client.py         # Provider-backed client wrapper
 ├── cost_estimator.py     # API cost estimation
 ├── cache_manager.py      # Result caching
 ├── result_parser.py      # JSON parsing utilities
@@ -45,8 +45,8 @@ ai_analyzer/
 - `AnalyzerFactory`: Creates analyzer instances
 - Each analyzer generates prompts and default results
 
-#### `claude_client.py`
-- `ClaudeAnalysisClient`: Wrapper for Claude SDK
+#### `llm_client.py`
+- `LLMAnalysisClient`: Wrapper for provider-backed client
 - Handles OAuth token validation
 - Creates security settings
 - Collects and returns responses
@@ -62,7 +62,7 @@ ai_analyzer/
 - Automatic cache invalidation
 
 #### `result_parser.py`
-- `ResultParser`: Parses JSON from Claude responses
+- `ResultParser`: Parses JSON from Codex responses
 - Multiple parsing strategies (direct, markdown blocks, extraction)
 - Fallback to default values
 

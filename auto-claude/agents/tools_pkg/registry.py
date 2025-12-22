@@ -7,13 +7,7 @@ Central registry for creating and managing auto-claude MCP tools.
 
 from pathlib import Path
 
-try:
-    from claude_agent_sdk import create_sdk_mcp_server
-
-    SDK_TOOLS_AVAILABLE = True
-except ImportError:
-    SDK_TOOLS_AVAILABLE = False
-    create_sdk_mcp_server = None
+SDK_TOOLS_AVAILABLE = False
 
 from .tools import (
     create_memory_tools,
@@ -59,12 +53,7 @@ def create_auto_claude_mcp_server(spec_dir: Path, project_dir: Path):
     Returns:
         MCP server instance, or None if SDK tools not available
     """
-    if not SDK_TOOLS_AVAILABLE:
-        return None
-
-    tools = create_all_tools(spec_dir, project_dir)
-
-    return create_sdk_mcp_server(name="auto-claude", version="1.0.0", tools=tools)
+    return None
 
 
 def is_tools_available() -> bool:

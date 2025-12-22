@@ -9,7 +9,7 @@ from typing import Any
 
 from .analyzers import AnalyzerFactory
 from .cache_manager import CacheManager
-from .claude_client import CLAUDE_SDK_AVAILABLE, ClaudeAnalysisClient
+from .llm_client import LLM_AVAILABLE, LLMAnalysisClient
 from .cost_estimator import CostEstimator
 from .models import AnalyzerType
 from .result_parser import ResultParser
@@ -29,7 +29,7 @@ class AIAnalyzerRunner:
         """
         self.project_dir = project_dir
         self.project_index = project_index
-        self.cache_manager = CacheManager(project_dir / ".auto-claude" / "ai_cache")
+        self.cache_manager = CacheManager(project_dir / ".auto-codex" / "ai_cache")
         self.cost_estimator = CostEstimator(project_dir, project_index)
         self.result_parser = ResultParser()
         self.summary_printer = SummaryPrinter()
@@ -54,9 +54,9 @@ class AIAnalyzerRunner:
         if cached_result:
             return cached_result
 
-        if not CLAUDE_SDK_AVAILABLE:
-            print("✗ Claude Agent SDK not available. Cannot run AI analysis.")
-            return {"error": "Claude SDK not installed"}
+        if not LLM_AVAILABLE:
+            print("✗ LLM provider not available. Cannot run AI analysis.")
+            return {"error": "LLM provider not available"}
 
         # Estimate cost before running
         cost_estimate = self.cost_estimator.estimate_cost()
@@ -158,7 +158,7 @@ class AIAnalyzerRunner:
         default_result = analyzer.get_default_result()
 
         # Run Claude query
-        client = ClaudeAnalysisClient(self.project_dir)
+        client = LLMAnalysisClient(self.project_dir)
         response = await client.run_analysis_query(prompt)
 
         # Parse and return result

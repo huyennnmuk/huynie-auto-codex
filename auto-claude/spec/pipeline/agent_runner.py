@@ -112,7 +112,7 @@ class AgentRunner:
         # Create client with thinking budget
         debug(
             "agent_runner",
-            "Creating Claude SDK client...",
+            "Creating Codex SDK client...",
             thinking_budget=thinking_budget,
         )
         client = create_client(
@@ -128,7 +128,7 @@ class AgentRunner:
 
         try:
             async with client:
-                debug("agent_runner", "Sending query to Claude SDK...")
+                debug("agent_runner", "Sending query to LLM SDK...")
                 await client.query(prompt)
                 debug_success("agent_runner", "Query sent successfully")
 

@@ -23,7 +23,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from .ai_resolver import AIResolver, create_claude_resolver
+from .ai_resolver import AIResolver, create_llm_resolver
 from .auto_merger import AutoMerger
 from .conflict_detector import ConflictDetector
 from .conflict_resolver import ConflictResolver
@@ -125,7 +125,7 @@ class MergeOrchestrator:
 
         Args:
             project_dir: Root directory of the project
-            storage_dir: Directory for merge data (default: .auto-claude/)
+            storage_dir: Directory for merge data (default: .auto-codex/)
             enable_ai: Whether to use AI for ambiguous conflicts
             ai_resolver: Optional pre-configured AI resolver
             dry_run: If True, don't write any files
@@ -140,7 +140,7 @@ class MergeOrchestrator:
         )
 
         self.project_dir = Path(project_dir).resolve()
-        self.storage_dir = storage_dir or (self.project_dir / ".auto-claude")
+        self.storage_dir = storage_dir or (self.project_dir / ".auto-codex")
         self.enable_ai = enable_ai
         self.dry_run = dry_run
 
@@ -176,7 +176,7 @@ class MergeOrchestrator:
         """Get the AI resolver, initializing if needed."""
         if not self._ai_resolver_initialized:
             if self.enable_ai:
-                self._ai_resolver = create_claude_resolver()
+                self._ai_resolver = create_llm_resolver()
             else:
                 self._ai_resolver = AIResolver()  # No AI function
             self._ai_resolver_initialized = True

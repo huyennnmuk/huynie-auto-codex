@@ -72,12 +72,12 @@ Successfully refactored `ai_analyzer_runner.py` from a monolithic 650-line file 
 - Factory pattern simplifies creation
 - Prompts separated from execution logic
 
-### 5. `claude_client.py` (144 lines)
+### 5. `llm_client.py` (144 lines)
 **Responsibility**: Claude SDK integration
 
 **Exports**:
-- `ClaudeAnalysisClient` class
-- `CLAUDE_SDK_AVAILABLE` flag
+- `LLMAnalysisClient` class
+- `LLM_AVAILABLE` flag
 
 **Key Features**:
 - OAuth token validation

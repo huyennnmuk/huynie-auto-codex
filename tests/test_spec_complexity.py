@@ -14,40 +14,26 @@ Tests the auto-claude/spec/complexity.py module functionality including:
 import json
 import pytest
 import sys
+import types
 from pathlib import Path
-from unittest.mock import MagicMock, patch, AsyncMock
+from unittest.mock import MagicMock, patch
 
 # Store original modules for cleanup
 _original_modules = {}
 _mocked_module_names = [
-    'claude_code_sdk',
-    'claude_code_sdk.types',
-    'claude_agent_sdk',
-    'claude_agent_sdk.types',
+    'core.client',
 ]
 
 for name in _mocked_module_names:
     if name in sys.modules:
         _original_modules[name] = sys.modules[name]
 
-# Mock claude_agent_sdk and related modules before importing spec modules
-# The SDK isn't available in the test environment
-mock_code_sdk = MagicMock()
-mock_code_sdk.ClaudeSDKClient = MagicMock()
-mock_code_sdk.ClaudeCodeOptions = MagicMock()
-mock_code_types = MagicMock()
-mock_code_types.HookMatcher = MagicMock()
-
-mock_agent_sdk = MagicMock()
-mock_agent_sdk.ClaudeAgentOptions = MagicMock()
-mock_agent_sdk.ClaudeSDKClient = MagicMock()
-mock_agent_types = MagicMock()
-mock_agent_types.HookMatcher = MagicMock()
-
-sys.modules['claude_code_sdk'] = mock_code_sdk
-sys.modules['claude_code_sdk.types'] = mock_code_types
-sys.modules['claude_agent_sdk'] = mock_agent_sdk
-sys.modules['claude_agent_sdk.types'] = mock_agent_types
+# Mock core.client before importing spec modules to avoid provider dependencies
+mock_core_client = types.SimpleNamespace(
+    create_client=MagicMock(),
+    get_client=MagicMock(),
+)
+sys.modules['core.client'] = mock_core_client
 
 # Add auto-claude directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent / "auto-claude"))

@@ -2,7 +2,7 @@
 Commit Message Generator
 ========================
 
-Generates high-quality commit messages using Claude Haiku.
+Generates high-quality commit messages using Codex CLI.
 
 Features:
 - Conventional commits format (feat/fix/refactor/etc)
@@ -141,7 +141,7 @@ def _build_prompt(
     diff_summary: str,
     files_changed: list[str],
 ) -> str:
-    """Build the prompt for Claude."""
+    """Build the prompt for the LLM provider."""
     commit_type = CATEGORY_TO_COMMIT_TYPE.get(
         spec_context.get("category", "").lower(), "chore"
     )
@@ -186,49 +186,31 @@ Fixes #N (if applicable)"""
     return prompt
 
 
-async def _call_claude_haiku(prompt: str) -> str:
-    """Call Claude Haiku with low thinking for fast commit message generation."""
-    from core.auth import ensure_claude_code_oauth_token, get_auth_token
+async def _call_codex(prompt: str) -> str:
+    """Call Codex CLI with low overhead for commit message generation."""
+    from core.client import get_client
+    from core.protocols import EventType
 
-    if not get_auth_token():
-        logger.warning("No authentication token found")
+    client = get_client()
+    if not client.is_available():
+        logger.warning("LLM provider not available")
         return ""
 
-    ensure_claude_code_oauth_token()
+    full_prompt = f"{SYSTEM_PROMPT}\n\n{prompt}"
 
     try:
-        from claude_agent_sdk import ClaudeAgentOptions, ClaudeSDKClient
-    except ImportError:
-        logger.warning("claude_agent_sdk not installed")
-        return ""
+        session_id = await client.start_session(full_prompt)
+        response_text = ""
+        async for event in client.stream_events(session_id):
+            if event.type == EventType.TEXT:
+                response_text += (
+                    event.data.get("content") or event.data.get("text") or ""
+                )
 
-    client = ClaudeSDKClient(
-        options=ClaudeAgentOptions(
-            model="claude-haiku-4-5-20251001",
-            system_prompt=SYSTEM_PROMPT,
-            allowed_tools=[],
-            max_turns=1,
-            max_thinking_tokens=1024,  # Low thinking for speed
-        )
-    )
-
-    try:
-        async with client:
-            await client.query(prompt)
-
-            response_text = ""
-            async for msg in client.receive_response():
-                msg_type = type(msg).__name__
-                if msg_type == "AssistantMessage" and hasattr(msg, "content"):
-                    for block in msg.content:
-                        if hasattr(block, "text"):
-                            response_text += block.text
-
-            logger.info(f"Generated commit message: {len(response_text)} chars")
-            return response_text.strip()
-
+        logger.info(f"Generated commit message: {len(response_text)} chars")
+        return response_text.strip()
     except Exception as e:
-        logger.error(f"Claude SDK call failed: {e}")
+        logger.error(f"Codex CLI call failed: {e}")
         print(f"    [WARN] Commit message generation failed: {e}", file=sys.stderr)
         return ""
 
@@ -254,7 +236,7 @@ def generate_commit_message_sync(
         Generated commit message or fallback message
     """
     # Find spec directory
-    spec_dir = project_dir / ".auto-claude" / "specs" / spec_name
+    spec_dir = project_dir / ".auto-codex" / "specs" / spec_name
     if not spec_dir.exists():
         # Try alternative location
         spec_dir = project_dir / "auto-claude" / "specs" / spec_name
@@ -273,7 +255,7 @@ def generate_commit_message_sync(
         files_changed or [],
     )
 
-    # Call Claude
+    # Call provider
     try:
         # Check if we're already in an async context
         try:
@@ -288,10 +270,10 @@ def generate_commit_message_sync(
 
             with concurrent.futures.ThreadPoolExecutor() as pool:
                 result = pool.submit(
-                    lambda: asyncio.run(_call_claude_haiku(prompt))
+                    lambda: asyncio.run(_call_codex(prompt))
                 ).result()
         else:
-            result = asyncio.run(_call_claude_haiku(prompt))
+            result = asyncio.run(_call_codex(prompt))
 
         if result:
             return result
@@ -333,7 +315,7 @@ async def generate_commit_message(
         Generated commit message or fallback message
     """
     # Find spec directory
-    spec_dir = project_dir / ".auto-claude" / "specs" / spec_name
+    spec_dir = project_dir / ".auto-codex" / "specs" / spec_name
     if not spec_dir.exists():
         spec_dir = project_dir / "auto-claude" / "specs" / spec_name
 
@@ -351,9 +333,9 @@ async def generate_commit_message(
         files_changed or [],
     )
 
-    # Call Claude
+    # Call provider
     try:
-        result = await _call_claude_haiku(prompt)
+        result = await _call_codex(prompt)
         if result:
             return result
     except Exception as e:

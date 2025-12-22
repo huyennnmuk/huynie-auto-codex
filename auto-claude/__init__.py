@@ -1,6 +1,6 @@
 """
-Auto Claude - Autonomous Coding Framework
-==========================================
+Auto Codex - Autonomous Coding Framework
+========================================
 
 Multi-agent autonomous coding framework that builds software through
 coordinated AI agent sessions.

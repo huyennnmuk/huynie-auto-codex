@@ -1,129 +1,71 @@
 """
-Authentication helpers for Auto Claude.
+Authentication helpers for Auto Codex.
 
-Provides centralized authentication token resolution with fallback support
-for multiple environment variables, and SDK environment variable passthrough
-for custom API endpoints.
+Provides centralized authentication token resolution with back-compat warnings
+for legacy LLM OAuth tokens, plus SDK environment variable passthrough.
 """
 
-import json
 import os
-import platform
-import subprocess
+import re
 
 # Priority order for auth token resolution
-# NOTE: We intentionally do NOT fall back to ANTHROPIC_API_KEY.
-# Auto Claude is designed to use Claude Code OAuth tokens only.
-# This prevents silent billing to user's API credits when OAuth fails.
+# NOTE: Auto Codex targets OpenAI Codex and requires an OpenAI API key.
 AUTH_TOKEN_ENV_VARS = [
-    "CLAUDE_CODE_OAUTH_TOKEN",  # OAuth token from Claude Code CLI
-    "ANTHROPIC_AUTH_TOKEN",  # CCR/proxy token (for enterprise setups)
+    "OPENAI_API_KEY",
+]
+
+# Legacy environment variables that should be migrated
+DEPRECATED_AUTH_ENV_VARS = [
+    "CLAUDE_CODE_OAUTH_TOKEN",
 ]
 
 # Environment variables to pass through to SDK subprocess
-# NOTE: ANTHROPIC_API_KEY is intentionally excluded to prevent silent API billing
 SDK_ENV_VARS = [
-    "ANTHROPIC_BASE_URL",
-    "ANTHROPIC_AUTH_TOKEN",
+    "OPENAI_API_KEY",
     "NO_PROXY",
     "DISABLE_TELEMETRY",
     "DISABLE_COST_WARNINGS",
     "API_TIMEOUT_MS",
 ]
 
+_OPENAI_KEY_PATTERN = re.compile(r"^sk-[A-Za-z0-9-]{20,}$")
 
-def get_token_from_keychain() -> str | None:
-    """
-    Get authentication token from macOS Keychain.
 
-    Reads Claude Code credentials from macOS Keychain and extracts the OAuth token.
-    Only works on macOS (Darwin platform).
+def is_valid_openai_api_key(token: str) -> bool:
+    """Return True if the token matches expected OpenAI API key format."""
+    return bool(_OPENAI_KEY_PATTERN.match(token or ""))
 
-    Returns:
-        Token string if found in Keychain, None otherwise
-    """
-    # Only attempt on macOS
-    if platform.system() != "Darwin":
-        return None
 
-    try:
-        # Query macOS Keychain for Claude Code credentials
-        result = subprocess.run(
-            [
-                "/usr/bin/security",
-                "find-generic-password",
-                "-s",
-                "Claude Code-credentials",
-                "-w",
-            ],
-            capture_output=True,
-            text=True,
-            timeout=5,
-        )
-
-        if result.returncode != 0:
-            return None
-
-        # Parse JSON response
-        credentials_json = result.stdout.strip()
-        if not credentials_json:
-            return None
-
-        data = json.loads(credentials_json)
-
-        # Extract OAuth token from nested structure
-        token = data.get("claudeAiOauth", {}).get("accessToken")
-
-        if not token:
-            return None
-
-        # Validate token format (Claude OAuth tokens start with sk-ant-oat01-)
-        if not token.startswith("sk-ant-oat01-"):
-            return None
-
-        return token
-
-    except (subprocess.TimeoutExpired, json.JSONDecodeError, KeyError, Exception):
-        # Silently fail - this is a fallback mechanism
-        return None
+def get_deprecated_auth_token() -> str | None:
+    """Return the legacy LLM OAuth token if present (deprecated)."""
+    for var in DEPRECATED_AUTH_ENV_VARS:
+        token = os.environ.get(var)
+        if token:
+            return token
+    return None
 
 
 def get_auth_token() -> str | None:
     """
-    Get authentication token from environment variables or macOS Keychain.
+    Get authentication token from environment variables.
 
-    Checks multiple sources in priority order:
-    1. CLAUDE_CODE_OAUTH_TOKEN (env var)
-    2. ANTHROPIC_AUTH_TOKEN (CCR/proxy env var for enterprise setups)
-    3. macOS Keychain (if on Darwin platform)
-
-    NOTE: ANTHROPIC_API_KEY is intentionally NOT supported to prevent
-    silent billing to user's API credits when OAuth is misconfigured.
+    Checks sources in priority order:
+    1. OPENAI_API_KEY (env var)
 
     Returns:
         Token string if found, None otherwise
     """
-    # First check environment variables
-    for var in AUTH_TOKEN_ENV_VARS:
-        token = os.environ.get(var)
-        if token:
-            return token
-
-    # Fallback to macOS Keychain
-    return get_token_from_keychain()
+    token = os.environ.get(AUTH_TOKEN_ENV_VARS[0], "")
+    if token and is_valid_openai_api_key(token):
+        return token
+    return None
 
 
 def get_auth_token_source() -> str | None:
     """Get the name of the source that provided the auth token."""
-    # Check environment variables first
-    for var in AUTH_TOKEN_ENV_VARS:
-        if os.environ.get(var):
-            return var
-
-    # Check if token came from macOS Keychain
-    if get_token_from_keychain():
-        return "macOS Keychain"
-
+    token = os.environ.get(AUTH_TOKEN_ENV_VARS[0], "")
+    if token and is_valid_openai_api_key(token):
+        return AUTH_TOKEN_ENV_VARS[0]
     return None
 
 
@@ -135,36 +77,36 @@ def require_auth_token() -> str:
         ValueError: If no auth token is found in any supported source
     """
     token = get_auth_token()
-    if not token:
-        error_msg = (
-            "No OAuth token found.\n\n"
-            "Auto Claude requires Claude Code OAuth authentication.\n"
-            "Direct API keys (ANTHROPIC_API_KEY) are not supported.\n\n"
+    if token:
+        return token
+
+    openai_token = os.environ.get(AUTH_TOKEN_ENV_VARS[0], "")
+    if openai_token and not is_valid_openai_api_key(openai_token):
+        raise ValueError(
+            "Invalid OPENAI_API_KEY format.\n"
+            "Expected a key starting with 'sk-' (e.g., sk-...)."
         )
-        # Provide platform-specific guidance
-        if platform.system() == "Darwin":
-            error_msg += (
-                "To authenticate:\n"
-                "  1. Run: claude setup-token\n"
-                "  2. The token will be saved to macOS Keychain automatically\n\n"
-                "Or set CLAUDE_CODE_OAUTH_TOKEN in your .env file."
-            )
-        else:
-            error_msg += (
-                "To authenticate:\n"
-                "  1. Run: claude setup-token\n"
-                "  2. Set CLAUDE_CODE_OAUTH_TOKEN in your .env file"
-            )
-        raise ValueError(error_msg)
-    return token
+
+    deprecated_token = get_deprecated_auth_token()
+    if deprecated_token:
+        raise ValueError(
+            "Detected CLAUDE_CODE_OAUTH_TOKEN, but Codex now requires OPENAI_API_KEY.\n"
+            "Please migrate by setting OPENAI_API_KEY in your environment and remove "
+            "CLAUDE_CODE_OAUTH_TOKEN once complete."
+        )
+
+    raise ValueError(
+        "No OpenAI API key found.\n\n"
+        "Auto Codex uses OpenAI Codex.\n"
+        "Set OPENAI_API_KEY in your .env file or environment."
+    )
 
 
 def get_sdk_env_vars() -> dict[str, str]:
     """
     Get environment variables to pass to SDK.
 
-    Collects relevant env vars (ANTHROPIC_BASE_URL, etc.) that should
-    be passed through to the claude-agent-sdk subprocess.
+    Collects relevant env vars that should be passed through to subprocesses.
 
     Returns:
         Dict of env var name -> value for non-empty vars
@@ -177,16 +119,15 @@ def get_sdk_env_vars() -> dict[str, str]:
     return env
 
 
+def ensure_openai_api_key() -> None:
+    """Ensure a valid OPENAI_API_KEY is set, raising a helpful error if not."""
+    require_auth_token()
+
+
 def ensure_claude_code_oauth_token() -> None:
     """
-    Ensure CLAUDE_CODE_OAUTH_TOKEN is set (for SDK compatibility).
+    Deprecated shim for legacy call sites.
 
-    If not set but other auth tokens are available, copies the value
-    to CLAUDE_CODE_OAUTH_TOKEN so the underlying SDK can use it.
+    Ensures a valid OPENAI_API_KEY is set, and raises a helpful error if not.
     """
-    if os.environ.get("CLAUDE_CODE_OAUTH_TOKEN"):
-        return
-
-    token = get_auth_token()
-    if token:
-        os.environ["CLAUDE_CODE_OAUTH_TOKEN"] = token
+    ensure_openai_api_key()

@@ -100,13 +100,13 @@ else:
     cache.save_result(insights)
 ```
 
-### Custom Analysis with Claude Client
+### Custom Analysis with Codex Client
 
 ```python
-from ai_analyzer.claude_client import ClaudeAnalysisClient
+from ai_analyzer.llm_client import LLMAnalysisClient
 
 # Create client for custom queries
-client = ClaudeAnalysisClient(project_dir)
+client = LLMAnalysisClient(project_dir)
 
 # Run custom analysis
 custom_prompt = """
@@ -127,7 +127,7 @@ from ai_analyzer.analyzers import (
     SecurityAnalyzer,
     PerformanceAnalyzer
 )
-from ai_analyzer.claude_client import ClaudeAnalysisClient
+from ai_analyzer.llm_client import LLMAnalysisClient
 from ai_analyzer.result_parser import ResultParser
 
 # Create analyzer using factory
@@ -139,8 +139,8 @@ analyzer = SecurityAnalyzer(project_index)
 # Get the analysis prompt
 prompt = analyzer.get_prompt()
 
-# Run analysis with Claude
-client = ClaudeAnalysisClient(project_dir)
+# Run analysis with Codex
+client = LLMAnalysisClient(project_dir)
 response = asyncio.run(client.run_analysis_query(prompt))
 
 # Parse result
@@ -365,18 +365,17 @@ if __name__ == "__main__":
 
 ```python
 from ai_analyzer import AIAnalyzerRunner
-from ai_analyzer.claude_client import CLAUDE_SDK_AVAILABLE
+from ai_analyzer.llm_client import LLM_AVAILABLE
 
-# Check SDK availability
-if not CLAUDE_SDK_AVAILABLE:
-    print("Please install: pip install claude-agent-sdk")
+# Check Codex CLI availability
+if not LLM_AVAILABLE:
+    print("Please install: npm install -g @openai/codex-cli")
     exit(1)
 
-# Handle missing OAuth token
+# Handle missing API key
 import os
-if not os.environ.get("CLAUDE_CODE_OAUTH_TOKEN"):
-    print("Please set CLAUDE_CODE_OAUTH_TOKEN")
-    print("Run: claude setup-token")
+if not os.environ.get("OPENAI_API_KEY"):
+    print("Please set OPENAI_API_KEY")
     exit(1)
 
 # Handle analysis errors gracefully

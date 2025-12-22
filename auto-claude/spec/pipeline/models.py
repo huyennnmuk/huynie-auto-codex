@@ -10,7 +10,7 @@ import shutil
 from datetime import datetime, timedelta
 from pathlib import Path
 
-from init import init_auto_claude_dir
+from init import init_auto_codex_dir
 from task_logger import update_task_logger_path
 from ui import Icons, highlight, print_status
 
@@ -18,24 +18,24 @@ from ui import Icons, highlight, print_status
 def get_specs_dir(project_dir: Path, dev_mode: bool = False) -> Path:
     """Get the specs directory path.
 
-    IMPORTANT: Only .auto-claude/ is considered an "installed" auto-claude.
+    IMPORTANT: Only .auto-codex/ is considered an "installed" auto-claude.
     The auto-claude/ folder (if it exists) is SOURCE CODE being developed,
-    not an installation. This allows Auto Claude to be used to develop itself.
+    not an installation. This allows Auto Codex to be used to develop itself.
 
-    This function also ensures .auto-claude is added to .gitignore on first use.
+    This function also ensures .auto-codex is added to .gitignore on first use.
 
     Args:
         project_dir: The project root directory
         dev_mode: Deprecated, kept for API compatibility. Has no effect.
 
     Returns:
-        Path to the specs directory within .auto-claude/
+        Path to the specs directory within .auto-codex/
     """
-    # Initialize .auto-claude directory and ensure it's in .gitignore
-    init_auto_claude_dir(project_dir)
+    # Initialize .auto-codex directory and ensure it's in .gitignore
+    init_auto_codex_dir(project_dir)
 
     # Return the specs directory path
-    return project_dir / ".auto-claude" / "specs"
+    return project_dir / ".auto-codex" / "specs"
 
 
 def cleanup_orphaned_pending_folders(specs_dir: Path) -> None:

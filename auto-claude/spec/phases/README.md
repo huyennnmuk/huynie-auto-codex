@@ -2,13 +2,13 @@
 
 ## Overview
 
-The `phases.py` file (originally 720 lines) has been refactored into a well-organized subpackage for improved maintainability and code quality.
+The `phases.py` file (originally 720 lines) has been refactored into a well-organized subpackage for improved maintainability and code quality. These phases drive the Codex workflow from discovery through planning, so the CLI can move from context gathering to a concrete implementation plan.
 
 ## Structure
 
 ### Before Refactoring
 ```
-auto-claude/spec/
+auto-codex/spec/
 └── phases.py (720 lines)
     ├── PhaseResult dataclass
     ├── PhaseExecutor class with 12 phase methods
@@ -17,7 +17,7 @@ auto-claude/spec/
 
 ### After Refactoring
 ```
-auto-claude/spec/
+auto-codex/spec/
 ├── phases.py (14 lines - entry point)
 └── phases/
     ├── __init__.py (19 lines)
@@ -53,7 +53,7 @@ auto-claude/spec/
 ### `spec_phases.py` (SpecPhaseMixin)
 - `phase_quick_spec()` - Simple task spec creation
 - `phase_spec_writing()` - Full spec.md document creation
-- `phase_self_critique()` - AI-powered spec validation
+- `phase_self_critique()` - Codex-assisted spec validation
 
 ### `planning_phases.py` (PlanningPhaseMixin)
 - `phase_planning()` - Implementation plan generation
@@ -85,6 +85,14 @@ The refactoring uses the **Mixin Pattern** to separate concerns:
 4. **Testability**: Individual mixins can be tested in isolation
 5. **Extensibility**: New phases can be added without modifying existing code
 6. **Type Safety**: Proper type hints throughout
+
+## Codex Workflow Fit
+
+The refactored mixins align with the Codex pipeline:
+- **Discovery**: Inventory the repo and gather focused context
+- **Requirements**: Capture intent, constraints, and external checks
+- **Spec**: Produce a clear, testable spec and validate it
+- **Planning**: Generate an actionable, ordered implementation plan
 
 ## File Size Comparison
 

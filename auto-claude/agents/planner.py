@@ -55,7 +55,7 @@ async def run_followup_planner(
     Args:
         project_dir: Root directory for the project
         spec_dir: Directory containing the completed spec
-        model: Claude model to use
+        model: LLM model to use
         verbose: Whether to show detailed output
 
     Returns:

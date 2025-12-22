@@ -151,7 +151,7 @@ def get_changed_files_from_branch(
         project_dir: Project directory
         base_branch: Base branch name
         spec_branch: Spec branch name
-        exclude_auto_claude: If True, exclude .auto-claude directory files (default True)
+        exclude_auto_claude: If True, exclude .auto-codex directory files (default True)
 
     Returns:
         List of (file_path, status) tuples
@@ -170,7 +170,7 @@ def get_changed_files_from_branch(
                 parts = line.split("\t", 1)
                 if len(parts) == 2:
                     file_path = parts[1]
-                    # Exclude .auto-claude directory files from merge
+                    # Exclude .auto-codex directory files from merge
                     if exclude_auto_claude and _is_auto_claude_file(file_path):
                         continue
                     files.append((file_path, parts[0]))  # (file_path, status)
@@ -178,11 +178,11 @@ def get_changed_files_from_branch(
 
 
 def _is_auto_claude_file(file_path: str) -> bool:
-    """Check if a file is in the .auto-claude or auto-claude/specs directory."""
-    # These patterns cover the internal spec/build files that shouldn't be merged
+    """Check if a file is in the .auto-codex or auto-codex/specs directory."""
+    # These patterns cover the internal spec/build files that shouldn't be merged.
     excluded_patterns = [
-        ".auto-claude/",
-        "auto-claude/specs/",
+        ".auto-codex/",
+        "auto-codex/specs/",
     ]
     for pattern in excluded_patterns:
         if file_path.startswith(pattern):

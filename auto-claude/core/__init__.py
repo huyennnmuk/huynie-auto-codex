@@ -2,7 +2,7 @@
 Core Framework Module
 =====================
 
-Core components for the Auto Claude autonomous coding framework.
+Core components for the Auto Codex autonomous coding framework.
 """
 
 # Note: We use lazy imports here because the full agent module has many dependencies
@@ -14,6 +14,9 @@ __all__ = [
     "WorkspaceManager",
     "WorktreeManager",
     "ProgressTracker",
+    "create_client",
+    "get_client",
+    "CodexClientAdapter",
 ]
 
 
@@ -35,7 +38,7 @@ def __getattr__(name):
         from .progress import ProgressTracker
 
         return ProgressTracker
-    elif name in ("create_claude_client", "ClaudeClient"):
+    elif name in ("create_client", "get_client", "CodexClientAdapter"):
         from . import client as _client
 
         return getattr(_client, name)

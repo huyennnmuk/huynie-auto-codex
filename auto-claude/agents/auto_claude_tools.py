@@ -1,11 +1,9 @@
 """
-Custom MCP Tools for Auto-Claude Agents
-========================================
+Custom MCP Tools for Auto-Codex Agents
+======================================
 
 DEPRECATED: This module is now a compatibility shim.
-Please import from the tools_pkg package instead:
-
-    from agents.tools_pkg import create_auto_claude_mcp_server, get_allowed_tools
+Please import from the tools_pkg package instead.
 
 This file remains for backward compatibility with existing imports.
 All functionality has been moved to the tools_pkg package for better

@@ -1,7 +1,7 @@
 """
 AI-powered idea generation.
 
-Uses Claude agents to generate ideas of different types:
+Uses Codex agents to generate ideas of different types:
 - Code improvements
 - UI/UX improvements
 - Documentation gaps
@@ -16,7 +16,7 @@ from pathlib import Path
 # Add auto-claude to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from client import create_client
+from core.client import create_client
 from phase_config import get_thinking_budget
 from ui import print_status
 
@@ -56,7 +56,7 @@ class IdeationGenerator:
         self,
         project_dir: Path,
         output_dir: Path,
-        model: str = "claude-opus-4-5-20251101",
+        model: str = "gpt-5.2-codex",
         thinking_level: str = "medium",
         max_ideas_per_type: int = 5,
     ):

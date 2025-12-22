@@ -38,7 +38,7 @@ import sys
 # Python version check - must be before any imports using 3.10+ syntax
 if sys.version_info < (3, 10):  # noqa: UP036
     sys.exit(
-        f"Error: Auto Claude requires Python 3.10 or higher.\n"
+        f"Error: Auto Codex requires Python 3.10 or higher.\n"
         f"You are running Python {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}\n"
         f"\n"
         f"Please upgrade Python: https://www.python.org/downloads/"
@@ -91,6 +91,7 @@ if env_file.exists():
 elif dev_env_file.exists():
     load_dotenv(dev_env_file)
 
+from core.auth import get_deprecated_auth_token, is_valid_openai_api_key
 from debug import debug, debug_error, debug_section, debug_success
 from phase_config import resolve_model_id
 from review import ReviewState
@@ -200,6 +201,22 @@ Examples:
 
     args = parser.parse_args()
 
+    # Validate authentication early for clearer UX
+    openai_key = os.environ.get("OPENAI_API_KEY", "")
+    if not openai_key:
+        if get_deprecated_auth_token():
+            print("Error: Detected deprecated CLAUDE_CODE_OAUTH_TOKEN")
+            print("Auto Codex requires OPENAI_API_KEY.")
+            print("Migrate by setting OPENAI_API_KEY in your .env file.")
+        else:
+            print("Error: No OpenAI API key found")
+            print("Set OPENAI_API_KEY in your .env file or environment.")
+        sys.exit(1)
+    if not is_valid_openai_api_key(openai_key):
+        print("Error: Invalid OPENAI_API_KEY format")
+        print("Expected a key starting with 'sk-' (e.g., sk-...).")
+        sys.exit(1)
+
     # Handle task from file if provided
     task_description = args.task
     if args.task_file:
@@ -228,18 +245,18 @@ Examples:
     if project_dir.name == "auto-claude" and (project_dir / "run.py").exists():
         # Running from within auto-claude/ source directory, go up 1 level
         project_dir = project_dir.parent
-    elif not (project_dir / ".auto-claude").exists():
-        # No .auto-claude folder found - try to find project root
-        # First check for .auto-claude (installed instance)
+    elif not (project_dir / ".auto-codex").exists():
+        # No .auto-codex folder found - try to find project root
+        # First check for .auto-codex (installed instance)
         for parent in project_dir.parents:
-            if (parent / ".auto-claude").exists():
+            if (parent / ".auto-codex").exists():
                 project_dir = parent
                 break
 
     # Note: --dev flag is deprecated but kept for API compatibility
     if args.dev:
         print(
-            f"\n{icon(Icons.GEAR)} Note: --dev flag is deprecated. All specs now go to .auto-claude/specs/\n"
+            f"\n{icon(Icons.GEAR)} Note: --dev flag is deprecated. All specs now go to .auto-codex/specs/\n"
         )
 
     # Resolve model shorthand to full model ID

@@ -3,7 +3,7 @@
 AI-Enhanced Project Analyzer - CLI Entry Point
 
 Runs AI analysis to extract deep insights after programmatic analysis.
-Uses Claude Agent SDK for intelligent codebase understanding.
+Uses Codex Agent SDK for intelligent codebase understanding.
 
 Example:
     # Run full analysis
@@ -25,7 +25,9 @@ def main() -> int:
     """CLI entry point."""
     import argparse
 
-    parser = argparse.ArgumentParser(description="AI-Enhanced Project Analyzer")
+    parser = argparse.ArgumentParser(
+        description="AI-Enhanced Project Analyzer (Codex Agent SDK)"
+    )
     parser.add_argument(
         "--project-dir",
         type=Path,

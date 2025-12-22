@@ -9,14 +9,16 @@ summarized and passed as context to subsequent phases.
 
 from pathlib import Path
 
-from claude_agent_sdk import ClaudeAgentOptions, ClaudeSDKClient
-from core.auth import get_sdk_env_vars, require_auth_token
+from core.auth import require_auth_token
+from core.client import create_client
 
 
 async def summarize_phase_output(
     phase_name: str,
     phase_output: str,
-    model: str = "claude-sonnet-4-5-20250929",
+    project_dir: Path | None = None,
+    spec_dir: Path | None = None,
+    model: str = "gpt-5.2-codex",
     target_words: int = 500,
 ) -> str:
     """
@@ -58,23 +60,21 @@ Be concise and use bullet points. Skip boilerplate and meta-commentary.
 ## Summary:
 """
 
-    client = ClaudeSDKClient(
-        options=ClaudeAgentOptions(
-            model=model,
-            system_prompt=(
-                "You are a concise technical summarizer. Extract only the most "
-                "critical information from phase outputs. Use bullet points. "
-                "Focus on decisions, discoveries, and actionable insights."
-            ),
-            allowed_tools=[],  # No tools needed for summarization
-            max_turns=1,
-            env=get_sdk_env_vars(),
-        )
+    system_prompt = (
+        "You are a concise technical summarizer. Extract only the most "
+        "critical information from phase outputs. Use bullet points. "
+        "Focus on decisions, discoveries, and actionable insights."
+    )
+    client = create_client(
+        project_dir=project_dir,
+        spec_dir=spec_dir,
+        model=model,
+        agent_type="planner",
     )
 
     try:
         async with client:
-            await client.query(prompt)
+            await client.query(f"{system_prompt}\n\n{prompt}")
             response_text = ""
             async for msg in client.receive_response():
                 if hasattr(msg, "content"):

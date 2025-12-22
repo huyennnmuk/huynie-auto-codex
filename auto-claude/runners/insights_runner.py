@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Insights Runner - AI chat for codebase insights using Claude SDK
+Insights Runner - AI chat for codebase insights using Codex
 
 This script provides an AI-powered chat interface for asking questions
 about a codebase. It can also suggest tasks based on the conversation.
@@ -22,16 +22,8 @@ env_file = Path(__file__).parent.parent / ".env"
 if env_file.exists():
     load_dotenv(env_file)
 
-try:
-    from claude_agent_sdk import ClaudeAgentOptions, ClaudeSDKClient
-
-    SDK_AVAILABLE = True
-except ImportError:
-    SDK_AVAILABLE = False
-    ClaudeAgentOptions = None
-    ClaudeSDKClient = None
-
-from core.auth import ensure_claude_code_oauth_token, get_auth_token
+from core.auth import get_auth_token
+from core.client import create_client
 from debug import (
     debug,
     debug_detailed,
@@ -45,8 +37,8 @@ def load_project_context(project_dir: str) -> str:
     """Load project context for the AI."""
     context_parts = []
 
-    # Load project index if available (from .auto-claude - the installed instance)
-    index_path = Path(project_dir) / ".auto-claude" / "project_index.json"
+    # Load project index if available (from .auto-codex - the installed instance)
+    index_path = Path(project_dir) / ".auto-codex" / "project_index.json"
     if index_path.exists():
         try:
             with open(index_path) as f:
@@ -65,7 +57,7 @@ def load_project_context(project_dir: str) -> str:
             pass
 
     # Load roadmap if available
-    roadmap_path = Path(project_dir) / ".auto-claude" / "roadmap" / "roadmap.json"
+    roadmap_path = Path(project_dir) / ".auto-codex" / "roadmap" / "roadmap.json"
     if roadmap_path.exists():
         try:
             with open(roadmap_path) as f:
@@ -83,7 +75,7 @@ def load_project_context(project_dir: str) -> str:
             pass
 
     # Load existing tasks
-    tasks_path = Path(project_dir) / ".auto-claude" / "specs"
+    tasks_path = Path(project_dir) / ".auto-codex" / "specs"
     if tasks_path.exists():
         try:
             task_dirs = [d for d in tasks_path.iterdir() if d.is_dir()]
@@ -128,19 +120,14 @@ Be conversational and helpful. Focus on providing actionable insights and clear 
 Keep responses concise but informative."""
 
 
-async def run_with_sdk(
+async def run_with_client(
     project_dir: str,
     message: str,
     history: list,
-    model: str = "claude-sonnet-4-5-20250929",
+    model: str = "gpt-5.2-codex",
     thinking_level: str = "medium",
 ) -> None:
-    """Run the chat using Claude SDK with streaming."""
-    if not SDK_AVAILABLE:
-        print("Claude SDK not available, falling back to simple mode", file=sys.stderr)
-        run_simple(project_dir, message, history)
-        return
-
+    """Run the chat using the Codex client adapter with streaming."""
     if not get_auth_token():
         print(
             "No authentication token found, falling back to simple mode",
@@ -148,9 +135,6 @@ async def run_with_sdk(
         )
         run_simple(project_dir, message, history)
         return
-
-    # Ensure SDK can find the token
-    ensure_claude_code_oauth_token()
 
     system_prompt = build_system_prompt(project_dir)
     project_path = Path(project_dir).resolve()
@@ -177,25 +161,18 @@ Current question: {message}"""
     )
 
     try:
-        # Create Claude SDK client with appropriate settings for insights
-        client = ClaudeSDKClient(
-            options=ClaudeAgentOptions(
-                model=model,  # Use configured model
-                system_prompt=system_prompt,
-                allowed_tools=[
-                    "Read",
-                    "Glob",
-                    "Grep",
-                ],
-                max_turns=30,  # Allow sufficient turns for codebase exploration
-                cwd=str(project_path),
-            )
+        # Create Codex client with appropriate settings for insights
+        client = create_client(
+            project_dir=project_path,
+            spec_dir=None,
+            model=model,
+            agent_type="planner",
         )
 
         # Use async context manager pattern
         async with client:
             # Send the query
-            await client.query(full_prompt)
+            await client.query(f"{system_prompt}\n\n{full_prompt}")
 
             # Stream the response
             response_text = ""
@@ -245,14 +222,15 @@ Current question: {message}"""
                                 flush=True,
                             )
 
-                elif msg_type == "ToolResult":
-                    # Tool finished executing
-                    if current_tool:
-                        print(
-                            f"__TOOL_END__:{json.dumps({'name': current_tool})}",
-                            flush=True,
-                        )
-                        current_tool = None
+                elif msg_type == "UserMessage" and hasattr(msg, "content"):
+                    for block in msg.content:
+                        block_type = type(block).__name__
+                        if block_type == "ToolResultBlock" and current_tool:
+                            print(
+                                f"__TOOL_END__:{json.dumps({'name': current_tool})}",
+                                flush=True,
+                            )
+                            current_tool = None
 
             # Ensure we have a newline at the end
             if response_text and not response_text.endswith("\n"):
@@ -265,7 +243,7 @@ Current question: {message}"""
             )
 
     except Exception as e:
-        print(f"Error using Claude SDK: {e}", file=sys.stderr)
+        print(f"Error using Codex client: {e}", file=sys.stderr)
         import traceback
 
         traceback.print_exc(file=sys.stderr)
@@ -273,7 +251,7 @@ Current question: {message}"""
 
 
 def run_simple(project_dir: str, message: str, history: list) -> None:
-    """Simple fallback mode without SDK - uses subprocess to call claude CLI."""
+    """Simple fallback mode without Codex client - uses subprocess to call codex."""
     import subprocess
 
     system_prompt = build_system_prompt(project_dir)
@@ -294,34 +272,35 @@ User: {message}
 Assistant:"""
 
     try:
-        # Try to use claude CLI with --print for simple output
+        # Try to use codex CLI with JSON output for simple text
         result = subprocess.run(
-            ["claude", "--print", "-p", full_prompt],
+            ["codex", "exec", "--json", "-"],
             capture_output=True,
             text=True,
             cwd=project_dir,
             timeout=120,
+            input=full_prompt,
         )
 
         if result.returncode == 0:
             print(result.stdout)
         else:
-            # Fallback response if claude CLI fails
+            # Fallback response if codex CLI fails
             print(
                 f"I apologize, but I encountered an issue processing your request. "
-                f"Please ensure Claude CLI is properly configured.\n\n"
+                f"Please ensure Codex CLI is properly configured.\n\n"
                 f"Your question was: {message}\n\n"
                 f"Based on the project context available, I can help you with:\n"
                 f"- Understanding the codebase structure\n"
                 f"- Suggesting improvements\n"
                 f"- Planning new features\n\n"
-                f"Please try again or check your Claude CLI configuration."
+                f"Please try again or check your Codex CLI configuration."
             )
 
     except subprocess.TimeoutExpired:
         print("Request timed out. Please try a shorter query.")
     except FileNotFoundError:
-        print("Claude CLI not found. Please ensure it is installed and in your PATH.")
+        print("Codex CLI not found. Please ensure it is installed and in your PATH.")
     except Exception as e:
         print(f"Error: {e}")
 
@@ -336,8 +315,8 @@ def main():
     )
     parser.add_argument(
         "--model",
-        default="claude-sonnet-4-5-20250929",
-        help="Claude model ID (default: claude-sonnet-4-5-20250929)",
+        default="gpt-5.2-codex",
+        help="Codex model ID (default: gpt-5.2-codex)",
     )
     parser.add_argument(
         "--thinking-level",
@@ -387,7 +366,9 @@ def main():
 
     # Run the async SDK function
     debug("insights_runner", "Running SDK query")
-    asyncio.run(run_with_sdk(project_dir, user_message, history, model, thinking_level))
+    asyncio.run(
+        run_with_client(project_dir, user_message, history, model, thinking_level)
+    )
     debug_success("insights_runner", "Query completed")
 
 

@@ -1,8 +1,8 @@
 """
-Auto Claude CLI - Main Entry Point
-===================================
+Auto Codex CLI - Main Entry Point
+=================================
 
-Command-line interface for the Auto Claude autonomous coding framework.
+Command-line interface for the Auto Codex autonomous coding framework.
 """
 
 import argparse
@@ -73,11 +73,10 @@ Examples:
 
 Prerequisites:
   1. Create a spec first: claude /spec
-  2. Run 'claude setup-token' and set CLAUDE_CODE_OAUTH_TOKEN
+  2. Set OPENAI_API_KEY for Codex access
 
 Environment Variables:
-  CLAUDE_CODE_OAUTH_TOKEN  Your Claude Code OAuth token (required)
-                           Get it by running: claude setup-token
+  OPENAI_API_KEY           Your OpenAI API key (required)
   AUTO_BUILD_MODEL         Override default model (optional)
         """,
     )
@@ -264,7 +263,7 @@ def main() -> None:
     # Note: --dev flag is deprecated but kept for API compatibility
     if args.dev:
         print(
-            f"\n{icon(Icons.GEAR)} Note: --dev flag is deprecated. All specs now use .auto-claude/specs/\n"
+            f"\n{icon(Icons.GEAR)} Note: --dev flag is deprecated. All specs now use .auto-codex/specs/\n"
         )
 
     # Handle --list command

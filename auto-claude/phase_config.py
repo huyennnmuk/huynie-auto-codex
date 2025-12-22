@@ -12,9 +12,7 @@ from typing import Literal, TypedDict
 
 # Model shorthand to full model ID mapping
 MODEL_ID_MAP: dict[str, str] = {
-    "opus": "claude-opus-4-5-20251101",
-    "sonnet": "claude-sonnet-4-5-20250929",
-    "haiku": "claude-haiku-4-5-20251001",
+    "codex": "gpt-5.2-codex",
 }
 
 # Thinking level to budget tokens mapping (None = no extended thinking)
@@ -48,10 +46,10 @@ SPEC_PHASE_THINKING_LEVELS: dict[str, str] = {
 
 # Default phase configuration (matches UI defaults)
 DEFAULT_PHASE_MODELS: dict[str, str] = {
-    "spec": "sonnet",
-    "planning": "opus",
-    "coding": "sonnet",
-    "qa": "sonnet",
+    "spec": "codex",
+    "planning": "codex",
+    "coding": "codex",
+    "qa": "codex",
 }
 
 DEFAULT_PHASE_THINKING: dict[str, str] = {
@@ -91,14 +89,14 @@ Phase = Literal["spec", "planning", "coding", "qa"]
 
 def resolve_model_id(model: str) -> str:
     """
-    Resolve a model shorthand (haiku, sonnet, opus) to a full model ID.
+    Resolve a model shorthand (codex) to a full model ID.
     If the model is already a full ID, return it unchanged.
 
     Args:
         model: Model shorthand or full ID
 
     Returns:
-        Full Claude model ID
+        Full Codex model ID
     """
     # Check if it's a shorthand
     if model in MODEL_ID_MAP:

@@ -11,8 +11,8 @@ from .models import CostEstimate
 class CostEstimator:
     """Estimates API costs before running analysis."""
 
-    # Claude Sonnet pricing per 1M tokens (input)
-    COST_PER_1M_TOKENS = 9.00
+    # Default pricing per 1M input tokens (USD); update to match your provider.
+    COST_PER_1M_TOKENS = 5.00
 
     # Token estimation factors
     TOKENS_PER_ROUTE = 500

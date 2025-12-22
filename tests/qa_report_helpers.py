@@ -6,10 +6,11 @@ QA Report Test Helpers
 Shared mocking setup and utilities for qa/report.py tests.
 
 This module provides the mock setup required to test the qa/report.py module
-without importing the Claude SDK which is not available in the test environment.
+without importing provider dependencies that are not available in the test environment.
 """
 
 import sys
+import types
 from pathlib import Path
 from typing import Any, Dict, List
 from unittest.mock import MagicMock
@@ -21,12 +22,11 @@ from unittest.mock import MagicMock
 # Store original modules for cleanup
 _original_modules: Dict[str, Any] = {}
 _mocked_module_names: List[str] = [
-    'claude_agent_sdk',
     'ui',
     'progress',
     'task_logger',
     'linear_updater',
-    'client',
+    'core.client',
 ]
 
 
@@ -42,12 +42,12 @@ def setup_qa_report_mocks() -> None:
         if name in sys.modules:
             _original_modules[name] = sys.modules[name]
 
-    # Mock claude_agent_sdk FIRST (before any other imports)
-    mock_sdk = MagicMock()
-    mock_sdk.ClaudeSDKClient = MagicMock()
-    mock_sdk.ClaudeAgentOptions = MagicMock()
-    mock_sdk.ClaudeCodeOptions = MagicMock()
-    sys.modules['claude_agent_sdk'] = mock_sdk
+    # Mock core.client to avoid provider dependencies
+    mock_core_client = types.SimpleNamespace(
+        create_client=MagicMock(),
+        get_client=MagicMock(),
+    )
+    sys.modules['core.client'] = mock_core_client
 
     # Mock UI module (used by progress)
     mock_ui = MagicMock()
@@ -94,11 +94,6 @@ def setup_qa_report_mocks() -> None:
     mock_linear.linear_qa_rejected = MagicMock()
     mock_linear.linear_qa_max_iterations = MagicMock()
     sys.modules['linear_updater'] = mock_linear
-
-    # Mock client module
-    mock_client = MagicMock()
-    mock_client.create_client = MagicMock()
-    sys.modules['client'] = mock_client
 
     # Add auto-claude path for imports
     sys.path.insert(0, str(Path(__file__).parent.parent / "auto-claude"))

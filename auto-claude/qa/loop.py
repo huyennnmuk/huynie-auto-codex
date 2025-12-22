@@ -10,6 +10,7 @@ import time as time_module
 from pathlib import Path
 
 from core.client import create_client
+from core.protocols import LLMClientProtocol
 from debug import debug, debug_error, debug_section, debug_success, debug_warning
 from linear_updater import (
     LinearTaskState,
@@ -76,7 +77,7 @@ async def run_qa_validation_loop(
     Args:
         project_dir: Project root directory
         spec_dir: Spec directory
-        model: Claude model to use
+        model: LLM model to use
         verbose: Whether to show detailed output
 
     Returns:
@@ -132,7 +133,7 @@ async def run_qa_validation_loop(
         qa_model = get_phase_model(spec_dir, "qa", model)
         fixer_thinking_budget = get_phase_thinking_budget(spec_dir, "qa")
 
-        fix_client = create_client(
+        fix_client: LLMClientProtocol = create_client(
             project_dir,
             spec_dir,
             qa_model,
@@ -212,7 +213,7 @@ async def run_qa_validation_loop(
             model=qa_model,
             thinking_budget=qa_thinking_budget,
         )
-        client = create_client(
+        client: LLMClientProtocol = create_client(
             project_dir,
             spec_dir,
             qa_model,

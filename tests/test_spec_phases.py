@@ -13,38 +13,28 @@ Tests the PhaseExecutor class in auto-claude/spec/phases.py covering:
 import json
 import pytest
 import sys
+import types
 from pathlib import Path
 from unittest.mock import MagicMock, AsyncMock, patch
 
 # Store original modules before mocking (for cleanup)
 _original_modules = {}
 _mocked_module_names = [
-    'claude_code_sdk',
-    'claude_code_sdk.types',
-    'claude_agent_sdk',
+    'core.client',
     'graphiti_providers',
     'validate_spec',
-    'client',
 ]
 
 for name in _mocked_module_names:
     if name in sys.modules:
         _original_modules[name] = sys.modules[name]
 
-# Mock ALL external dependencies before ANY imports from the spec module
-# The import chain is: spec.phases -> spec.__init__ -> spec.pipeline -> client -> claude_agent_sdk
-mock_sdk = MagicMock()
-mock_sdk.ClaudeSDKClient = MagicMock()
-mock_sdk.ClaudeCodeOptions = MagicMock()
-mock_sdk.HookMatcher = MagicMock()
-sys.modules['claude_code_sdk'] = mock_sdk
-sys.modules['claude_code_sdk.types'] = mock_sdk
-
-# Mock claude_agent_sdk
-mock_agent_sdk = MagicMock()
-mock_agent_sdk.ClaudeSDKClient = MagicMock()
-mock_agent_sdk.ClaudeAgentOptions = MagicMock()
-sys.modules['claude_agent_sdk'] = mock_agent_sdk
+# Mock core.client before importing spec modules
+mock_core_client = types.SimpleNamespace(
+    create_client=MagicMock(),
+    get_client=MagicMock(),
+)
+sys.modules['core.client'] = mock_core_client
 
 # Mock graphiti_providers module
 mock_graphiti = MagicMock()
@@ -56,11 +46,6 @@ sys.modules['graphiti_providers'] = mock_graphiti
 mock_validate_spec = MagicMock()
 mock_validate_spec.auto_fix_plan = MagicMock(return_value=False)
 sys.modules['validate_spec'] = mock_validate_spec
-
-# Mock client module to avoid circular imports
-mock_client = MagicMock()
-mock_client.create_client = MagicMock()
-sys.modules['client'] = mock_client
 
 # Now import the phases module directly (bypasses __init__.py issues)
 from spec.phases import PhaseExecutor, PhaseResult, MAX_RETRIES

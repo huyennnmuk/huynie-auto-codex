@@ -10,13 +10,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-try:
-    from claude_agent_sdk import tool
-
-    SDK_TOOLS_AVAILABLE = True
-except ImportError:
-    SDK_TOOLS_AVAILABLE = False
-    tool = None
+SDK_TOOLS_AVAILABLE = False
+tool = None
 
 
 def create_subtask_tools(spec_dir: Path, project_dir: Path) -> list:

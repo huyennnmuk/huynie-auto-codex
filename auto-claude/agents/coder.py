@@ -84,7 +84,7 @@ async def run_autonomous_agent(
     Args:
         project_dir: Root directory for the project
         spec_dir: Directory containing the spec (auto-claude/specs/001-name/)
-        model: Claude model to use
+        model: LLM model to use
         max_iterations: Maximum number of iterations (None for unlimited)
         verbose: Whether to show detailed output
         source_spec_dir: Original spec directory in main project (for syncing from worktree)

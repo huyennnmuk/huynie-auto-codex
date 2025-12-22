@@ -64,7 +64,7 @@ class ScriptExecutor:
 
 
 class AgentExecutor:
-    """Executes Claude AI agents with specific prompts."""
+    """Executes Codex agents with specific prompts."""
 
     def __init__(
         self,
@@ -122,7 +122,7 @@ class AgentExecutor:
         # Create client with thinking budget
         debug(
             "roadmap_executor",
-            "Creating Claude client",
+            "Creating Codex client",
             project_dir=str(self.project_dir),
             model=self.model,
             thinking_budget=self.thinking_budget,

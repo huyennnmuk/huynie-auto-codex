@@ -1,17 +1,13 @@
-"""Backward compatibility shim - import from core.client instead."""
+"""Deprecated shim - import from core.client instead."""
 
-import os
-import sys
+from warnings import warn
 
-# Add auto-claude to path if not present
-_auto_claude_dir = os.path.dirname(os.path.abspath(__file__))
-if _auto_claude_dir not in sys.path:
-    sys.path.insert(0, _auto_claude_dir)
+from core.client import CodexClientAdapter, create_client, get_client
 
+warn(
+    "auto-claude/client.py is deprecated; import from core.client instead.",
+    DeprecationWarning,
+    stacklevel=2,
+)
 
-# Use lazy imports to avoid circular dependency
-def __getattr__(name):
-    """Lazy import to avoid circular imports with auto_claude_tools."""
-    from core import client as _client
-
-    return getattr(_client, name)
+__all__ = ["CodexClientAdapter", "create_client", "get_client"]

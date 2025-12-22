@@ -66,7 +66,7 @@ class StreamingLogCapture:
         self, msg, verbose: bool = False, capture_detail: bool = True
     ) -> None:
         """
-        Process a message from the Claude SDK stream.
+        Process a message from the Codex stream.
 
         Args:
             msg: Message from client.receive_response()

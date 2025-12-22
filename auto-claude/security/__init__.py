@@ -36,6 +36,7 @@ from project_analyzer import (
 )
 
 from .hooks import bash_security_hook, validate_command
+from .codex_config import CodexSecurityConfig
 
 # Command parsing utilities
 from .parser import (
@@ -100,4 +101,5 @@ __all__ = [
     "is_command_allowed",
     "needs_validation",
     "BASE_COMMANDS",
+    "CodexSecurityConfig",
 ]

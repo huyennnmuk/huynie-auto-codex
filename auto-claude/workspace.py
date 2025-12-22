@@ -6,7 +6,7 @@ from 'workspace' instead of 'core.workspace'. The workspace module has been
 refactored into a package (core/workspace/) with multiple sub-modules.
 
 IMPLEMENTATION: To avoid triggering core/__init__.py (which imports modules
-with heavy dependencies like claude_agent_sdk), we:
+with heavy dependencies like the LLM client), we:
 1. Create a minimal fake 'core' module to satisfy Python's import system
 2. Load core.workspace package directly using importlib
 3. Register it in sys.modules

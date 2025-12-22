@@ -247,7 +247,7 @@ def _generate_and_save_commit_message(project_dir: Path, spec_name: str) -> None
 
         if commit_message:
             # Save to spec directory for UI to read
-            spec_dir = project_dir / ".auto-claude" / "specs" / spec_name
+            spec_dir = project_dir / ".auto-codex" / "specs" / spec_name
             if not spec_dir.exists():
                 spec_dir = project_dir / "auto-claude" / "specs" / spec_name
 
@@ -449,7 +449,7 @@ def _check_git_merge_conflicts(project_dir: Path, spec_name: str) -> dict:
                     )
                     if match:
                         file_path = match.group(1).strip()
-                        # Skip .auto-claude files - they should never be merged
+                        # Skip .auto-codex files - they should never be merged
                         if (
                             file_path
                             and file_path not in result["conflicting_files"]
@@ -486,7 +486,7 @@ def _check_git_merge_conflicts(project_dir: Path, spec_name: str) -> dict:
                 )
 
                 # Files modified in both = potential conflicts
-                # Filter out .auto-claude files - they should never be merged
+                # Filter out .auto-codex files - they should never be merged
                 conflicting = main_files & spec_files
                 result["conflicting_files"] = [
                     f for f in conflicting if not _is_auto_claude_file(f)

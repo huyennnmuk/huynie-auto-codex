@@ -7,12 +7,12 @@ from typing import Any
 
 
 class ResultParser:
-    """Parses JSON responses from Claude SDK."""
+    """Parses JSON responses from Codex SDK."""
 
     @staticmethod
     def parse_json_response(response: str, default: dict[str, Any]) -> dict[str, Any]:
         """
-        Parse JSON from Claude's response.
+        Parse JSON from the LLM's response.
 
         Tries multiple strategies:
         1. Direct JSON parse
@@ -21,7 +21,7 @@ class ResultParser:
         4. Return default on failure
 
         Args:
-            response: Raw text response from Claude
+            response: Raw text response from the LLM
             default: Default value to return on parse failure
 
         Returns:

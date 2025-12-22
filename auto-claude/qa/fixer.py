@@ -7,7 +7,7 @@ Runs QA fixer sessions to resolve issues identified by the reviewer.
 
 from pathlib import Path
 
-from claude_agent_sdk import ClaudeSDKClient
+from core.client import CodexClientAdapter
 from debug import debug, debug_detailed, debug_error, debug_section, debug_success
 from task_logger import (
     LogEntryType,
@@ -40,7 +40,7 @@ def load_qa_fixer_prompt() -> str:
 
 
 async def run_qa_fixer_session(
-    client: ClaudeSDKClient,
+    client: CodexClientAdapter,
     spec_dir: Path,
     fix_session: int,
     verbose: bool = False,
@@ -49,7 +49,7 @@ async def run_qa_fixer_session(
     Run a QA fixer agent session.
 
     Args:
-        client: Claude SDK client
+        client: Codex client adapter
         spec_dir: Spec directory
         fix_session: Fix iteration number
         verbose: Whether to show detailed output
@@ -96,7 +96,7 @@ async def run_qa_fixer_session(
     prompt += f"The fix request file is at: `{spec_dir}/QA_FIX_REQUEST.md`\n"
 
     try:
-        debug("qa_fixer", "Sending query to Claude SDK...")
+        debug("qa_fixer", "Sending query to Codex client...")
         await client.query(prompt)
         debug_success("qa_fixer", "Query sent successfully")
 

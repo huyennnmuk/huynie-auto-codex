@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Auto Claude Framework
-=====================
+Auto Codex Framework
+====================
 
 A multi-session autonomous coding framework for building features and applications.
 Uses subtask-based implementation plans with phase dependencies.
@@ -23,9 +23,9 @@ Usage:
     python auto-claude/run.py --spec 001 --discard   # Delete build (requires confirmation)
 
 Prerequisites:
-    - CLAUDE_CODE_OAUTH_TOKEN environment variable set (run: claude setup-token)
-    - Spec created via: claude /spec
-    - Claude Code CLI installed
+    - OPENAI_API_KEY environment variable set (OpenAI Codex access)
+    - Spec created via: codex /spec
+    - Codex Code CLI installed
 """
 
 import sys

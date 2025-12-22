@@ -2,7 +2,7 @@
 
 ## Overview
 
-This module provides AI-based conflict resolution for the Auto Claude merge system. The code has been refactored from a single 665-line file into a well-organized package with clear separation of concerns.
+This module provides AI-based conflict resolution for the Auto Codex merge system. The code has been refactored from a single 665-line file into a well-organized package with clear separation of concerns.
 
 ## Architecture
 
@@ -16,7 +16,7 @@ ai_resolver/
 ├── prompts.py            # AI prompt templates (97 lines)
 ├── parsers.py            # Code block parsing (101 lines)
 ├── language_utils.py     # Language detection & location utils (70 lines)
-└── claude_client.py      # Claude SDK integration (92 lines)
+└── llm_client.py         # Provider-backed integration (92 lines)
 ```
 
 ### Refactoring Results
@@ -67,9 +67,9 @@ Language and location utilities:
 - Infer programming language from file paths
 - Check if code locations overlap
 
-### `claude_client.py`
-Claude SDK integration:
-- Factory function for Claude-based resolver
+### `llm_client.py`
+LLM SDK integration:
+- Factory function for an LLM-backed resolver
 - Async SDK client management
 - Error handling and logging
 
@@ -78,10 +78,10 @@ Claude SDK integration:
 ### Basic Usage
 
 ```python
-from merge.ai_resolver import AIResolver, create_claude_resolver
+from merge.ai_resolver import AIResolver, create_llm_resolver
 
-# Create resolver with Claude integration
-resolver = create_claude_resolver()
+# Create resolver with LLM integration
+resolver = create_llm_resolver()
 
 # Resolve a conflict
 result = resolver.resolve_conflict(
@@ -97,7 +97,7 @@ result = resolver.resolve_conflict(
 from merge.ai_resolver import AIResolver
 
 def my_ai_function(system: str, user: str) -> str:
-    # Your AI integration here
+    # Your LLM integration here
     return ai_response
 
 resolver = AIResolver(ai_call_fn=my_ai_function)
@@ -130,8 +130,8 @@ The refactoring maintains 100% backwards compatibility:
 
 ```python
 # These imports still work exactly as before
-from merge.ai_resolver import AIResolver, ConflictContext, create_claude_resolver
-from merge import AIResolver, create_claude_resolver
+from merge.ai_resolver import AIResolver, ConflictContext, create_llm_resolver
+from merge import AIResolver, create_llm_resolver
 ```
 
 All existing code using the ai_resolver module continues to work without modification.

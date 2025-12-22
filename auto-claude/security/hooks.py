@@ -47,7 +47,7 @@ async def bash_security_hook(
         return {}
 
     # Get the working directory from context or use current directory
-    # In the actual client, this would be set by the ClaudeSDKClient
+    # In the actual client, this would be set by the LLM client adapter
     cwd = os.getcwd()
     if context and hasattr(context, "cwd"):
         cwd = context.cwd

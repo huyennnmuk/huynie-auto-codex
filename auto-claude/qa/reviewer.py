@@ -8,7 +8,7 @@ acceptance criteria.
 
 from pathlib import Path
 
-from claude_agent_sdk import ClaudeSDKClient
+from core.client import CodexClientAdapter
 from debug import debug, debug_detailed, debug_error, debug_section, debug_success
 from prompts_pkg import get_qa_reviewer_prompt
 from task_logger import (
@@ -25,7 +25,7 @@ from .criteria import get_qa_signoff_status
 
 
 async def run_qa_agent_session(
-    client: ClaudeSDKClient,
+    client: CodexClientAdapter,
     project_dir: Path,
     spec_dir: Path,
     qa_session: int,
@@ -37,7 +37,7 @@ async def run_qa_agent_session(
     Run a QA reviewer agent session.
 
     Args:
-        client: Claude SDK client
+        client: Codex client adapter
         project_dir: Project root directory (for capability detection)
         spec_dir: Spec directory
         qa_session: QA iteration number
@@ -163,7 +163,7 @@ This is attempt {previous_error.get("consecutive_errors", 1) + 1}. If you fail t
         )
 
     try:
-        debug("qa_reviewer", "Sending query to Claude SDK...")
+        debug("qa_reviewer", "Sending query to Codex client...")
         await client.query(prompt)
         debug_success("qa_reviewer", "Query sent successfully")
 

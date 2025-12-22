@@ -56,7 +56,7 @@ class SpecOrchestrator:
         spec_name: str | None = None,
         spec_dir: Path
         | None = None,  # Use existing spec directory (for UI integration)
-        model: str = "claude-sonnet-4-5-20250929",
+        model: str = "gpt-5.2-codex",
         thinking_level: str = "medium",  # Thinking level for extended thinking
         complexity_override: str | None = None,  # Force a specific complexity
         use_ai_assessment: bool = True,  # Use AI for complexity assessment (vs heuristics)
@@ -174,7 +174,9 @@ class SpecOrchestrator:
             summary = await summarize_phase_output(
                 phase_name,
                 phase_output,
-                model="claude-sonnet-4-5-20250929",  # Use Sonnet for efficiency
+                project_dir=self.project_dir,
+                spec_dir=self.spec_dir,
+                model="gpt-5.2-codex",
                 target_words=500,
             )
 
@@ -193,7 +195,7 @@ class SpecOrchestrator:
         This ensures QA agents receive accurate project capability information
         for dynamic MCP tool injection.
         """
-        index_file = self.project_dir / ".auto-claude" / "project_index.json"
+        index_file = self.project_dir / ".auto-codex" / "project_index.json"
 
         if should_refresh_project_index(self.project_dir):
             if index_file.exists():

@@ -589,7 +589,7 @@ def _check_git_conflicts(project_dir: Path, spec_name: str) -> dict:
                     )
                     if match:
                         file_path = match.group(1).strip()
-                        # Skip .auto-claude files - they should never be merged
+                        # Skip .auto-codex files - they should never be merged
                         if (
                             file_path
                             and file_path not in result["conflicting_files"]
@@ -624,7 +624,7 @@ def _check_git_conflicts(project_dir: Path, spec_name: str) -> dict:
                 )
 
                 # Files modified in both = potential conflicts
-                # Filter out .auto-claude files - they should never be merged
+                # Filter out .auto-codex files - they should never be merged
                 conflicting = main_files & spec_files
                 result["conflicting_files"] = [
                     f for f in conflicting if not _is_auto_claude_file(f)
@@ -1189,18 +1189,8 @@ async def _merge_file_with_ai_async(
             # Need AI merge
             debug(MODULE, f"Using AI to merge {task.file_path}")
 
-            # Import auth utilities
-            from core.auth import ensure_claude_code_oauth_token, get_auth_token
-
-            if not get_auth_token():
-                return ParallelMergeResult(
-                    file_path=task.file_path,
-                    merged_content=None,
-                    success=False,
-                    error="No authentication token available",
-                )
-
-            ensure_claude_code_oauth_token()
+            from core.client import get_client
+            from core.protocols import EventType
 
             # Build prompt
             prompt = _build_merge_prompt(
@@ -1211,37 +1201,24 @@ async def _merge_file_with_ai_async(
                 task.spec_name,
             )
 
-            # Call Claude Haiku for fast merge
-            try:
-                from claude_agent_sdk import ClaudeAgentOptions, ClaudeSDKClient
-            except ImportError:
+            # Call Codex for fast merge
+            client = get_client()
+            if not client.is_available():
                 return ParallelMergeResult(
                     file_path=task.file_path,
                     merged_content=None,
                     success=False,
-                    error="claude_agent_sdk not installed",
+                    error="LLM provider not available",
                 )
 
-            client = ClaudeSDKClient(
-                options=ClaudeAgentOptions(
-                    model="claude-haiku-4-5-20251001",
-                    system_prompt=AI_MERGE_SYSTEM_PROMPT,
-                    allowed_tools=[],
-                    max_turns=1,
-                    max_thinking_tokens=1024,  # Low thinking for speed
-                )
-            )
-
+            full_prompt = f"{AI_MERGE_SYSTEM_PROMPT}\n\n{prompt}"
             response_text = ""
-            async with client:
-                await client.query(prompt)
-
-                async for msg in client.receive_response():
-                    msg_type = type(msg).__name__
-                    if msg_type == "AssistantMessage" and hasattr(msg, "content"):
-                        for block in msg.content:
-                            if hasattr(block, "text"):
-                                response_text += block.text
+            session_id = await client.start_session(full_prompt)
+            async for event in client.stream_events(session_id):
+                if event.type == EventType.TEXT:
+                    response_text += (
+                        event.data.get("content") or event.data.get("text") or ""
+                    )
 
             if response_text:
                 # Strip any code fences the model might have added

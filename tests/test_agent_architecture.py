@@ -87,7 +87,7 @@ class TestAgentEntryPoint:
 
     def test_no_parallel_parameters(self):
         """Agent entry point should not accept parallel configuration."""
-        from agent import run_autonomous_agent
+        from core.agent import run_autonomous_agent
 
         sig = inspect.signature(run_autonomous_agent)
         param_names = list(sig.parameters.keys())
@@ -102,7 +102,7 @@ class TestAgentEntryPoint:
 
     def test_required_parameters(self):
         """Agent entry point has required parameters."""
-        from agent import run_autonomous_agent
+        from core.agent import run_autonomous_agent
 
         sig = inspect.signature(run_autonomous_agent)
         param_names = list(sig.parameters.keys())
@@ -113,7 +113,7 @@ class TestAgentEntryPoint:
 
     def test_is_async(self):
         """Agent entry point is async."""
-        from agent import run_autonomous_agent
+        from core.agent import run_autonomous_agent
 
         assert inspect.iscoroutinefunction(run_autonomous_agent), (
             "run_autonomous_agent should be async"
@@ -152,7 +152,7 @@ class TestModuleIntegrity:
     def test_agent_module_imports(self):
         """Agent module imports without errors."""
         try:
-            import agent
+            import core.agent as agent
         except ImportError as e:
             pytest.fail(f"agent.py failed to import: {e}")
 

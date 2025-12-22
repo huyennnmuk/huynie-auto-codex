@@ -4,7 +4,7 @@ This package contains the refactored workspace management code, organized for be
 
 ## Structure
 
-The original `workspace.py` file (2,868 lines) has been refactored into a modular package:
+The original `workspace.py` file (2,868 lines) has been refactored into a modular package that supports the Codex workflow for isolated builds, review, and merge.
 
 ```
 workspace/
@@ -27,7 +27,7 @@ workspace.py             (2,295 lines) - Complex merge operations (remaining)
 
 ### models.py
 Data structures and type definitions:
-- `WorkspaceMode` - How auto-claude should work (ISOLATED/DIRECT)
+- `WorkspaceMode` - How auto-codex should work (ISOLATED/DIRECT)
 - `WorkspaceChoice` - User's choice after build (MERGE/REVIEW/TEST/LATER)
 - `ParallelMergeTask` - Task for parallel file merging
 - `ParallelMergeResult` - Result of parallel merge
@@ -140,7 +140,7 @@ from workspace import WorkspaceMode, setup_workspace, finalize_workspace
 
 Run the import test:
 ```bash
-cd auto-claude
+cd auto-codex
 python3 -c "from workspace import WorkspaceMode, setup_workspace; print('✓ Imports work')"
 ```
 

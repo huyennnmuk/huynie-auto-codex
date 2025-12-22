@@ -2,7 +2,7 @@
 CLI Utilities
 ==============
 
-Shared utility functions for the Auto Claude CLI.
+Shared utility functions for the Auto Codex CLI.
 """
 
 import os
@@ -14,7 +14,11 @@ _PARENT_DIR = Path(__file__).parent.parent
 if str(_PARENT_DIR) not in sys.path:
     sys.path.insert(0, str(_PARENT_DIR))
 
-from core.auth import get_auth_token, get_auth_token_source
+from core.auth import (
+    get_auth_token_source,
+    get_deprecated_auth_token,
+    is_valid_openai_api_key,
+)
 from dotenv import load_dotenv
 from graphiti_config import get_graphiti_status
 from linear_integration import LinearManager
@@ -29,7 +33,7 @@ from ui import (
 )
 
 # Configuration
-DEFAULT_MODEL = "claude-opus-4-5-20251101"
+DEFAULT_MODEL = "gpt-5.2-codex"
 
 
 def setup_environment() -> Path:
@@ -96,24 +100,28 @@ def validate_environment(spec_dir: Path) -> bool:
     """
     valid = True
 
-    # Check for OAuth token (API keys are not supported)
-    if not get_auth_token():
-        print("Error: No OAuth token found")
-        print("\nAuto Claude requires Claude Code OAuth authentication.")
-        print("Direct API keys (ANTHROPIC_API_KEY) are not supported.")
-        print("\nTo authenticate, run:")
-        print("  claude setup-token")
+    # Check for OpenAI API key (Codex)
+    openai_key = os.environ.get("OPENAI_API_KEY", "")
+    if not openai_key:
+        deprecated_token = get_deprecated_auth_token()
+        if deprecated_token:
+            print("Error: Detected legacy OAuth token (CLAUDE_CODE_OAUTH_TOKEN)")
+            print("This CLI now uses OpenAI Codex and requires OPENAI_API_KEY.")
+            print("Please migrate by setting OPENAI_API_KEY in your .env file.")
+        else:
+            print("Error: No OpenAI API key found")
+            print("\nThis CLI now uses OpenAI Codex.")
+            print("Set OPENAI_API_KEY in your .env file or environment.")
+        valid = False
+    elif not is_valid_openai_api_key(openai_key):
+        print("Error: Invalid OPENAI_API_KEY format")
+        print("Expected a key starting with 'sk-' (e.g., sk-...).")
         valid = False
     else:
         # Show which auth source is being used
         source = get_auth_token_source()
         if source:
             print(f"Auth: {source}")
-
-        # Show custom base URL if set
-        base_url = os.environ.get("ANTHROPIC_BASE_URL")
-        if base_url:
-            print(f"API Endpoint: {base_url}")
 
     # Check for spec.md in spec directory
     spec_file = spec_dir / "spec.md"

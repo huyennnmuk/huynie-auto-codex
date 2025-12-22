@@ -367,7 +367,7 @@ Update `implementation_plan.json`:
 
 ### Using Subagents for Complex Work (Optional)
 
-**For complex subtasks**, you can spawn subagents to work in parallel. Subagents are lightweight Claude Code instances that:
+**For complex subtasks**, you can spawn subagents to work in parallel. Subagents are lightweight Codex CLI instances that:
 - Have their own isolated context windows
 - Can work on different parts of the subtask simultaneously
 - Report back to you (the orchestrator)
@@ -387,7 +387,7 @@ Use the Task tool to spawn a subagent:
 ```
 
 **Best practices:**
-- Let Claude Code decide the parallelism level (don't specify batch sizes)
+- Let Codex CLI decide the parallelism level (don't specify batch sizes)
 - Subagents work best on disjoint tasks (different files/modules)
 - Each subagent has its own context window - use this for large codebases
 - You can spawn up to 10 concurrent subagents

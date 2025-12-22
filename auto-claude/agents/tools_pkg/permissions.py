@@ -10,6 +10,8 @@ context window usage. For example, Electron tools are only included for
 Electron projects, not for Next.js or CLI projects.
 """
 
+from dataclasses import dataclass, field
+
 from .models import (
     BASE_READ_TOOLS,
     BASE_WRITE_TOOLS,
@@ -23,6 +25,14 @@ from .models import (
     TOOL_UPDATE_SUBTASK_STATUS,
     is_electron_mcp_enabled,
 )
+
+
+@dataclass(frozen=True)
+class ToolPermissions:
+    """Codex-friendly tool permissions model."""
+
+    allowed: list[str] = field(default_factory=list)
+    blocked: list[str] = field(default_factory=list)
 
 
 def get_allowed_tools(
@@ -100,6 +110,22 @@ def get_allowed_tools(
         tools.extend(_get_qa_mcp_tools(project_capabilities))
 
     return tools
+
+
+def get_codex_tool_permissions(
+    agent_type: str,
+    project_capabilities: dict | None = None,
+) -> ToolPermissions:
+    """
+    Return tool permissions in a Codex CLI-compatible format.
+
+    Codex uses allow/deny lists, so keep the existing allowlist
+    and leave the deny list empty.
+    """
+    return ToolPermissions(
+        allowed=get_allowed_tools(agent_type, project_capabilities),
+        blocked=[],
+    )
 
 
 def _get_qa_mcp_tools(project_capabilities: dict | None) -> list[str]:
