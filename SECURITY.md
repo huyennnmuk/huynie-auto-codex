@@ -4,8 +4,12 @@
 
 Please do not open public issues for suspected security vulnerabilities.
 
-- Email: security@autocodex.local (replace with your real address before production)
+Preferred: use GitHub Security Advisories / Private Vulnerability Reporting for this repository.
+
+- Open a report: `https://github.com/tytsxai/Auto-Codex/security/advisories/new`
 - Include: affected version, reproduction steps, impact, and any logs (redact secrets)
+
+If you cannot use GitHub advisories, open a normal issue with **only non-sensitive details** and we will coordinate a private channel.
 
 ## Supported Versions
 
