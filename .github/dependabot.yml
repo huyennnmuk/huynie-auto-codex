@@ -1,0 +1,30 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/auto-codex-ui"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    groups:
+      electron:
+        patterns:
+          - "electron"
+          - "electron-*"
+          - "@electron/*"
+      eslint:
+        patterns:
+          - "eslint"
+          - "eslint-*"
+          - "@eslint/*"
+          - "typescript-eslint"
+      testing:
+        patterns:
+          - "vitest"
+          - "@playwright/test"
+          - "@testing-library/*"
+
+  - package-ecosystem: "pip"
+    directory: "/auto-codex"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
