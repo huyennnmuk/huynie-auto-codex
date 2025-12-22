@@ -6,9 +6,9 @@ CLI interface for the FileTimelineTracker service.
 Used by git hooks and manual operations.
 
 Usage:
-    python -m auto_claude.merge.tracker_cli notify-commit <hash>
-    python -m auto_claude.merge.tracker_cli show-timeline <file_path>
-    python -m auto_claude.merge.tracker_cli show-drift <task_id>
+    PYTHONPATH=auto-codex python -m merge.tracker_cli notify-commit <hash>
+    PYTHONPATH=auto-codex python -m merge.tracker_cli show-timeline <file_path>
+    PYTHONPATH=auto-codex python -m merge.tracker_cli show-drift <task_id>
 """
 
 import argparse

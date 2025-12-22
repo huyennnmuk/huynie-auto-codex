@@ -42,6 +42,10 @@ class ProjectAnalyzer:
     """
 
     PROFILE_FILENAME = ".auto-codex-security.json"
+    LEGACY_PROFILE_FILENAMES = (
+        ".auto-claude-security.json",
+        ".auto-build-security.json",
+    )
 
     def __init__(self, project_dir: Path, spec_dir: Path | None = None):
         """
@@ -62,16 +66,37 @@ class ProjectAnalyzer:
             return self.spec_dir / self.PROFILE_FILENAME
         return self.project_dir / self.PROFILE_FILENAME
 
+    def _find_existing_profile_path(self) -> Path | None:
+        primary = self.get_profile_path()
+        if primary.exists():
+            return primary
+
+        candidates: list[Path] = []
+        if self.spec_dir:
+            candidates.extend(self.spec_dir / name for name in self.LEGACY_PROFILE_FILENAMES)
+        candidates.extend(self.project_dir / name for name in self.LEGACY_PROFILE_FILENAMES)
+
+        for candidate in candidates:
+            if candidate.exists():
+                return candidate
+        return None
+
     def load_profile(self) -> SecurityProfile | None:
         """Load existing profile if it exists."""
-        profile_path = self.get_profile_path()
-        if not profile_path.exists():
+        profile_path = self._find_existing_profile_path()
+        if not profile_path:
             return None
 
         try:
             with open(profile_path) as f:
                 data = json.load(f)
-            return SecurityProfile.from_dict(data)
+            profile = SecurityProfile.from_dict(data)
+
+            primary_path = self.get_profile_path()
+            if profile_path != primary_path:
+                self.save_profile(profile)
+
+            return profile
         except (OSError, json.JSONDecodeError, KeyError):
             return None
 

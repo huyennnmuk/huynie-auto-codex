@@ -8,11 +8,12 @@
 #
 # Installation:
 #   Copy to .git/hooks/post-commit and make executable
-#   Or use: python -m auto_claude.merge.install_hook
+#   Or use: PYTHONPATH=auto-codex python -m merge.install_hook
 #
 
 COMMIT_HASH=$(git rev-parse HEAD)
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
+PROJECT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
 
 # Only track commits to main/master branch
 # Skip if we're in a worktree (auto-codex branches)
@@ -32,7 +33,7 @@ if [[ "$BRANCH" == "main" ]] || [[ "$BRANCH" == "master" ]]; then
 
         # Try to notify the tracker
         # Run in background to avoid slowing down commits
-        ($PYTHON -m auto_claude.merge.tracker_cli notify-commit "$COMMIT_HASH" 2>/dev/null &) &
+        (PYTHONPATH="$PROJECT_ROOT/auto-codex" $PYTHON -m merge.tracker_cli notify-commit "$COMMIT_HASH" 2>/dev/null &) &
 
         # Don't let hook failures block commits
         exit 0

@@ -59,7 +59,7 @@ def get_allowed_tools(
     Returns:
         List of allowed tool names
     """
-    # Auto-claude tool mappings by agent type
+    # Auto-Codex tool mappings by agent type
     tool_mappings = {
         "planner": {
             "base": BASE_READ_TOOLS + BASE_WRITE_TOOLS,

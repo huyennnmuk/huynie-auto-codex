@@ -11,7 +11,7 @@ import os
 # Tool Name Constants
 # =============================================================================
 
-# Auto-Claude MCP tool names (prefixed with mcp__auto-claude__)
+# Auto-Codex MCP tool names (legacy prefix: mcp__auto-claude__)
 TOOL_UPDATE_SUBTASK_STATUS = "mcp__auto-claude__update_subtask_status"
 TOOL_GET_BUILD_PROGRESS = "mcp__auto-claude__get_build_progress"
 TOOL_RECORD_DISCOVERY = "mcp__auto-claude__record_discovery"
