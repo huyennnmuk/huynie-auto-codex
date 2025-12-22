@@ -42,6 +42,10 @@ Stop:
 - `falkordb` uses a container healthcheck (`redis-cli ping`).
 - `graphiti-mcp` uses an HTTP-response healthcheck (no strict `/health` endpoint).
 
+### Network Exposure (Important)
+
+By default, `docker-compose.yml` binds service ports to `127.0.0.1` only. Do not expose FalkorDB to untrusted networks.
+
 ## Data Locations
 
 ### Task Logs (Per Project)
@@ -101,4 +105,3 @@ See `RELEASE.md` for the packaging flow and tag/version validation.
    - Stop memory layer: `docker-compose down`
    - Run with minimal env vars (no Linear/GitHub tokens)
 4. Roll back if needed (desktop artifact / docker tags)
-

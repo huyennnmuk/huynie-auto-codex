@@ -27,7 +27,7 @@ services:
     image: falkordb/falkordb:latest
     container_name: auto-codex-falkordb
     ports:
-      - "${GRAPHITI_FALKORDB_PORT:-6380}:6379"
+      - "127.0.0.1:${GRAPHITI_FALKORDB_PORT:-6380}:6379"
     volumes:
       - falkordb_data:/data
     environment:
@@ -44,7 +44,7 @@ services:
     container_name: auto-codex-graphiti-mcp
     platform: linux/amd64  # Required: image only available for amd64
     ports:
-      - "${GRAPHITI_MCP_PORT:-8000}:8000"
+      - "127.0.0.1:${GRAPHITI_MCP_PORT:-8000}:8000"
     env_file:
       # Load API keys from auto-codex/.env (CLI users) or .env (Frontend users)
       # Note: Only OPENAI_API_KEY is needed from these files
