@@ -1,14 +1,14 @@
 /**
- * Configuration for Auto Claude updater
+ * Configuration for Auto Codex updater
  */
 
 /**
  * GitHub repository configuration
  */
 export const GITHUB_CONFIG = {
-  owner: 'AndyMik90',
-  repo: 'Auto-Claude',
-  autoBuildPath: 'auto-claude' // Path within repo where auto-claude lives
+  owner: 'tytsxai',
+  repo: 'Auto-Codex',
+  autoBuildPath: 'auto-claude' // Path within repo where the Python backend lives
 } as const;
 
 /**

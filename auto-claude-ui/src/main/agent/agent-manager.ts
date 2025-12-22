@@ -5,7 +5,7 @@ import { AgentState } from './agent-state';
 import { AgentEvents } from './agent-events';
 import { AgentProcessManager } from './agent-process';
 import { AgentQueueManager } from './agent-queue';
-import { getClaudeProfileManager } from '../claude-profile-manager';
+import { getCodexProfileManager } from '../codex-profile-manager';
 import {
   SpecCreationMetadata,
   TaskExecutionOptions,
@@ -35,6 +35,7 @@ export class AgentManager extends EventEmitter {
 
   constructor() {
     super();
+    this.setMaxListeners(0);
 
     // Initialize modular components
     this.state = new AgentState();
@@ -75,7 +76,7 @@ export class AgentManager extends EventEmitter {
   }
 
   /**
-   * Configure paths for Python and auto-claude source
+   * Configure paths for Python and auto-codex source
    */
   configure(pythonPath?: string, autoBuildSourcePath?: string): void {
     this.processManager.configure(pythonPath, autoBuildSourcePath);
@@ -92,9 +93,9 @@ export class AgentManager extends EventEmitter {
     metadata?: SpecCreationMetadata
   ): void {
     // Pre-flight auth check: Verify active profile has valid authentication
-    const profileManager = getClaudeProfileManager();
+    const profileManager = getCodexProfileManager();
     if (!profileManager.hasValidAuth()) {
-      this.emit('error', taskId, 'Claude authentication required. Please authenticate in Settings > Claude Profiles before starting tasks.');
+      this.emit('error', taskId, 'Codex authentication required. Please authenticate in Settings > Codex Profiles before starting tasks.');
       return;
     }
 
@@ -160,9 +161,9 @@ export class AgentManager extends EventEmitter {
     options: TaskExecutionOptions = {}
   ): void {
     // Pre-flight auth check: Verify active profile has valid authentication
-    const profileManager = getClaudeProfileManager();
+    const profileManager = getCodexProfileManager();
     if (!profileManager.hasValidAuth()) {
-      this.emit('error', taskId, 'Claude authentication required. Please authenticate in Settings > Claude Profiles before starting tasks.');
+      this.emit('error', taskId, 'Codex authentication required. Please authenticate in Settings > Codex Profiles before starting tasks.');
       return;
     }
 

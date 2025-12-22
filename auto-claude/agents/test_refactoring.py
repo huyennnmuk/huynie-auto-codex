@@ -9,15 +9,50 @@ This script verifies that:
 """
 
 import sys
+import types
 from pathlib import Path
 
-# Add parent directory to path
+# Add repo root and auto-claude package to path
+repo_root = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(repo_root))
 sys.path.insert(0, str(Path(__file__).parent.parent))
+
+
+def _install_codex_client_mocks():
+    """Install Codex client mocks to avoid provider dependencies during imports."""
+    # Some tests install `core.client` as a mock module (ModuleType / MagicMock).
+    # Ensure we import the real implementation from this repo.
+    core_dir = (Path(__file__).parent.parent / "core").resolve()
+    for module_name in ("core.client", "core"):
+        module = sys.modules.get(module_name)
+        module_file = getattr(module, "__file__", None)
+        if module_file is None or str(core_dir) not in str(module_file):
+            sys.modules.pop(module_name, None)
+
+    from core.client import CodexClientAdapter
+    from tests.fixtures.codex_mocks import MockCodexClient
+
+    mock_client = MockCodexClient()
+
+    def _create_client(*args, **kwargs):
+        return CodexClientAdapter(mock_client)
+
+    def _get_client(*args, **kwargs):
+        return mock_client
+
+    mock_client_module = types.ModuleType("core.client")
+    mock_client_module.CodexClientAdapter = CodexClientAdapter
+    mock_client_module.create_client = _create_client
+    mock_client_module.get_client = _get_client
+    sys.modules["core.client"] = mock_client_module
+    return mock_client
 
 
 def test_imports():
     """Test that all modules can be imported."""
     print("Testing module imports...")
+
+    _install_codex_client_mocks()
 
     # Test base module
     from agents import base
@@ -66,6 +101,8 @@ def test_public_api():
     """Test that the public API is accessible."""
     print("Testing public API...")
 
+    _install_codex_client_mocks()
+
     # Test main agent module exports
     import agents
 
@@ -87,12 +124,13 @@ def test_public_api():
     print("\n✓ All public API functions accessible!\n")
 
 
-def test_backwards_compatibility():
-    """Test that the old agent.py facade maintains backwards compatibility."""
-    print("Testing backwards compatibility...")
+def test_core_agent_exports():
+    """Test that the core agent facade is accessible."""
+    print("Testing core.agent exports...")
 
-    # Test that agent.py can be imported
-    import agent
+    _install_codex_client_mocks()
+
+    import core.agent as agent
 
     required_functions = [
         "run_autonomous_agent",
@@ -105,11 +143,11 @@ def test_backwards_compatibility():
 
     for func_name in required_functions:
         assert hasattr(agent, func_name), (
-            f"Missing function in agent module: {func_name}"
+            f"Missing function in core.agent: {func_name}"
         )
-        print(f"  ✓ agent.{func_name}")
+        print(f"  ✓ core.agent.{func_name}")
 
-    print("\n✓ Backwards compatibility maintained!\n")
+    print("\n✓ Core agent exports available!\n")
 
 
 def test_module_structure():
@@ -136,6 +174,30 @@ def test_module_structure():
         print(f"  ✓ agents/{filename}")
 
     print("\n✓ Module structure correct!\n")
+
+
+def test_backwards_compatibility():
+    """Test that compatibility shims and env vars remain available."""
+    print("Testing backwards compatibility...")
+
+    _install_codex_client_mocks()
+
+    from agents import auto_claude_tools, memory_manager
+    from core import auth
+
+    assert hasattr(auto_claude_tools, "create_auto_claude_mcp_server")
+    assert hasattr(auto_claude_tools, "get_allowed_tools")
+    print("  ✓ agents.auto_claude_tools")
+
+    assert hasattr(memory_manager, "save_session_to_graphiti")
+    print("  ✓ agents.memory_manager.save_session_to_graphiti")
+
+    assert "OPENAI_API_KEY" in auth.AUTH_TOKEN_ENV_VARS
+    assert "CLAUDE_CODE_OAUTH_TOKEN" in auth.DEPRECATED_AUTH_ENV_VARS
+    assert "OPENAI_API_KEY" in auth.SDK_ENV_VARS
+    print("  ✓ core.auth env var references")
+
+    print("\n✓ Backwards compatibility verified!\n")
 
 
 if __name__ == "__main__":

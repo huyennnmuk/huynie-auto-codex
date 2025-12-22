@@ -15,8 +15,9 @@ Usage:
     export GRAPHITI_EMBEDDER_PROVIDER=openai  # or: voyage, azure_openai, ollama
 
     # Provider-specific credentials (set based on your chosen providers):
-    # OpenAI:
+    # OpenAI (Codex defaults):
     export OPENAI_API_KEY=sk-...
+    export OPENAI_MODEL=gpt-5.2-codex
 
     # Anthropic (LLM only, needs separate embedder):
     export ANTHROPIC_API_KEY=sk-ant-...
@@ -48,6 +49,17 @@ import json
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
+
+# This file is a manual integration script, not part of the unit test suite.
+# When imported by pytest (collection), skip it to avoid requiring a running
+# FalkorDB + provider credentials.
+if "pytest" in sys.modules:
+    import pytest
+
+    pytest.skip(
+        "Graphiti integration smoke script; run directly with `python` and proper env.",
+        allow_module_level=True,
+    )
 
 # Add auto-claude to path
 sys.path.insert(0, str(Path(__file__).parent))
@@ -561,6 +573,7 @@ async def main():
         print(
             "    export GRAPHITI_EMBEDDER_PROVIDER=openai  # or voyage, azure_openai, ollama"
         )
+        print("    export OPENAI_MODEL=gpt-5.2-codex")
         print("    # Plus provider-specific credentials (see docstring for examples)")
         print()
         if status.get("reason"):

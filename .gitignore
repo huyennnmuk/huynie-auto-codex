@@ -14,6 +14,7 @@ Thumbs.db
 .vscode/
 *.swp
 *.swo
+*.backup
 
 # Logs
 logs/
@@ -72,6 +73,7 @@ dmypy.json
 # Auto-build generated files
 .auto-build-security.json
 .auto-claude-security.json
+.auto-codex-security.json
 .auto-claude-status
 .claude_settings.json
 .update-metadata.json

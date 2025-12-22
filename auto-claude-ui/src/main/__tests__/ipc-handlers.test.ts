@@ -96,7 +96,7 @@ vi.mock('electron', () => {
 // Setup test project structure
 function setupTestProject(): void {
   mkdirSync(TEST_PROJECT_PATH, { recursive: true });
-  mkdirSync(path.join(TEST_PROJECT_PATH, 'auto-claude', 'specs'), { recursive: true });
+  mkdirSync(path.join(TEST_PROJECT_PATH, 'auto-codex', 'specs'), { recursive: true });
 }
 
 // Cleanup test directories
@@ -125,7 +125,7 @@ describe('IPC Handlers', () => {
     destroy: ReturnType<typeof vi.fn>;
     write: ReturnType<typeof vi.fn>;
     resize: ReturnType<typeof vi.fn>;
-    invokeClaude: ReturnType<typeof vi.fn>;
+    invokeCodex: ReturnType<typeof vi.fn>;
     killAll: ReturnType<typeof vi.fn>;
   };
   let mockPythonEnvManager: {
@@ -142,6 +142,7 @@ describe('IPC Handlers', () => {
     // Get mocked ipcMain
     const electron = await import('electron');
     ipcMain = electron.ipcMain as unknown as typeof ipcMain;
+    ipcMain.setMaxListeners(0);
 
     // Create mock window
     mockMainWindow = {
@@ -156,6 +157,7 @@ describe('IPC Handlers', () => {
       killTask: vi.fn(),
       configure: vi.fn()
     });
+    mockAgentManager.setMaxListeners(0);
 
     // Create mock terminal manager
     mockTerminalManager = {
@@ -163,7 +165,7 @@ describe('IPC Handlers', () => {
       destroy: vi.fn(() => Promise.resolve({ success: true })),
       write: vi.fn(),
       resize: vi.fn(),
-      invokeClaude: vi.fn(),
+      invokeCodex: vi.fn(),
       killAll: vi.fn(() => Promise.resolve())
     };
 
@@ -339,15 +341,15 @@ describe('IPC Handlers', () => {
       const { setupIpcHandlers } = await import('../ipc-handlers');
       setupIpcHandlers(mockAgentManager as never, mockTerminalManager as never, () => mockMainWindow as never, mockPythonEnvManager as never);
 
-      // Create .auto-claude directory first (before adding project so it gets detected)
-      mkdirSync(path.join(TEST_PROJECT_PATH, '.auto-claude', 'specs'), { recursive: true });
+      // Create .auto-codex directory first (before adding project so it gets detected)
+      mkdirSync(path.join(TEST_PROJECT_PATH, '.auto-codex', 'specs'), { recursive: true });
 
-      // Add a project - it will detect .auto-claude
+      // Add a project - it will detect .auto-codex
       const addResult = await ipcMain.invokeHandler('project:add', {}, TEST_PROJECT_PATH);
       const projectId = (addResult as { data: { id: string } }).data.id;
 
-      // Create a spec directory with implementation plan in .auto-claude/specs
-      const specDir = path.join(TEST_PROJECT_PATH, '.auto-claude', 'specs', '001-test-feature');
+      // Create a spec directory with implementation plan in .auto-codex/specs
+      const specDir = path.join(TEST_PROJECT_PATH, '.auto-codex', 'specs', '001-test-feature');
       mkdirSync(specDir, { recursive: true });
       writeFileSync(path.join(specDir, 'implementation_plan.json'), JSON.stringify({
         feature: 'Test Feature',
@@ -396,8 +398,8 @@ describe('IPC Handlers', () => {
       const { setupIpcHandlers } = await import('../ipc-handlers');
       setupIpcHandlers(mockAgentManager as never, mockTerminalManager as never, () => mockMainWindow as never, mockPythonEnvManager as never);
 
-      // Create .auto-claude directory first (before adding project so it gets detected)
-      mkdirSync(path.join(TEST_PROJECT_PATH, '.auto-claude', 'specs'), { recursive: true });
+      // Create .auto-codex directory first (before adding project so it gets detected)
+      mkdirSync(path.join(TEST_PROJECT_PATH, '.auto-codex', 'specs'), { recursive: true });
 
       // Add a project first
       const addResult = await ipcMain.invokeHandler('project:add', {}, TEST_PROJECT_PATH);
