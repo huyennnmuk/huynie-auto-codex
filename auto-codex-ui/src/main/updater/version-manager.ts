@@ -48,27 +48,27 @@ export function getEffectiveVersion(): string {
   }
 
   if (isDebug) {
-    console.log('[Version] Checking metadata paths:', metadataPaths);
+    console.warn('[Version] Checking metadata paths:', metadataPaths);
   }
 
   // Check each path for metadata
   for (const metadataPath of metadataPaths) {
     const exists = existsSync(metadataPath);
     if (isDebug) {
-      console.log(`[Version] Checking ${metadataPath}: ${exists ? 'EXISTS' : 'not found'}`);
+      console.warn(`[Version] Checking ${metadataPath}: ${exists ? 'EXISTS' : 'not found'}`);
     }
     if (exists) {
       try {
         const metadata = JSON.parse(readFileSync(metadataPath, 'utf-8')) as UpdateMetadata;
         if (metadata.version) {
           if (isDebug) {
-            console.log(`[Version] Found metadata version: ${metadata.version}`);
+            console.warn(`[Version] Found metadata version: ${metadata.version}`);
           }
           return metadata.version;
         }
       } catch (e) {
         if (isDebug) {
-          console.log(`[Version] Error reading metadata: ${e}`);
+          console.warn(`[Version] Error reading metadata: ${e}`);
         }
         // Continue to next path
       }
@@ -77,7 +77,7 @@ export function getEffectiveVersion(): string {
 
   const bundledVersion = app.getVersion();
   if (isDebug) {
-    console.log(`[Version] No metadata found, using bundled version: ${bundledVersion}`);
+    console.warn(`[Version] No metadata found, using bundled version: ${bundledVersion}`);
   }
   return bundledVersion;
 }

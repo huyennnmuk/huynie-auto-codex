@@ -74,6 +74,14 @@ export default tseslint.config(
     }
   },
   {
+    files: ['scripts/**/*.{js,cjs,mjs}'],
+    rules: {
+      'no-console': 'off',
+      '@typescript-eslint/no-require-imports': 'off',
+      '@typescript-eslint/no-unused-vars': 'off'
+    }
+  },
+  {
     ignores: ['out/**', 'dist/**', '.eslintrc.cjs', 'eslint.config.mjs', 'node_modules/**']
   }
 );

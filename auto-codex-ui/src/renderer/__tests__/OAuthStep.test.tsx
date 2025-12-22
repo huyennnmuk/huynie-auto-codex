@@ -5,7 +5,7 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import type { CodexProfile, CodexProfileSettings, ElectronAPI } from '../../shared/types';
+import type { CodexProfile } from '../../shared/types';
 
 // Import browser mock to get full ElectronAPI structure
 import '../lib/browser-mock';
@@ -426,10 +426,8 @@ describe('OAuthStep Profile Management Logic', () => {
     });
 
     it('should show "Active" badge for active profile', () => {
-      const profiles: CodexProfile[] = [
-        createTestProfile({ id: 'p1' }),
-        createTestProfile({ id: 'p2' })
-      ];
+      createTestProfile({ id: 'p1' });
+      createTestProfile({ id: 'p2' });
       const activeProfileId = 'p1';
 
       const isActive = (profileId: string) => profileId === activeProfileId;

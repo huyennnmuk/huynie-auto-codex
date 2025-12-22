@@ -5,7 +5,7 @@ import type { IPCResult } from '../../shared/types';
 import path from 'path';
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import type { AutoBuildSourceUpdateProgress, SourceEnvConfig, SourceEnvCheckResult } from '../../shared/types';
-import { checkForUpdates as checkSourceUpdates, downloadAndApplyUpdate, getBundledVersion, getEffectiveVersion, getEffectiveSourcePath } from '../auto-codex-updater';
+import { checkForUpdates as checkSourceUpdates, downloadAndApplyUpdate, getEffectiveVersion, getEffectiveSourcePath } from '../auto-codex-updater';
 import { debugLog } from '../../shared/utils/debug-logger';
 
 
@@ -22,11 +22,11 @@ export function registerAutobuildSourceHandlers(
   ipcMain.handle(
     IPC_CHANNELS.AUTOBUILD_SOURCE_CHECK,
     async (): Promise<IPCResult<{ updateAvailable: boolean; currentVersion: string; latestVersion?: string; releaseNotes?: string; releaseUrl?: string; error?: string }>> => {
-      console.log('[autobuild-source] Check for updates called');
+      console.warn('[autobuild-source] Check for updates called');
       debugLog('[IPC] AUTOBUILD_SOURCE_CHECK called');
       try {
         const result = await checkSourceUpdates();
-        console.log('[autobuild-source] Check result:', JSON.stringify(result, null, 2));
+        console.warn('[autobuild-source] Check result:', JSON.stringify(result, null, 2));
         debugLog('[IPC] AUTOBUILD_SOURCE_CHECK result:', result);
         return { success: true, data: result };
       } catch (error) {

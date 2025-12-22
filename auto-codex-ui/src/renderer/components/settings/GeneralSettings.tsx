@@ -11,7 +11,7 @@ import {
   DEFAULT_FEATURE_THINKING,
   FEATURE_LABELS
 } from '../../../shared/constants';
-import type { AppSettings, FeatureModelConfig, FeatureThinkingConfig, ModelTypeShort, ThinkingLevel } from '../../../shared/types';
+import type { AppSettings, FeatureModelConfig, ModelTypeShort, ThinkingLevel } from '../../../shared/types';
 
 interface GeneralSettingsProps {
   settings: AppSettings;

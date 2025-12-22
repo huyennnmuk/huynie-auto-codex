@@ -120,7 +120,7 @@ export function EnvConfigModal({
     };
 
     loadData();
-  }, [open]);
+  }, [open, selectedProfileId]);
 
   // 监听终端返回的 OAuth 令牌
   useEffect(() => {

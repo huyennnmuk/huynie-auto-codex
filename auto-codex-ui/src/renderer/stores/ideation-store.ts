@@ -340,7 +340,7 @@ export function generateIdeation(projectId: string): void {
 
   // 调试日志
   if (window.DEBUG) {
-    console.log('[Ideation] Starting generation:', {
+    console.warn('[Ideation] Starting generation:', {
       projectId,
       enabledTypes: config.enabledTypes,
       includeRoadmapContext: config.includeRoadmapContext,
@@ -366,7 +366,7 @@ export async function stopIdeation(projectId: string): Promise<boolean> {
 
   // 调试日志
   if (window.DEBUG) {
-    console.log('[Ideation] Stop requested:', { projectId });
+    console.warn('[Ideation] Stop requested:', { projectId });
   }
 
   // 无论后端响应如何，用户请求停止时始终将 UI 状态更新为 'idle'
@@ -382,7 +382,7 @@ export async function stopIdeation(projectId: string): Promise<boolean> {
 
   // 调试日志
   if (window.DEBUG) {
-    console.log('[Ideation] Stop result:', { projectId, success: result.success });
+    console.warn('[Ideation] Stop result:', { projectId, success: result.success });
   }
 
   if (!result.success) {
@@ -561,7 +561,7 @@ export function setupIdeationListeners(): () => void {
   const unsubProgress = window.electronAPI.onIdeationProgress((_projectId, status) => {
     // 调试日志
     if (window.DEBUG) {
-      console.log('[Ideation] Progress update:', {
+      console.warn('[Ideation] Progress update:', {
         projectId: _projectId,
         phase: status.phase,
         progress: status.progress,
@@ -581,7 +581,7 @@ export function setupIdeationListeners(): () => void {
     (_projectId, ideationType, ideas) => {
       // 调试日志
       if (window.DEBUG) {
-        console.log('[Ideation] Type completed:', {
+        console.warn('[Ideation] Type completed:', {
           projectId: _projectId,
           ideationType,
           ideasCount: ideas.length,
@@ -628,7 +628,7 @@ export function setupIdeationListeners(): () => void {
   const unsubComplete = window.electronAPI.onIdeationComplete((_projectId, session) => {
     // 调试日志
     if (window.DEBUG) {
-      console.log('[Ideation] Generation complete:', {
+      console.warn('[Ideation] Generation complete:', {
         projectId: _projectId,
         totalIdeas: session.ideas.length,
         ideaTypes: session.ideas.reduce((acc, idea) => {

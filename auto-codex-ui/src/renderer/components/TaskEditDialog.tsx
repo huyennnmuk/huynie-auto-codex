@@ -200,7 +200,7 @@ export function TaskEditDialog({ task, open, onOpenChange, onSaved }: TaskEditDi
       setShowImages((task.metadata?.attachedImages || []).length > 0);
       setPasteSuccess(false);
     }
-  }, [open, task, settings.selectedAgentProfile, selectedProfile.model, selectedProfile.thinkingLevel]);
+  }, [open, task, settings.selectedAgentProfile, selectedProfile.model, selectedProfile.thinkingLevel, selectedProfile.phaseModels, selectedProfile.phaseThinking]);
 
   /**
    * 处理粘贴事件以支持截图

@@ -58,7 +58,7 @@ export function useIpcListeners(): void {
       (projectId: string, status: RoadmapGenerationStatus) => {
         // Debug logging
         if (window.DEBUG) {
-          console.log('[Roadmap] Progress update:', {
+          console.warn('[Roadmap] Progress update:', {
             projectId,
             currentProjectId: useRoadmapStore.getState().currentProjectId,
             phase: status.phase,
@@ -77,7 +77,7 @@ export function useIpcListeners(): void {
       (projectId: string, roadmap: Roadmap) => {
         // Debug logging
         if (window.DEBUG) {
-          console.log('[Roadmap] Generation complete:', {
+          console.warn('[Roadmap] Generation complete:', {
             projectId,
             currentProjectId: useRoadmapStore.getState().currentProjectId,
             featuresCount: roadmap.features?.length || 0,
@@ -122,7 +122,7 @@ export function useIpcListeners(): void {
       (projectId: string) => {
         // Debug logging
         if (window.DEBUG) {
-          console.log('[Roadmap] Generation stopped:', {
+          console.warn('[Roadmap] Generation stopped:', {
             projectId,
             currentProjectId: useRoadmapStore.getState().currentProjectId
           });

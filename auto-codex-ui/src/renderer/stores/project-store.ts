@@ -205,22 +205,22 @@ export async function initializeProject(
   const store = useProjectStore.getState();
 
   try {
-    console.log('[ProjectStore] initializeProject called for:', projectId);
+    if (window.DEBUG) console.warn('[ProjectStore] initializeProject called for:', projectId);
     const result = await window.electronAPI.initializeProject(projectId);
-    console.log('[ProjectStore] IPC result:', result);
+    if (window.DEBUG) console.warn('[ProjectStore] IPC result:', result);
 
     if (result.success && result.data) {
-      console.log('[ProjectStore] IPC succeeded, result.data:', result.data);
+      if (window.DEBUG) console.warn('[ProjectStore] IPC succeeded, result.data:', result.data);
       // 在本地状态中更新项目的 autoBuildPath
       if (result.data.success) {
-        console.log('[ProjectStore] Updating project autoBuildPath to .auto-codex');
+        if (window.DEBUG) console.warn('[ProjectStore] Updating project autoBuildPath to .auto-codex');
         store.updateProject(projectId, { autoBuildPath: '.auto-codex' });
       } else {
-        console.log('[ProjectStore] result.data.success is false, not updating project');
+        if (window.DEBUG) console.warn('[ProjectStore] result.data.success is false, not updating project');
       }
       return result.data;
     }
-    console.log('[ProjectStore] IPC failed or no data, setting error');
+    if (window.DEBUG) console.warn('[ProjectStore] IPC failed or no data, setting error');
     store.setError(result.error || 'Failed to initialize project');
     return null;
   } catch (error) {

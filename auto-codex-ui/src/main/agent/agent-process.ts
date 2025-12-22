@@ -243,7 +243,7 @@ export class AgentProcessManager {
       processLog(log);
       // Print to console when DEBUG is enabled (visible in pnpm dev terminal)
       if (['true', '1', 'yes', 'on'].includes(process.env.DEBUG?.toLowerCase() ?? '')) {
-        console.log(`[Agent:${taskId}] ${log.trim()}`);
+        console.warn(`[Agent:${taskId}] ${log.trim()}`);
       }
     });
 
@@ -256,7 +256,7 @@ export class AgentProcessManager {
       processLog(log);
       // Print to console when DEBUG is enabled (visible in pnpm dev terminal)
       if (['true', '1', 'yes', 'on'].includes(process.env.DEBUG?.toLowerCase() ?? '')) {
-        console.log(`[Agent:${taskId}] ${log.trim()}`);
+        console.warn(`[Agent:${taskId}] ${log.trim()}`);
       }
     });
 

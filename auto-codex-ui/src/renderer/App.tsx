@@ -263,23 +263,23 @@ export function App() {
     }
   };
 
-  const handleInitialize = async () => {
-    if (!pendingProject) return;
+    const handleInitialize = async () => {
+      if (!pendingProject) return;
 
-    const projectId = pendingProject.id;
-    console.log('[InitDialog] Starting initialization for project:', projectId);
-    setIsInitializing(true);
-    setInitSuccess(false);
-    setInitError(null); // 清除之前的错误
-    try {
-      const result = await initializeProject(projectId);
-      console.log('[InitDialog] Initialization result:', result);
+      const projectId = pendingProject.id;
+      if (window.DEBUG) console.warn('[InitDialog] Starting initialization for project:', projectId);
+      setIsInitializing(true);
+      setInitSuccess(false);
+      setInitError(null); // 清除之前的错误
+      try {
+        const result = await initializeProject(projectId);
+        if (window.DEBUG) console.warn('[InitDialog] Initialization result:', result);
 
-      if (result?.success) {
-        console.log('[InitDialog] Initialization successful, closing dialog');
-        // 从 store 获取更新后的项目
-        const updatedProject = useProjectStore.getState().projects.find(p => p.id === projectId);
-        console.log('[InitDialog] Updated project:', updatedProject);
+        if (result?.success) {
+          if (window.DEBUG) console.warn('[InitDialog] Initialization successful, closing dialog');
+          // 从 store 获取更新后的项目
+          const updatedProject = useProjectStore.getState().projects.find(p => p.id === projectId);
+          if (window.DEBUG) console.warn('[InitDialog] Updated project:', updatedProject);
 
         // 标记成功以防 onOpenChange 将其视为跳过
         setInitSuccess(true);
@@ -294,13 +294,13 @@ export function App() {
           setGitHubSetupProject(updatedProject);
           setShowGitHubSetup(true);
         }
-      } else {
-        // 初始化失败 - 显示错误但保持对话框开启
-        console.log('[InitDialog] Initialization failed, showing error');
-        const errorMessage = result?.error || 'Failed to initialize Auto Codex. Please try again.';
-        setInitError(errorMessage);
-        setIsInitializing(false);
-      }
+        } else {
+          // 初始化失败 - 显示错误但保持对话框开启
+          if (window.DEBUG) console.warn('[InitDialog] Initialization failed, showing error');
+          const errorMessage = result?.error || 'Failed to initialize Auto Codex. Please try again.';
+          setInitError(errorMessage);
+          setIsInitializing(false);
+        }
     } catch (error) {
       // 发生了意外错误
       console.error('[InitDialog] Unexpected error during initialization:', error);
@@ -352,7 +352,7 @@ export function App() {
   };
 
   const handleSkipInit = () => {
-    console.log('[InitDialog] User skipped initialization');
+    if (window.DEBUG) console.warn('[InitDialog] User skipped initialization');
     if (pendingProject) {
       setSkippedInitProjectId(pendingProject.id);
     }
@@ -523,7 +523,9 @@ export function App() {
 
         {/* 初始化 Auto Codex 对话框 */}
         <Dialog open={showInitDialog} onOpenChange={(open) => {
-          console.log('[InitDialog] onOpenChange called', { open, pendingProject: !!pendingProject, isInitializing, initSuccess });
+          if (window.DEBUG) {
+            console.warn('[InitDialog] onOpenChange called', { open, pendingProject: !!pendingProject, isInitializing, initSuccess });
+          }
           // 仅在用户手动关闭对话框时触发跳过
           // 不触发的情况：初始化成功、没有待处理项目、或正在初始化
           if (!open && pendingProject && !isInitializing && !initSuccess) {

@@ -175,11 +175,11 @@ export function AdvancedSettings({ settings, onSettingsChange, section, version 
   };
 
   const checkForSourceUpdates = async () => {
-    console.log('[AdvancedSettings] Checking for source updates...');
+    if (window.DEBUG) console.warn('[AdvancedSettings] Checking for source updates...');
     setIsCheckingSourceUpdate(true);
     try {
       const result = await window.electronAPI.checkAutoBuildSourceUpdate();
-      console.log('[AdvancedSettings] Check result:', result);
+      if (window.DEBUG) console.warn('[AdvancedSettings] Check result:', result);
       if (result.success && result.data) {
         setSourceUpdateCheck(result.data);
         // 从检查结果更新显示版本（最准确）

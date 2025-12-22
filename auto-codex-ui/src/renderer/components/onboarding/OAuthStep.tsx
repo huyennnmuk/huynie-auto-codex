@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import {
-  Key,
   Eye,
   EyeOff,
   Info,

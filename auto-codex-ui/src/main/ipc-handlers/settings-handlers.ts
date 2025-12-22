@@ -290,7 +290,7 @@ export function registerSettingsHandlers(
   ipcMain.handle(IPC_CHANNELS.APP_VERSION, async (): Promise<string> => {
     // Use effective version which accounts for source updates
     const version = getEffectiveVersion();
-    console.log('[settings-handlers] APP_VERSION returning:', version);
+    console.warn('[settings-handlers] APP_VERSION returning:', version);
     return version;
   });
 

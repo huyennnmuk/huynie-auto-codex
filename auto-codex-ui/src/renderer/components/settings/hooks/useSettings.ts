@@ -30,12 +30,14 @@ export function useSettings() {
 
   // Load settings on mount and capture original theme
   useEffect(() => {
-    loadSettingsFromStore();
-    // Update the original theme ref when settings load
-    originalThemeRef.current = {
-      theme: currentSettings.theme,
-      colorTheme: currentSettings.colorTheme
-    };
+    void loadSettingsFromStore().finally(() => {
+      // Update the original theme ref when settings load
+      const loaded = useSettingsStore.getState().settings;
+      originalThemeRef.current = {
+        theme: loaded.theme,
+        colorTheme: loaded.colorTheme
+      };
+    });
   }, []);
 
   const saveSettings = async () => {

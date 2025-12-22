@@ -233,7 +233,7 @@ export function registerTaskExecutionHandlers(
             stdio: 'pipe'
           });
           if (resetResult.status === 0) {
-            console.log('[TASK_REVIEW] Unstaged changes in main');
+            console.warn('[TASK_REVIEW] Unstaged changes in main');
           }
 
           // Step 2: Discard all working tree changes (restore to pre-merge state)
@@ -243,7 +243,7 @@ export function registerTaskExecutionHandlers(
             stdio: 'pipe'
           });
           if (checkoutResult.status === 0) {
-            console.log('[TASK_REVIEW] Discarded working tree changes in main');
+            console.warn('[TASK_REVIEW] Discarded working tree changes in main');
           }
 
           // Step 3: Clean untracked files that came from the merge
@@ -253,10 +253,10 @@ export function registerTaskExecutionHandlers(
             stdio: 'pipe'
           });
           if (cleanResult.status === 0) {
-            console.log('[TASK_REVIEW] Cleaned untracked files in main');
+            console.warn('[TASK_REVIEW] Cleaned untracked files in main');
           }
 
-          console.log('[TASK_REVIEW] Main branch restored to pre-merge state');
+          console.warn('[TASK_REVIEW] Main branch restored to pre-merge state');
         }
 
         // Write feedback for QA fixer - write to WORKTREE spec dir if it exists
@@ -325,7 +325,7 @@ export function registerTaskExecutionHandlers(
           };
         } else {
           // No worktree - allow marking as done (limbo state recovery)
-          console.log(`[TASK_UPDATE_STATUS] Allowing status 'done' for task ${taskId} (no worktree found - limbo state)`);
+          console.warn(`[TASK_UPDATE_STATUS] Allowing status 'done' for task ${taskId} (no worktree found - limbo state)`);
         }
       }
 

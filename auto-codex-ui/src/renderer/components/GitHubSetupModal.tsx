@@ -28,7 +28,7 @@ import {
 } from './ui/select';
 import { GitHubOAuthFlow } from './project-settings/GitHubOAuthFlow';
 import { CodexOAuthFlow } from './project-settings/CodexOAuthFlow';
-import type { Project, ProjectSettings } from '../../shared/types';
+import type { Project } from '../../shared/types';
 
 interface GitHubSetupModalProps {
   open: boolean;

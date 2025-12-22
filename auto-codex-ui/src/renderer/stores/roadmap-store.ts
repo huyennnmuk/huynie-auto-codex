@@ -35,7 +35,7 @@ function migrateRoadmapIfNeeded(roadmap: Roadmap): Roadmap {
   });
 
   if (needsMigration) {
-    console.log('[Roadmap] Migrated roadmap data to latest schema');
+    if (window.DEBUG) console.warn('[Roadmap] Migrated roadmap data to latest schema');
     return {
       ...roadmap,
       features: migratedFeatures,
@@ -301,7 +301,7 @@ export function generateRoadmap(
 ): void {
   // 调试日志
   if (window.DEBUG) {
-    console.log('[Roadmap] Starting generation:', { projectId, enableCompetitorAnalysis, refreshCompetitorAnalysis });
+    console.warn('[Roadmap] Starting generation:', { projectId, enableCompetitorAnalysis, refreshCompetitorAnalysis });
   }
 
   useRoadmapStore.getState().setGenerationStatus({
@@ -319,7 +319,7 @@ export function refreshRoadmap(
 ): void {
   // 调试日志
   if (window.DEBUG) {
-    console.log('[Roadmap] Starting refresh:', { projectId, enableCompetitorAnalysis, refreshCompetitorAnalysis });
+    console.warn('[Roadmap] Starting refresh:', { projectId, enableCompetitorAnalysis, refreshCompetitorAnalysis });
   }
 
   useRoadmapStore.getState().setGenerationStatus({
@@ -335,7 +335,7 @@ export async function stopRoadmap(projectId: string): Promise<boolean> {
 
   // 调试日志
   if (window.DEBUG) {
-    console.log('[Roadmap] Stop requested:', { projectId });
+    console.warn('[Roadmap] Stop requested:', { projectId });
   }
 
   // 无论后端响应如何，用户请求停止时始终将 UI 状态更新为 'idle'
@@ -350,12 +350,12 @@ export async function stopRoadmap(projectId: string): Promise<boolean> {
 
   // 调试日志
   if (window.DEBUG) {
-    console.log('[Roadmap] Stop result:', { projectId, success: result.success });
+    console.warn('[Roadmap] Stop result:', { projectId, success: result.success });
   }
 
   if (!result.success) {
     // 后端找不到/无法停止该进程（可能已完成/崩溃）
-    console.log('[Roadmap] Process already stopped');
+    if (window.DEBUG) console.warn('[Roadmap] Process already stopped');
   }
 
   return result.success;
