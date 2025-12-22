@@ -135,7 +135,7 @@ Environment configuration:
 - `ENV_INVOKE_CODEX_SETUP` - Run Codex setup
 
 #### `autobuild-source-handlers.ts` (8.9KB)
-Auto-build source updates:
+Auto-Codex source updates (`autoBuildPath` points to the backend source directory):
 - `AUTOBUILD_SOURCE_CHECK` - Check for updates
 - `AUTOBUILD_SOURCE_DOWNLOAD` - Download updates
 - `AUTOBUILD_SOURCE_VERSION` - Get version info

@@ -15,7 +15,7 @@ modules/
 ├── changelog-api.ts      # Changelog generation and versioning
 ├── linear-api.ts         # Linear issue tracking integration
 ├── github-api.ts         # GitHub integration (issues, releases)
-├── autobuild-api.ts      # Auto-build source update management
+├── autobuild-api.ts      # Auto-Codex source update management
 ├── shell-api.ts          # Shell operations (e.g., opening URLs)
 └── index.ts              # Barrel export for easy imports
 ```

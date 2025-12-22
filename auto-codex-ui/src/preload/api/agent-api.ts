@@ -8,7 +8,7 @@
  * - Changelog operations
  * - Linear integration
  * - GitHub integration
- * - Auto-build source updates
+ * - Auto-Codex source updates
  * - Shell operations
  */
 
@@ -69,7 +69,7 @@ export const createAgentAPI = (): AgentAPI => {
     // GitHub Integration API
     ...githubAPI,
 
-    // Auto-Build Source Update API
+    // Auto-Codex Source Update API
     ...autobuildAPI,
 
     // Shell Operations API

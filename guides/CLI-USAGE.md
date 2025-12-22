@@ -11,7 +11,7 @@ This document covers terminal-only usage of Auto-Codex. **For most users, we rec
 ## Prerequisites
 
 - Python 3.9+
-- Codex CLI (`npm install -g @openai/codex-cli`)
+- Codex CLI (`npm install -g @openai/codex`)
 
 ## Setup
 

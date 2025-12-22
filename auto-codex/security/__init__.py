@@ -1,6 +1,6 @@
 """
-Security Module for Auto-Build Framework
-=========================================
+Security Module for Auto-Codex
+==============================
 
 Provides security validation for bash commands using dynamic allowlists
 based on project analysis.

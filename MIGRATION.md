@@ -5,7 +5,7 @@ This guide walks you through migrating Auto-Codex from the Claude SDK to the Ope
 ## 1) Install Codex CLI
 
 ```bash
-npm install -g @openai/codex-cli
+npm install -g @openai/codex
 codex --version
 ```
 

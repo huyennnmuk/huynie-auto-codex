@@ -369,7 +369,7 @@ from ai_analyzer.llm_client import LLM_AVAILABLE
 
 # Check Codex CLI availability
 if not LLM_AVAILABLE:
-    print("Please install: npm install -g @openai/codex-cli")
+    print("Please install: npm install -g @openai/codex")
     exit(1)
 
 # Handle missing API key

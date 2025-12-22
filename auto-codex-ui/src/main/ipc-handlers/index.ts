@@ -80,7 +80,7 @@ export function setupIpcHandlers(
   // GitHub integration handlers
   registerGithubHandlers(agentManager, getMainWindow);
 
-  // Auto-build source update handlers
+  // Auto-Codex source update handlers
   registerAutobuildSourceHandlers(getMainWindow);
 
   // Ideation handlers

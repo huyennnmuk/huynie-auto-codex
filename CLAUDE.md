@@ -23,10 +23,10 @@ uv venv && uv pip install -r requirements.txt
 # Or: python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt
 
 # Install Codex CLI (if not already installed)
-npm install -g @openai/codex-cli
+npm install -g @openai/codex
 
 # Authenticate Codex CLI (recommended) or set API key directly
-codex auth login
+codex login
 # Or set OPENAI_API_KEY in your shell or .env file
 export OPENAI_API_KEY=your-key
 # Or add to auto-codex/.env: OPENAI_API_KEY=your-key

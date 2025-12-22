@@ -44,7 +44,7 @@ function migrateOnboardingCompleted(settings: AppSettings): AppSettings {
 
   // 检查现有用户的迹象：
   // - 已配置 OpenAI API
-  // - 已配置 auto-build 源路径
+  // - 已配置 Auto-Codex 源路径（autoBuildPath）
   const hasOpenAIApiKey = Boolean(settings.globalOpenAIApiKey);
   const hasAutoBuildPath = Boolean(settings.autoBuildPath);
 

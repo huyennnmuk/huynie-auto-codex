@@ -1,6 +1,6 @@
 """
-Security Hooks for Auto-Build Framework
-=======================================
+Security Hooks for Auto-Codex
+=============================
 
 BACKWARD COMPATIBILITY FACADE
 

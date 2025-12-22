@@ -59,7 +59,7 @@ pip install -r ../tests/requirements-test.txt
 # Set up environment
 cp .env.example .env
 # Install Codex CLI
-npm install -g @openai/codex-cli
+npm install -g @openai/codex
 # Edit .env and add your OPENAI_API_KEY
 ```
 

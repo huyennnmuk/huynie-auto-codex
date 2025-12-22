@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Secret Scanning Script for Auto-Build Framework
-================================================
+Secret Scanning Script for Auto-Codex
+=====================================
 
 Scans staged git files for potential secrets before commit.
 Designed to prevent accidental exposure of API keys, tokens, and credentials.

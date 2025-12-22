@@ -12,7 +12,7 @@ The module is organized into focused, single-responsibility files:
 Shared utility functions for environment configuration and parsing.
 
 **Exports:**
-- `getAutoBuildSourcePath()` - Get auto-build source path from settings
+- `getAutoBuildSourcePath()` - Get Auto-Codex source path from settings (`autoBuildPath`)
 - `parseEnvFile(content)` - Parse .env file content into key-value pairs
 - `loadProjectEnvVars(projectPath, autoBuildPath)` - Load project-specific environment variables
 - `loadGlobalSettings()` - Load global application settings
