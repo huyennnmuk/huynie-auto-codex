@@ -4,6 +4,13 @@
  */
 
 import { getCodexProfileManager } from './codex-profile-manager';
+import {
+  buildProviderEnvFromConfig,
+  configPrefersApiKey,
+  getApiKeyFromAuthJson,
+  readAuthJson,
+} from './codex-profile/codex-config';
+import { expandHomePath } from './codex-profile/profile-utils';
 
 /**
  * Regex pattern to detect Codex Code rate limit messages
@@ -273,9 +280,24 @@ export function getProfileEnv(profileId?: string): Record<string, string> {
     return {};
   }
 
+  const configDir = expandHomePath((profile.configDir || '').trim());
+
+  // Some Codex providers require a specific env var (env_key) for API key auth
+  // (e.g. YUNYI_KEY). GUI-launched processes often don't inherit shell env,
+  // so we opportunistically source it from the Codex config dir auth.json.
+  const providerEnv = buildProviderEnvFromConfig(configDir, process.env);
+
+  // If the Codex config is explicitly set up for API-key auth (common for
+  // third-party gateways/activators), prefer config-dir auth over an OAuth token
+  // stored in the Desktop profile. This avoids a stale/invalid OAuth token
+  // shadowing a working API-key-based setup.
+  const authJson = configDir ? readAuthJson(configDir) : null;
+  const hasApiKeyInAuthJson = !!getApiKeyFromAuthJson(authJson);
+  const prefersApiKey = !!configDir && (hasApiKeyInAuthJson || configPrefersApiKey(configDir));
+
   // Prefer OAuth token (instant switching, no browser auth needed)
   // Use profile manager to get decrypted token
-  if (profile.oauthToken) {
+  if (profile.oauthToken && !prefersApiKey) {
     const decryptedToken = profileId
       ? profileManager.getProfileToken(profileId)
       : profileManager.getActiveProfileToken();
@@ -283,25 +305,33 @@ export function getProfileEnv(profileId?: string): Record<string, string> {
     if (decryptedToken) {
       console.warn('[getProfileEnv] Using OAuth token for profile:', profile.name);
       return {
-        CODEX_CODE_OAUTH_TOKEN: decryptedToken
+        ...providerEnv,
+        CODEX_CODE_OAUTH_TOKEN: decryptedToken,
       };
     } else {
       console.warn('[getProfileEnv] Failed to decrypt token for profile:', profile.name);
     }
+  } else if (profile.oauthToken && prefersApiKey) {
+    console.warn('[getProfileEnv] Skipping OAuth token due to API-key preferred config:', {
+      profileName: profile.name,
+      configDir,
+      hasApiKeyInAuthJson,
+    });
   }
 
   // Fallback: If default profile, no env vars needed
   if (profile.isDefault) {
-    console.warn('[getProfileEnv] Using default profile (no env vars)');
-    return {};
+    console.warn('[getProfileEnv] Using default profile (provider env only)');
+    return providerEnv;
   }
 
   // Fallback: Use configDir for profiles without OAuth token (legacy)
   if (profile.configDir) {
     console.warn('[getProfileEnv] Using configDir fallback for profile:', profile.name);
-    console.warn('[getProfileEnv] WARNING: Profile has no OAuth token. Run "codex setup-token" and save the token to enable instant switching.');
+    console.warn('[getProfileEnv] WARNING: Profile has no OAuth token. Use `codex login` (e.g. `codex login --device-auth`) if you want OAuth-based switching.');
     return {
-      CODEX_CONFIG_DIR: profile.configDir
+      ...providerEnv,
+      CODEX_CONFIG_DIR: configDir,
     };
   }
 

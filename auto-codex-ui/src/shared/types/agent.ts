@@ -83,6 +83,8 @@ export interface CodexProfile {
    * @deprecated Use oauthToken instead for reliable multi-profile switching
    */
   configDir?: string;
+  /** Derived auth status (computed at runtime, not persisted) */
+  isAuthenticated?: boolean;
   /** Whether this is the default profile (uses ~/.codex) */
   isDefault: boolean;
   /** Optional description/notes for this profile */

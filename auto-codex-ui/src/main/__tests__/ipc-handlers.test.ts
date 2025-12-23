@@ -83,6 +83,11 @@ vi.mock('electron', () => {
       getVersion: vi.fn(() => '0.1.0'),
       isPackaged: false
     },
+    safeStorage: {
+      isEncryptionAvailable: vi.fn(() => true),
+      encryptString: vi.fn((value: string) => Buffer.from(`enc:${value}`, 'utf-8')),
+      decryptString: vi.fn((value: Buffer) => value.toString('utf-8').replace(/^enc:/, '')),
+    },
     ipcMain: mockIpcMain,
     dialog: {
       showOpenDialog: vi.fn(() => Promise.resolve({ canceled: false, filePaths: [TEST_PROJECT_PATH] }))
@@ -463,7 +468,7 @@ describe('IPC Handlers', () => {
         { pythonPath: '/usr/bin/python3' }
       );
 
-      expect(mockAgentManager.configure).toHaveBeenCalledWith('/usr/bin/python3', undefined);
+      expect(mockAgentManager.configure).toHaveBeenCalledWith('/usr/bin/python3', expect.anything());
     });
   });
 

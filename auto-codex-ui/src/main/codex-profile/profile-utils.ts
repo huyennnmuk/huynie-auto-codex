@@ -7,6 +7,7 @@ import { homedir } from 'os';
 import { join } from 'path';
 import { existsSync, readFileSync, readdirSync, mkdirSync } from 'fs';
 import type { CodexProfile } from '../../shared/types';
+import { configDirLooksConfigured, readAuthJson, getApiKeyFromAuthJson } from './codex-config';
 
 /**
  * Default Codex config directory
@@ -59,27 +60,47 @@ export async function createProfileDirectory(profileName: string): Promise<strin
  * (checks if the config directory has credential files)
  */
 export function isProfileAuthenticated(profile: CodexProfile): boolean {
-  const configDir = profile.configDir;
+  const configDir = expandHomePath(profile.configDir || '');
   if (!configDir || !existsSync(configDir)) {
     return false;
   }
 
-  // Codex stores auth in .codex/credentials or similar files
-  // Check for common auth indicators
+  const looksLikeToken = (value: unknown): boolean => {
+    if (typeof value !== 'string') return false;
+    const t = value.trim();
+    const normalized = t.toLowerCase().startsWith('bearer ') ? t.slice(7).trim() : t;
+    return normalized.length >= 20 && !/\s/.test(normalized);
+  };
+
+  // 1) auth.json (Codex CLI primary credential store for API key / gateway setups)
+  const auth = readAuthJson(configDir);
+  const apiKey = getApiKeyFromAuthJson(auth);
+  if (apiKey) return true;
+  if (auth && (looksLikeToken(auth.access_token) || looksLikeToken(auth.refresh_token))) {
+    return true;
+  }
+
+  // 2) legacy files (heuristic scan for a plausible token)
   const possibleAuthFiles = [
     join(configDir, 'credentials'),
     join(configDir, 'credentials.json'),
     join(configDir, '.credentials'),
-    join(configDir, 'settings.json'),  // Often contains auth tokens
+    join(configDir, 'settings.json'),
   ];
 
   for (const authFile of possibleAuthFiles) {
     if (existsSync(authFile)) {
       try {
         const content = readFileSync(authFile, 'utf-8');
-        // Check if file has actual content (not just empty or placeholder)
-        if (content.length > 10) {
-          return true;
+        if (looksLikeToken(content)) return true;
+        // If JSON, scan common keys.
+        try {
+          const parsed = JSON.parse(content) as Record<string, unknown>;
+          for (const key of ['token', 'access_token', 'refresh_token', 'OPENAI_API_KEY', 'api_key', 'apiKey']) {
+            if (looksLikeToken(parsed[key])) return true;
+          }
+        } catch {
+          // not JSON
         }
       } catch {
         // Ignore read errors
@@ -87,16 +108,35 @@ export function isProfileAuthenticated(profile: CodexProfile): boolean {
     }
   }
 
-  // Also check if there are any session files (indicates authenticated usage)
-  const projectsDir = join(configDir, 'projects');
-  if (existsSync(projectsDir)) {
-    try {
-      const projects = readdirSync(projectsDir);
-      if (projects.length > 0) {
-        return true;
+  // 3) If config dir looks configured, treat it as authenticated if any of the
+  // known config files are non-trivial. This matches Codex CLI behavior and
+  // avoids blocking users who authenticate via API key / gateway without having
+  // any local `projects/` sessions yet.
+  if (configDirLooksConfigured(configDir)) {
+    for (const fileName of ['config.toml', 'auth.json', 'settings.json']) {
+      const p = join(configDir, fileName);
+      if (!existsSync(p)) continue;
+      try {
+        const content = readFileSync(p, 'utf-8');
+        if (content.trim().length > 10) {
+          return true;
+        }
+      } catch {
+        // Ignore read errors
       }
-    } catch {
-      // Ignore read errors
+    }
+
+    // Also check if there are any session files (indicates authenticated usage)
+    const projectsDir = join(configDir, 'projects');
+    if (existsSync(projectsDir)) {
+      try {
+        const projects = readdirSync(projectsDir);
+        if (projects.length > 0) {
+          return true;
+        }
+      } catch {
+        // Ignore read errors
+      }
     }
   }
 

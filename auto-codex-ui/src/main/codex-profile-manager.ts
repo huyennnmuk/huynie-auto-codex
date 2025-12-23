@@ -78,6 +78,30 @@ export class CodexProfileManager {
   private load(): ProfileStoreData {
     const loadedData = loadProfileStore(this.storePath);
     if (loadedData) {
+      // Normalize legacy data (e.g., "~" paths) and strip derived fields.
+      let changed = false;
+      for (const profile of loadedData.profiles) {
+        if (profile.configDir) {
+          const expanded = expandHomePath(profile.configDir);
+          if (expanded !== profile.configDir) {
+            profile.configDir = expanded;
+            changed = true;
+          }
+        }
+        // Derived at runtime; avoid persisting it if it ever got written.
+        if (typeof (profile as { isAuthenticated?: unknown }).isAuthenticated !== 'undefined') {
+          delete (profile as { isAuthenticated?: unknown }).isAuthenticated;
+          changed = true;
+        }
+      }
+
+      if (changed) {
+        try {
+          saveProfileStore(this.storePath, loadedData);
+        } catch {
+          // Best-effort migration; ignore write errors.
+        }
+      }
       return loadedData;
     }
 
@@ -118,7 +142,12 @@ export class CodexProfileManager {
    */
   getSettings(): CodexProfileSettings {
     return {
-      profiles: this.data.profiles,
+      // Compute derived auth status at runtime (do not persist).
+      profiles: this.data.profiles.map((profile) => ({
+        ...profile,
+        configDir: profile.configDir ? expandHomePath(profile.configDir) : profile.configDir,
+        isAuthenticated: this.hasValidAuth(profile.id),
+      })),
       activeProfileId: this.data.activeProfileId,
       autoSwitch: this.data.autoSwitch || DEFAULT_AUTO_SWITCH_SETTINGS
     };
@@ -296,7 +325,7 @@ export class CodexProfileManager {
 
   /**
    * Set the OAuth token for a profile (encrypted storage).
-   * Used when capturing token from `codex setup-token` output.
+   * Used when capturing token from Codex auth output.
    */
   setProfileToken(profileId: string, token: string, email?: string): boolean {
     const profile = this.getProfile(profileId);
@@ -499,7 +528,7 @@ export class CodexProfileManager {
     }
 
     return {
-      CODEX_CONFIG_DIR: profile.configDir
+      CODEX_CONFIG_DIR: expandHomePath(profile.configDir)
     };
   }
 

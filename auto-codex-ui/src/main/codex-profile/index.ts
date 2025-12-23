@@ -52,5 +52,16 @@ export {
   expandHomePath
 } from './profile-utils';
 
+// Codex config helpers
+export type { CodexProviderEnvInfo, CodexAuthJson } from './codex-config';
+export {
+  configDirLooksConfigured,
+  readAuthJson,
+  getApiKeyFromAuthJson,
+  getProviderEnvInfoFromConfigToml,
+  configPrefersApiKey,
+  buildProviderEnvFromConfig
+} from './codex-config';
+
 // Usage monitoring (proactive account switching)
 export { UsageMonitor, getUsageMonitor } from './usage-monitor';

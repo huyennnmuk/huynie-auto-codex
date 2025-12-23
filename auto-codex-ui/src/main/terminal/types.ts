@@ -12,6 +12,7 @@ export interface TerminalProcess {
   cwd: string;
   codexSessionId?: string;
   codexProfileId?: string;
+  codexAuthNotified?: boolean;
   outputBuffer: string;
   title: string;
 }

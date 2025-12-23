@@ -15,7 +15,8 @@ codex-profile/
 ├── rate-limit-manager.ts    # Rate limit event tracking
 ├── profile-storage.ts       # Disk persistence
 ├── profile-scorer.ts        # Profile availability scoring and auto-switch logic
-└── profile-utils.ts         # Helper utilities
+├── profile-utils.ts         # Helper utilities
+└── codex-config.ts          # Codex CLI config helpers (auth.json/config.toml)
 ```
 
 ## Modules
@@ -83,10 +84,19 @@ Helper utilities for profile operations.
 - `DEFAULT_CODEX_CONFIG_DIR` - Default Codex config location (~/.codex)
 - `CODEX_PROFILES_DIR` - Additional profiles directory (~/.codex-profiles)
 
-### 7. **types.ts**
+### 7. **codex-config.ts**
+Helpers for reading Codex CLI config/auth files and deriving provider env settings.
+
+**Key Functions:**
+- `readAuthJson(configDir): CodexAuthJson | null` - Reads auth.json safely
+- `getApiKeyFromAuthJson(auth): string | undefined` - Extracts API key values
+- `getProviderEnvInfoFromConfigToml(configDir): CodexProviderEnvInfo` - Reads provider/env_key settings
+- `buildProviderEnvFromConfig(configDir, existingEnv): Record<string, string>` - Builds provider env overrides
+
+### 8. **types.ts**
 Re-exports shared types for convenience and future extensibility.
 
-### 8. **index.ts**
+### 9. **index.ts**
 Central export point providing a clean public API for all profile functionality.
 
 ## Main Manager

@@ -89,17 +89,34 @@ export function handleOAuthToken(
   data: string,
   getWindow: WindowGetter
 ): void {
+  const email = OutputParser.extractEmail(terminal.outputBuffer);
+  const profileIdMatch = terminal.id.match(/^codex-login-(.+)-\d+$/);
   const token = OutputParser.extractOAuthToken(data);
   if (!token) {
+    if (!email || !profileIdMatch || terminal.codexAuthNotified) {
+      return;
+    }
+
+    terminal.codexAuthNotified = true;
+    const profileId = profileIdMatch[1];
+
+    console.warn('[CodexIntegration] Codex login detected for profile:', profileId);
+    const win = getWindow();
+    if (win) {
+      win.webContents.send(IPC_CHANNELS.TERMINAL_OAUTH_TOKEN, {
+        terminalId: terminal.id,
+        profileId,
+        email,
+        success: true,
+        detectedAt: new Date().toISOString()
+      } as OAuthTokenEvent);
+    }
     return;
   }
 
   console.warn('[CodexIntegration] OAuth token detected, length:', token.length);
 
-  const email = OutputParser.extractEmail(terminal.outputBuffer);
   // Match both custom profiles (profile-123456) and the default profile
-  const profileIdMatch = terminal.id.match(/codex-login-(profile-\d+|default)-/);
-
   if (profileIdMatch) {
     // Save to specific profile (profile login terminal)
     const profileId = profileIdMatch[1];
