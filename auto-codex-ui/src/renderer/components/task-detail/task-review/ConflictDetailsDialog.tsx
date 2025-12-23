@@ -22,6 +22,23 @@ interface ConflictDetailsDialogProps {
   onMerge: () => void;
 }
 
+function getSeverityLabel(severity: string) {
+  switch (severity) {
+    case 'none':
+      return '无';
+    case 'low':
+      return '低';
+    case 'medium':
+      return '中';
+    case 'high':
+      return '高';
+    case 'critical':
+      return '严重';
+    default:
+      return severity;
+  }
+}
+
 /**
  * Dialog displaying detailed information about merge conflicts
  */
@@ -38,13 +55,13 @@ export function ConflictDetailsDialog({
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-warning" />
-            Merge Conflicts Preview
+            合并冲突预览
           </AlertDialogTitle>
           <AlertDialogDescription>
-            {mergePreview?.conflicts.length || 0} potential conflict{(mergePreview?.conflicts.length || 0) !== 1 ? 's' : ''} detected.
+            检测到 {mergePreview?.conflicts.length || 0} 个潜在冲突。
             {mergePreview && mergePreview.summary.autoMergeable > 0 && (
               <span className="text-success ml-1">
-                {mergePreview.summary.autoMergeable} can be auto-merged.
+                {mergePreview.summary.autoMergeable} 个可自动合并。
               </span>
             )}
           </AlertDialogDescription>
@@ -74,24 +91,24 @@ export function ConflictDetailsDialog({
                         variant="secondary"
                         className={cn('text-xs', getSeverityVariant(conflict.severity))}
                       >
-                        {conflict.severity}
+                        {getSeverityLabel(conflict.severity)}
                       </Badge>
                       {conflict.canAutoMerge && (
                         <Badge variant="secondary" className="text-xs bg-success/10 text-success">
-                          auto-merge
+                          可自动合并
                         </Badge>
                       )}
                     </div>
                   </div>
                   <div className="text-xs text-muted-foreground space-y-1">
                     {conflict.location && (
-                      <div><span className="text-foreground/70">Location:</span> {conflict.location}</div>
+                      <div><span className="text-foreground/70">位置：</span> {conflict.location}</div>
                     )}
                     {conflict.reason && (
-                      <div><span className="text-foreground/70">Reason:</span> {conflict.reason}</div>
+                      <div><span className="text-foreground/70">原因：</span> {conflict.reason}</div>
                     )}
                     {conflict.strategy && (
-                      <div><span className="text-foreground/70">Strategy:</span> {conflict.strategy}</div>
+                      <div><span className="text-foreground/70">策略：</span> {conflict.strategy}</div>
                     )}
                   </div>
                 </div>
@@ -99,12 +116,12 @@ export function ConflictDetailsDialog({
             </div>
           ) : (
             <div className="text-center py-8 text-muted-foreground">
-              No conflicts detected
+              未检测到冲突
             </div>
           )}
         </div>
         <AlertDialogFooter className="mt-4">
-          <AlertDialogCancel>Close</AlertDialogCancel>
+          <AlertDialogCancel>关闭</AlertDialogCancel>
           <AlertDialogAction
             onClick={(e) => {
               e.preventDefault();
@@ -114,7 +131,7 @@ export function ConflictDetailsDialog({
             className="bg-warning text-warning-foreground hover:bg-warning/90"
           >
             <GitMerge className="mr-2 h-4 w-4" />
-            {stageOnly ? 'Stage with AI Merge' : 'Merge with AI'}
+            {stageOnly ? 'AI 合并并暂存' : 'AI 合并'}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

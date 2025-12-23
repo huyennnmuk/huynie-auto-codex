@@ -421,7 +421,7 @@ export function Sidebar({
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => window.open('https://github.com/AndyMik90/Auto-Codex/issues', '_blank')}
+                  onClick={() => window.electronAPI.openExternal('https://github.com/tytsxai/Auto-Codex/issues')}
                 >
                   <HelpCircle className="h-4 w-4" />
                 </Button>

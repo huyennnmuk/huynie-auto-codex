@@ -92,7 +92,7 @@ export function Worktrees({ projectId }: WorktreesProps) {
 
   // Find task for a worktree
   const findTaskForWorktree = (specName: string) => {
-    return tasks.find(t => t.specId === specName);
+    return tasks.find((t) => t.projectId === projectId && t.specId === specName);
   };
 
   // Handle merge
@@ -307,7 +307,9 @@ export function Worktrees({ projectId }: WorktreesProps) {
                         size="sm"
                         onClick={() => {
                           // Copy worktree path to clipboard
-                          navigator.clipboard.writeText(worktree.path);
+                          void navigator.clipboard.writeText(worktree.path).catch((err) => {
+                            setError(err instanceof Error ? err.message : '复制路径失败');
+                          });
                         }}
                       >
                         <FolderOpen className="h-3.5 w-3.5 mr-1.5" />
