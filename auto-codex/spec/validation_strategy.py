@@ -20,12 +20,21 @@ Usage:
         print(f"Run: {step.command}")
 """
 
+import configparser
 import json
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
 from risk_classifier import RiskClassifier
+
+try:
+    import tomllib
+except ImportError:  # pragma: no cover - fallback for older Python
+    try:
+        import tomli as tomllib  # type: ignore[import-not-found]
+    except ImportError:  # pragma: no cover - no TOML parser available
+        tomllib = None
 
 # =============================================================================
 # DATA CLASSES
@@ -126,6 +135,167 @@ PROJECT_TYPE_INDICATORS = {
         "files": ["Gemfile"],
     },
 }
+
+_CLI_ENTRYPOINT_IGNORE_DIRS = {
+    ".git",
+    ".venv",
+    "__pycache__",
+    ".tox",
+    ".mypy_cache",
+    ".pytest_cache",
+    "build",
+    "dist",
+    "node_modules",
+    "site-packages",
+    "dist-packages",
+    "tests",
+    "test",
+    "venv",
+}
+
+
+def _extract_module_from_entrypoint(value: str) -> str | None:
+    if not isinstance(value, str):
+        return None
+    target = value.strip()
+    if not target:
+        return None
+    if "=" in target:
+        _, target = target.split("=", 1)
+        target = target.strip()
+    if not target:
+        return None
+    if ":" in target:
+        module = target.split(":", 1)[0].strip()
+    else:
+        module = target
+    return module or None
+
+
+def _module_from_entrypoint_lines(lines: list[str]) -> str | None:
+    for line in lines:
+        cleaned = line.strip()
+        if not cleaned or cleaned.startswith("#") or cleaned.startswith(";"):
+            continue
+        module = _extract_module_from_entrypoint(cleaned)
+        if module:
+            return module
+    return None
+
+
+def _module_from_entrypoint_group(group: Any) -> str | None:
+    if isinstance(group, dict):
+        for key in sorted(group):
+            module = _extract_module_from_entrypoint(str(group[key]))
+            if module:
+                return module
+        return None
+    if isinstance(group, (list, tuple)):
+        return _module_from_entrypoint_lines([str(item) for item in group])
+    if isinstance(group, str):
+        return _module_from_entrypoint_lines(group.splitlines())
+    return None
+
+
+def _extract_cli_module_from_entry_points(entry_points: Any) -> str | None:
+    if isinstance(entry_points, dict):
+        for group_key in ("console_scripts", "console-scripts", "gui_scripts"):
+            module = _module_from_entrypoint_group(entry_points.get(group_key))
+            if module:
+                return module
+        return _module_from_entrypoint_group(entry_points)
+    return _module_from_entrypoint_group(entry_points)
+
+
+def _detect_cli_module_from_pyproject(project_dir: Path) -> str | None:
+    pyproject = project_dir / "pyproject.toml"
+    if not pyproject.exists() or tomllib is None:
+        return None
+
+    try:
+        data = tomllib.loads(pyproject.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+
+    project = data.get("project", {})
+    module = _module_from_entrypoint_group(project.get("scripts"))
+    if module:
+        return module
+
+    module = _extract_cli_module_from_entry_points(
+        project.get("entry-points") or project.get("entry_points")
+    )
+    if module:
+        return module
+
+    tool = data.get("tool", {})
+    poetry = tool.get("poetry", {})
+    module = _module_from_entrypoint_group(poetry.get("scripts"))
+    if module:
+        return module
+
+    plugins = poetry.get("plugins", {})
+    module = _extract_cli_module_from_entry_points(plugins)
+    if module:
+        return module
+
+    setuptools_cfg = tool.get("setuptools", {})
+    module = _extract_cli_module_from_entry_points(
+        setuptools_cfg.get("entry-points") or setuptools_cfg.get("entry_points")
+    )
+    return module
+
+
+def _detect_cli_module_from_setup_cfg(project_dir: Path) -> str | None:
+    setup_cfg = project_dir / "setup.cfg"
+    if not setup_cfg.exists():
+        return None
+
+    parser = configparser.ConfigParser()
+    try:
+        parser.read(setup_cfg, encoding="utf-8")
+    except (OSError, configparser.Error):
+        return None
+
+    section = "options.entry_points"
+    if not parser.has_section(section):
+        return None
+
+    for key in ("console_scripts", "gui_scripts"):
+        if parser.has_option(section, key):
+            value = parser.get(section, key)
+            module = _module_from_entrypoint_lines(value.splitlines())
+            if module:
+                return module
+    return None
+
+
+def _detect_cli_module_from_main(project_dir: Path) -> str | None:
+    candidates = []
+    search_roots = [project_dir / "src", project_dir]
+    for root in search_roots:
+        if not root.exists():
+            continue
+        for path in root.rglob("__main__.py"):
+            if any(part in _CLI_ENTRYPOINT_IGNORE_DIRS for part in path.parts):
+                continue
+            relative = path.relative_to(root)
+            if relative.name != "__main__.py":
+                continue
+            module_parts = relative.with_suffix("").parts[:-1]
+            if not module_parts:
+                continue
+            candidates.append(".".join(module_parts))
+
+    return sorted(candidates)[0] if candidates else None
+
+
+def _detect_cli_module(project_dir: Path) -> str | None:
+    return (
+        _detect_cli_module_from_pyproject(project_dir)
+        or _detect_cli_module_from_setup_cfg(project_dir)
+        or _detect_cli_module_from_main(project_dir)
+    )
 
 
 def detect_project_type(project_dir: Path) -> str:
@@ -286,16 +456,8 @@ class ValidationStrategyBuilder:
         """
         steps = [
             ValidationStep(
-                name="Start HTTP Server",
-                command="python -m http.server 8000 &",
-                expected_outcome="Server running on port 8000",
-                step_type="setup",
-                required=True,
-                blocking=True,
-            ),
-            ValidationStep(
                 name="Visual Verification",
-                command="npx playwright screenshot http://localhost:8000 screenshot.png",
+                command="python -m http.server 8000 & SERVER_PID=$!; sleep 1; npx playwright screenshot http://localhost:8000 screenshot.png; STATUS=$?; kill $SERVER_PID; exit $STATUS",
                 expected_outcome="Screenshot captured without errors",
                 step_type="visual",
                 required=True,
@@ -303,7 +465,7 @@ class ValidationStrategyBuilder:
             ),
             ValidationStep(
                 name="Console Error Check",
-                command="npx playwright test --grep 'console-errors'",
+                command="python -m http.server 8000 & SERVER_PID=$!; sleep 1; npx playwright test --grep 'console-errors'; STATUS=$?; kill $SERVER_PID; exit $STATUS",
                 expected_outcome="No JavaScript console errors",
                 step_type="test",
                 required=True,
@@ -316,7 +478,7 @@ class ValidationStrategyBuilder:
             steps.append(
                 ValidationStep(
                     name="Lighthouse Audit",
-                    command="npx lighthouse http://localhost:8000 --output=json --output-path=lighthouse.json",
+                    command="python -m http.server 8000 & SERVER_PID=$!; sleep 1; npx lighthouse http://localhost:8000 --output=json --output-path=lighthouse.json; STATUS=$?; kill $SERVER_PID; exit $STATUS",
                     expected_outcome="Performance > 90, Accessibility > 90",
                     step_type="visual",
                     required=True,
@@ -372,7 +534,7 @@ class ValidationStrategyBuilder:
         steps.append(
             ValidationStep(
                 name="Console Error Check",
-                command="npm run dev & sleep 5 && npx playwright test --grep 'no-console-errors'",
+                command="npm run dev & DEV_PID=$!; sleep 5; npx playwright test --grep 'no-console-errors'; STATUS=$?; kill $DEV_PID; exit $STATUS",
                 expected_outcome="No console errors in browser",
                 step_type="test",
                 required=True,
@@ -590,6 +752,7 @@ class ValidationStrategyBuilder:
         Validation strategy for CLI tools.
         """
         steps = []
+        cli_module = _detect_cli_module(project_dir)
 
         if risk_level != "trivial":
             steps.append(
@@ -605,9 +768,13 @@ class ValidationStrategyBuilder:
             steps.append(
                 ValidationStep(
                     name="CLI Help Check",
-                    command="python -m module_name --help",
-                    expected_outcome="Help text displays without errors",
-                    step_type="test",
+                    command=f"python -m {cli_module} --help" if cli_module else "manual",
+                    expected_outcome=(
+                        "Help text displays without errors"
+                        if cli_module
+                        else "Run the CLI help command for the project's entry point"
+                    ),
+                    step_type="test" if cli_module else "manual",
                     required=True,
                     blocking=True,
                 )
@@ -617,9 +784,15 @@ class ValidationStrategyBuilder:
             steps.append(
                 ValidationStep(
                     name="CLI Output Verification",
-                    command="python -m module_name --version",
-                    expected_outcome="Version displays correctly",
-                    step_type="test",
+                    command=f"python -m {cli_module} --version"
+                    if cli_module
+                    else "manual",
+                    expected_outcome=(
+                        "Version displays correctly"
+                        if cli_module
+                        else "Verify the CLI version command output"
+                    ),
+                    step_type="test" if cli_module else "manual",
                     required=True,
                     blocking=False,
                 )

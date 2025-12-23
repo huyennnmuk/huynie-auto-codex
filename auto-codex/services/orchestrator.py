@@ -178,11 +178,7 @@ class ServiceOrchestrator:
 
                 # Extract port mapping
                 ports = config.get("ports", [])
-                port = None
-                if ports:
-                    port_mapping = str(ports[0])
-                    if ":" in port_mapping:
-                        port = int(port_mapping.split(":")[0])
+                port = self._extract_published_port(ports)
 
                 # Determine health check URL
                 health_url = None
@@ -199,6 +195,57 @@ class ServiceOrchestrator:
                 )
         except Exception:
             pass
+
+    def _extract_published_port(self, ports: Any) -> int | None:
+        if isinstance(ports, (str, int, dict)):
+            ports = [ports]
+        if not isinstance(ports, list):
+            return None
+        for mapping in ports:
+            port = self._parse_port_mapping(mapping)
+            if port:
+                return port
+        return None
+
+    def _parse_port_mapping(self, mapping: Any) -> int | None:
+        if isinstance(mapping, dict):
+            published = mapping.get("published") or mapping.get("host_port")
+            if published is None:
+                return None
+            try:
+                return int(published)
+            except (TypeError, ValueError):
+                return None
+
+        if isinstance(mapping, int):
+            return None
+        if not isinstance(mapping, str):
+            return None
+
+        value = mapping.strip()
+        if not value:
+            return None
+
+        # Strip protocol (e.g. "3000:3000/tcp")
+        value = value.split("/", 1)[0]
+
+        # Strip IPv6 host portion like "[::1]:"
+        if value.startswith("["):
+            end = value.find("]")
+            if end != -1:
+                value = value[end + 1 :]
+                if value.startswith(":"):
+                    value = value[1:]
+
+        parts = [part for part in value.split(":") if part]
+        if len(parts) < 2:
+            return None
+
+        host_port = parts[-2]
+        try:
+            return int(host_port)
+        except ValueError:
+            return None
 
     def _discover_monorepo_services(self) -> None:
         """Discover services in a monorepo structure."""
@@ -340,8 +387,8 @@ class ServiceOrchestrator:
                         cwd=self.project_dir / service.path
                         if service.path
                         else self.project_dir,
-                        stdout=subprocess.PIPE,
-                        stderr=subprocess.PIPE,
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL,
                         env=get_gui_env(),
                     )
                     self._processes[service.name] = proc
@@ -352,10 +399,18 @@ class ServiceOrchestrator:
 
         # Wait for services to be ready
         if result.services_started:
-            if self._wait_for_health(timeout):
+            if self._wait_for_health(timeout, processes=self._processes):
                 result.success = True
             else:
-                result.errors.append("Services did not become healthy in time")
+                exited = self._get_exited_processes()
+                if exited:
+                    for name, code in exited.items():
+                        result.errors.append(
+                            f"{name} exited during startup (code {code})"
+                        )
+                        result.services_failed.append(name)
+                else:
+                    result.errors.append("Services did not become healthy in time")
 
         return result
 
@@ -424,12 +479,17 @@ class ServiceOrchestrator:
 
         return None
 
-    def _wait_for_health(self, timeout: int) -> bool:
+    def _wait_for_health(
+        self,
+        timeout: int,
+        processes: dict[str, subprocess.Popen] | None = None,
+    ) -> bool:
         """
         Wait for all services to become healthy.
 
         Args:
             timeout: Maximum time to wait in seconds
+            processes: Optional process map for local services
 
         Returns:
             True if all services became healthy
@@ -440,6 +500,16 @@ class ServiceOrchestrator:
             all_healthy = True
 
             for service in self._services:
+                if processes:
+                    proc = processes.get(service.name)
+                    if proc and proc.poll() is not None:
+                        return False
+                if service.health_check_url:
+                    if self._check_http_health(service.health_check_url):
+                        continue
+                    if not service.port:
+                        all_healthy = False
+                        break
                 if service.port:
                     if not self._check_port(service.port):
                         all_healthy = False
@@ -452,6 +522,14 @@ class ServiceOrchestrator:
 
         return False
 
+    def _get_exited_processes(self) -> dict[str, int]:
+        exited = {}
+        for name, proc in self._processes.items():
+            code = proc.poll()
+            if code is not None:
+                exited[name] = code
+        return exited
+
     def _check_port(self, port: int) -> bool:
         """Check if a port is responding."""
         import socket
@@ -461,6 +539,18 @@ class ServiceOrchestrator:
                 s.settimeout(1)
                 result = s.connect_ex(("localhost", port))
                 return result == 0
+        except Exception:
+            return False
+
+    def _check_http_health(self, url: str) -> bool:
+        import urllib.error
+        import urllib.request
+
+        try:
+            with urllib.request.urlopen(url, timeout=2):
+                return True
+        except urllib.error.HTTPError:
+            return True
         except Exception:
             return False
 
