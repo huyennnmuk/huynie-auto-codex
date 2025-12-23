@@ -274,14 +274,28 @@ export function registerAutobuildSourceHandlers(
     IPC_CHANNELS.AUTOBUILD_SOURCE_ENV_CHECK_TOKEN,
     async (): Promise<IPCResult<SourceEnvCheckResult>> => {
       try {
+        const hasAuthVars = (vars: Record<string, string | undefined>): boolean => {
+          const openaiKey = (vars['OPENAI_API_KEY'] || '').trim();
+          if (openaiKey) return true;
+
+          const oauthToken = (vars['CODEX_CODE_OAUTH_TOKEN'] || '').trim();
+          if (oauthToken) return true;
+
+          const configDir = (vars['CODEX_CONFIG_DIR'] || '').trim();
+          if (configDir && existsSync(configDir)) return true;
+
+          return false;
+        };
+
+        const hasProcessToken = hasAuthVars(process.env);
         const sourcePath = getEffectiveSourcePath();
         if (!sourcePath) {
           return {
             success: true,
             data: {
-              hasToken: false,
+              hasToken: hasProcessToken,
               sourcePath: undefined,
-              error: 'Auto-Codex source path not found'
+              error: hasProcessToken ? undefined : 'Auto-Codex source path not found'
             }
           };
         }
@@ -291,16 +305,16 @@ export function registerAutobuildSourceHandlers(
           return {
             success: true,
             data: {
-              hasToken: false,
+              hasToken: hasProcessToken,
               sourcePath,
-              error: '.env file does not exist'
+              error: hasProcessToken ? undefined : '.env file does not exist'
             }
           };
         }
 
         const content = readFileSync(envPath, 'utf-8');
         const vars = parseSourceEnvFile(content);
-        const hasToken = !!vars['CODEX_CODE_OAUTH_TOKEN'] && vars['CODEX_CODE_OAUTH_TOKEN'].length > 0;
+        const hasToken = hasAuthVars(vars) || hasProcessToken;
 
         return {
           success: true,

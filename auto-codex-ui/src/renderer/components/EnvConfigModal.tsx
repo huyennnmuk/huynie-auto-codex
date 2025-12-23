@@ -46,7 +46,7 @@ export function EnvConfigModal({
   onOpenChange,
   onConfigured,
   title = '需要 Codex 身份验证',
-  description = '使用构思和路线图生成等 AI 功能需要 Codex OAuth 令牌或本地 Codex CLI 配置（~/.codex/auth.json 或 ~/.codex/config.toml）。',
+  description = '使用构思和路线图生成等 AI 功能需要 Codex 认证：可用 OPENAI_API_KEY、OAuth 令牌，或本地 Codex CLI 配置（~/.codex/auth.json 或 ~/.codex/config.toml）。',
   projectId
 }: EnvConfigModalProps) {
   const [token, setToken] = useState('');
@@ -507,6 +507,9 @@ export function EnvConfigModal({
                       </li>
                       <li>完成登录后，如 CLI 输出 OAuth 令牌，请复制并粘贴到下方</li>
                     </ol>
+                    <p className="text-xs text-muted-foreground">
+                      或者直接在 <code className="px-1 py-0.5 bg-muted rounded font-mono">auto-codex/.env</code> 中设置 <code className="px-1 py-0.5 bg-muted rounded font-mono">OPENAI_API_KEY</code>。
+                    </p>
                     <button
                       onClick={handleOpenDocs}
                       className="text-info hover:text-info/80 flex items-center gap-1 mt-2"
