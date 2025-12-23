@@ -252,8 +252,8 @@ docker-compose up -d
 # Check container status
 docker ps | grep graphiti-mcp
 
-# Check health endpoint
-curl http://localhost:8000/health
+# Check the HTTP server is responding
+curl -I http://localhost:8000/sse
 
 # View logs if there are issues
 docker logs auto-codex-graphiti-mcp
@@ -328,7 +328,7 @@ docker logs auto-codex-falkordb
 | **"DATABASE_TYPE must be set"** | Using old docker run command. Use `docker-compose up -d` instead. |
 | **Container keeps restarting** | Check logs: `docker logs auto-codex-graphiti-mcp`. Usually missing API key. |
 | **Platform warning on Apple Silicon** | This is normal - the image runs via Rosetta emulation. It may be slower but works. |
-| **Health check fails** | Wait 30 seconds for startup. Check: `curl http://localhost:8000/health` |
+| **Health check fails** | Wait 30 seconds for startup. Check: `curl -I http://localhost:8000/sse` |
 
 ### Memory/Performance Issues
 

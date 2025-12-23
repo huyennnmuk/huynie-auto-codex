@@ -18,6 +18,32 @@ Auto-Codex is primarily a **desktop app**. Production readiness focuses on:
 - Backend env: `auto-codex/.env` (see `auto-codex/.env.example`)
 - Never commit `.env` files (they are gitignored).
 - Prefer exporting secrets via your shell/CI secret store instead of writing them to disk.
+- For production, keep the Codex CLI sandbox enabled: set `AUTO_CODEX_BYPASS_CODEX_SANDBOX=0`.
+
+## Preflight Readiness Check
+
+Run before a release or after changing dependencies/env:
+
+`./scripts/healthcheck.sh`
+
+This validates Python/Node/Git/Codex auth, ensures the git working tree is clean, and if Graphiti is enabled it checks Docker/Compose and pinned image tags. A non-zero exit indicates a blocking issue.
+
+## Dependency Locking (Production)
+
+Use the Python-versioned lock files for deterministic installs:
+
+- `auto-codex/requirements-py312.lock`
+- `auto-codex/requirements-py313.lock`
+- `tests/requirements-test-py312.lock`
+- `tests/requirements-test-py313.lock`
+
+Update them with:
+
+`./scripts/lock-deps.sh`
+
+If you need to regenerate locks for a supported Python minor, run:
+
+`./scripts/lock-deps.sh 3.12 3.13`
 
 ## Services: Memory Layer (FalkorDB + Graphiti MCP)
 
@@ -94,6 +120,14 @@ Create a timestamped tarball of the Docker volume:
 
 `./scripts/backup-falkordb.sh`
 
+Optional retention:
+
+`BACKUP_RETENTION_DAYS=14 ./scripts/backup-falkordb.sh`
+
+Example cron (daily at 2am, keep 14 days):
+
+`0 2 * * * BACKUP_RETENTION_DAYS=14 /path/to/Auto-Codex/scripts/backup-falkordb.sh`
+
 Restore (destructive; stops services first):
 
 `./scripts/restore-falkordb.sh backups/<your_backup>.tar.gz`
@@ -139,6 +173,20 @@ Logs are written to `<userData>/logs/main.log` with size-based rotation (keeps l
 
 - Collect logs for support: `<userData>/logs/`
 - Redaction: API keys and tokens are scrubbed before writing to disk
+
+### Restore Drill (Recommended)
+
+Perform a restore drill quarterly on a non-production machine:
+
+1. Take a fresh backup: `./scripts/backup-falkordb.sh`
+2. Restore it: `./scripts/restore-falkordb.sh backups/<your_backup>.tar.gz`
+3. Validate: `docker-compose ps` shows healthy, and Graphiti can connect.
+
+## Monitoring & Alerts (Minimal)
+
+- Check container health: `docker-compose ps` (or `docker compose ps`) should show `healthy` for Graphiti/FalkorDB.
+- Track disk usage for Docker volume `auto-codex_falkordb_data` and the `backups/` directory.
+- Review logs for repeated failures: `<userData>/logs/` and `.auto-codex/specs/**/logs`.
 
 ## Release & Rollback
 

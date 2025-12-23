@@ -31,8 +31,10 @@ jobs:
         working-directory: auto-codex
         run: |
           uv venv
-          uv pip install -r requirements.txt
-          uv pip install -r ../tests/requirements-test.txt
+          PY_VER="${{ matrix.python-version }}"
+          PY_VER_NODOT="$(echo "$PY_VER" | tr -d '.')"
+          uv pip install -r requirements-py${PY_VER_NODOT}.lock
+          uv pip install -r ../tests/requirements-test-py${PY_VER_NODOT}.lock
 
       - name: Run tests
         working-directory: auto-codex

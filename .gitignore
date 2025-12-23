@@ -19,6 +19,7 @@ Thumbs.db
 # Logs
 logs/
 *.log
+backups/
 
 # Personal notes
 OPUS_ANALYSIS_AND_IDEAS.md

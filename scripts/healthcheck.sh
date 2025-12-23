@@ -1,0 +1,261 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+failures=0
+warnings=0
+
+log_ok() {
+  echo "[ok] $*"
+}
+
+log_warn() {
+  warnings=$((warnings + 1))
+  echo "[warn] $*"
+}
+
+log_fail() {
+  failures=$((failures + 1))
+  echo "[fail] $*"
+}
+
+check_cmd() {
+  local cmd="$1"
+  local label="${2:-$1}"
+  if command -v "$cmd" >/dev/null 2>&1; then
+    log_ok "$label found"
+    return 0
+  fi
+  log_fail "$label not found"
+  return 1
+}
+
+get_env_value() {
+  local key="$1"
+  local file="$2"
+  if [[ ! -f "$file" ]]; then
+    return 1
+  fi
+  local line
+  line="$(grep -E "^[[:space:]]*${key}[[:space:]]*=" "$file" | tail -n 1 || true)"
+  if [[ -z "$line" ]]; then
+    return 1
+  fi
+  local value="${line#*=}"
+  value="${value%%#*}"
+  value="$(echo "$value" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//")"
+  if [[ -n "$value" ]]; then
+    printf "%s" "$value"
+    return 0
+  fi
+  return 1
+}
+
+is_true() {
+  case "${1:-}" in
+    [Tt][Rr][Uu][Ee]|1|[Yy][Ee][Ss]|[Oo][Nn]) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+check_python() {
+  if ! command -v python3 >/dev/null 2>&1; then
+    log_fail "python3 not found"
+    return
+  fi
+  local version
+  version="$(python3 -c 'import sys; print(".".join(map(str, sys.version_info[:3])))')"
+  if python3 -c 'import sys; raise SystemExit(0 if sys.version_info >= (3,12) else 1)'; then
+    log_ok "python3 $version"
+  else
+    log_fail "python3 >= 3.12 required (found $version)"
+  fi
+}
+
+check_node() {
+  if ! command -v node >/dev/null 2>&1; then
+    log_fail "node not found (required for auto-codex-ui)"
+    return
+  fi
+  local version raw major
+  raw="$(node -v 2>/dev/null | sed 's/^v//')"
+  major="${raw%%.*}"
+  if [[ -n "$major" && "$major" -ge 18 ]]; then
+    log_ok "node $raw"
+  else
+    log_fail "node >= 18 required (found ${raw:-unknown})"
+  fi
+}
+
+check_git_repo() {
+  if [[ -d "$ROOT_DIR/.git" ]]; then
+    log_ok "git repo detected"
+  else
+    log_fail "git repo not found at $ROOT_DIR"
+  fi
+}
+
+check_git_clean() {
+  if ! command -v git >/dev/null 2>&1; then
+    return
+  fi
+  if ! git -C "$ROOT_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    return
+  fi
+  local status count
+  status="$(git -C "$ROOT_DIR" status --porcelain)"
+  if [[ -n "$status" ]]; then
+    count="$(printf "%s\n" "$status" | wc -l | tr -d ' ')"
+    log_fail "git working tree dirty (${count} change(s))"
+    return
+  fi
+  log_ok "git working tree clean"
+}
+
+check_file() {
+  local file="$1"
+  local label="${2:-$1}"
+  if [[ -f "$file" ]]; then
+    log_ok "$label present"
+    return 0
+  fi
+  log_warn "$label missing"
+  return 1
+}
+
+check_auth() {
+  local auth_source=""
+  if [[ -n "${OPENAI_API_KEY:-}" ]]; then
+    auth_source="OPENAI_API_KEY (env)"
+  elif [[ -n "${CODEX_CODE_OAUTH_TOKEN:-}" ]]; then
+    auth_source="CODEX_CODE_OAUTH_TOKEN (env)"
+  elif [[ -n "${CODEX_CONFIG_DIR:-}" ]]; then
+    auth_source="CODEX_CONFIG_DIR (env)"
+  fi
+
+  if [[ -z "$auth_source" ]]; then
+    local env_file="$ROOT_DIR/auto-codex/.env"
+    if get_env_value "OPENAI_API_KEY" "$env_file" >/dev/null; then
+      auth_source="OPENAI_API_KEY (auto-codex/.env)"
+    elif get_env_value "CODEX_CODE_OAUTH_TOKEN" "$env_file" >/dev/null; then
+      auth_source="CODEX_CODE_OAUTH_TOKEN (auto-codex/.env)"
+    elif get_env_value "CODEX_CONFIG_DIR" "$env_file" >/dev/null; then
+      auth_source="CODEX_CONFIG_DIR (auto-codex/.env)"
+    fi
+  fi
+
+  if [[ -z "$auth_source" ]]; then
+    local codex_dir="$HOME/.codex"
+    if [[ -z "${AUTO_CODEX_DISABLE_DEFAULT_CODEX_CONFIG_DIR:-}" ]] && [[ -f "$codex_dir/config.toml" || -f "$codex_dir/auth.json" ]]; then
+      auth_source="DEFAULT_CODEX_CONFIG_DIR (~/.codex)"
+    fi
+  fi
+
+  if [[ -n "$auth_source" ]]; then
+    log_ok "Codex auth source: $auth_source"
+  else
+    log_fail "Codex auth not found (set OPENAI_API_KEY/CODEX_CODE_OAUTH_TOKEN/CODEX_CONFIG_DIR)"
+  fi
+}
+
+detect_compose_cmd() {
+  if command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1; then
+    echo "docker compose"
+    return 0
+  fi
+  if command -v docker-compose >/dev/null 2>&1 && docker-compose version >/dev/null 2>&1; then
+    echo "docker-compose"
+    return 0
+  fi
+  return 1
+}
+
+check_docker() {
+  if ! command -v docker >/dev/null 2>&1; then
+    log_fail "docker not found"
+    return 1
+  fi
+  if ! docker info >/dev/null 2>&1; then
+    log_fail "docker daemon not running"
+    return 1
+  fi
+  log_ok "docker available"
+  return 0
+}
+
+check_graphiti() {
+  local graphiti_enabled="${GRAPHITI_ENABLED:-}"
+  if [[ -z "$graphiti_enabled" ]]; then
+    graphiti_enabled="$(get_env_value "GRAPHITI_ENABLED" "$ROOT_DIR/auto-codex/.env" || true)"
+  fi
+
+  if is_true "$graphiti_enabled"; then
+    log_ok "Graphiti enabled"
+  else
+    log_ok "Graphiti disabled"
+    return
+  fi
+
+  if ! check_docker; then
+    return
+  fi
+
+  local compose_cmd
+  if compose_cmd="$(detect_compose_cmd)"; then
+    log_ok "compose command: $compose_cmd"
+  else
+    log_fail "docker compose/docker-compose not found"
+  fi
+
+  local falkor_tag="${FALKORDB_IMAGE_TAG:-}"
+  local mcp_tag="${GRAPHITI_MCP_IMAGE_TAG:-}"
+  if [[ -z "$falkor_tag" ]]; then
+    falkor_tag="$(get_env_value "FALKORDB_IMAGE_TAG" "$ROOT_DIR/.env" || true)"
+  fi
+  if [[ -z "$mcp_tag" ]]; then
+    mcp_tag="$(get_env_value "GRAPHITI_MCP_IMAGE_TAG" "$ROOT_DIR/.env" || true)"
+  fi
+
+  if [[ -n "$falkor_tag" ]]; then
+    log_ok "FALKORDB_IMAGE_TAG set"
+  else
+    log_fail "FALKORDB_IMAGE_TAG not set (required for production)"
+  fi
+  if [[ -n "$mcp_tag" ]]; then
+    log_ok "GRAPHITI_MCP_IMAGE_TAG set"
+  else
+    log_fail "GRAPHITI_MCP_IMAGE_TAG not set (required for production)"
+  fi
+}
+
+echo "Auto-Codex health check"
+echo "Root: $ROOT_DIR"
+echo
+
+check_python
+check_node
+check_cmd git "git"
+check_git_repo
+check_git_clean
+check_cmd codex "codex CLI"
+check_auth
+check_graphiti
+
+# Lockfiles (recommended for deterministic installs)
+check_file "$ROOT_DIR/auto-codex/requirements-py312.lock" "requirements-py312.lock"
+check_file "$ROOT_DIR/auto-codex/requirements-py313.lock" "requirements-py313.lock"
+check_file "$ROOT_DIR/tests/requirements-test-py312.lock" "requirements-test-py312.lock"
+check_file "$ROOT_DIR/tests/requirements-test-py313.lock" "requirements-test-py313.lock"
+check_file "$ROOT_DIR/auto-codex-ui/pnpm-lock.yaml" "pnpm-lock.yaml"
+
+echo
+if [[ "$failures" -gt 0 ]]; then
+  echo "[summary] FAIL ($failures)"
+  exit 1
+fi
+if [[ "$warnings" -gt 0 ]]; then
+  echo "[summary] WARN ($warnings)"
+  exit 0
+fi
+echo "[summary] OK"

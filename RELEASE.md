@@ -155,6 +155,8 @@ node scripts/bump-version.js patch
 Use this checklist when creating a new release:
 
 - [ ] All tests passing on main branch
+- [ ] Run `./scripts/healthcheck.sh` (preflight readiness)
+- [ ] Lock files updated (run `./scripts/lock-deps.sh` if deps changed)
 - [ ] CHANGELOG updated (if applicable)
 - [ ] Run `node scripts/bump-version.js <type>`
 - [ ] Review commit and tag
