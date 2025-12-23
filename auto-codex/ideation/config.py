@@ -4,6 +4,7 @@ Configuration management for ideation generation.
 Handles initialization of directories, component setup, and configuration validation.
 """
 
+import os
 from pathlib import Path
 
 from init import init_auto_codex_dir
@@ -25,7 +26,7 @@ class IdeationConfigManager:
         include_roadmap_context: bool = True,
         include_kanban_context: bool = True,
         max_ideas_per_type: int = 5,
-        model: str = "gpt-5.2-codex-xhigh",
+        model: str | None = None,
         thinking_level: str = "medium",
         refresh: bool = False,
         append: bool = False,
@@ -39,13 +40,13 @@ class IdeationConfigManager:
             include_roadmap_context: Include roadmap files in analysis
             include_kanban_context: Include kanban board in analysis
             max_ideas_per_type: Maximum ideas to generate per type
-            model: LLM model to use
+            model: LLM model to use (defaults to AUTO_BUILD_MODEL env var or gpt-5.2-codex)
             thinking_level: Thinking level for extended reasoning
             refresh: Force regeneration of existing files
             append: Preserve existing ideas when merging
         """
         self.project_dir = Path(project_dir)
-        self.model = model
+        self.model = model or os.environ.get("AUTO_BUILD_MODEL", "gpt-5.2-codex")
         self.thinking_level = thinking_level
         self.refresh = refresh
         self.append = append

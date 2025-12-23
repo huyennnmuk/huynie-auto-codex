@@ -27,6 +27,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from providers.codex_cli import get_gui_env
+
 # =============================================================================
 # DATA CLASSES
 # =============================================================================
@@ -303,6 +305,7 @@ class ServiceOrchestrator:
                 capture_output=True,
                 text=True,
                 timeout=timeout,
+                env=get_gui_env(),
             )
 
             if proc.returncode != 0:
@@ -339,6 +342,7 @@ class ServiceOrchestrator:
                         else self.project_dir,
                         stdout=subprocess.PIPE,
                         stderr=subprocess.PIPE,
+                        env=get_gui_env(),
                     )
                     self._processes[service.name] = proc
                     result.services_started.append(service.name)
@@ -372,6 +376,7 @@ class ServiceOrchestrator:
                     cwd=self.project_dir,
                     capture_output=True,
                     timeout=60,
+                    env=get_gui_env(),
                 )
         except Exception:
             pass
@@ -397,6 +402,7 @@ class ServiceOrchestrator:
                 ["docker", "compose", "version"],
                 capture_output=True,
                 timeout=5,
+                env=get_gui_env(),
             )
             if proc.returncode == 0:
                 return ["docker", "compose", "-f", str(self._compose_file)]
@@ -409,6 +415,7 @@ class ServiceOrchestrator:
                 ["docker-compose", "version"],
                 capture_output=True,
                 timeout=5,
+                env=get_gui_env(),
             )
             if proc.returncode == 0:
                 return ["docker-compose", "-f", str(self._compose_file)]

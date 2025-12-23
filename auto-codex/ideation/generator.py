@@ -10,6 +10,7 @@ Uses Codex agents to generate ideas of different types:
 - Code quality
 """
 
+import os
 import sys
 from pathlib import Path
 
@@ -56,13 +57,13 @@ class IdeationGenerator:
         self,
         project_dir: Path,
         output_dir: Path,
-        model: str = "gpt-5.2-codex-xhigh",
+        model: str | None = None,
         thinking_level: str = "medium",
         max_ideas_per_type: int = 5,
     ):
         self.project_dir = Path(project_dir)
         self.output_dir = Path(output_dir)
-        self.model = model
+        self.model = model or os.environ.get("AUTO_BUILD_MODEL", "gpt-5.2-codex")
         self.thinking_level = thinking_level
         self.thinking_budget = get_thinking_budget(thinking_level)
         self.max_ideas_per_type = max_ideas_per_type
@@ -111,13 +112,13 @@ class IdeationGenerator:
                             block_type = type(block).__name__
                             if block_type == "TextBlock" and hasattr(block, "text"):
                                 response_text += block.text
-                                print(block.text, end="", flush=True)
+                                print(block.text, end="", flush=True, file=sys.stderr)
                             elif block_type == "ToolUseBlock" and hasattr(
                                 block, "name"
                             ):
-                                print(f"\n[Tool: {block.name}]", flush=True)
+                                print(f"\n[Tool: {block.name}]", flush=True, file=sys.stderr)
 
-                print()
+                print(file=sys.stderr)
                 return True, response_text
 
         except Exception as e:
@@ -202,13 +203,13 @@ Write the fixed JSON to the file now.
                         for block in msg.content:
                             block_type = type(block).__name__
                             if block_type == "TextBlock" and hasattr(block, "text"):
-                                print(block.text, end="", flush=True)
+                                print(block.text, end="", flush=True, file=sys.stderr)
                             elif block_type == "ToolUseBlock" and hasattr(
                                 block, "name"
                             ):
-                                print(f"\n[Recovery Tool: {block.name}]", flush=True)
+                                print(f"\n[Recovery Tool: {block.name}]", flush=True, file=sys.stderr)
 
-                print()
+                print(file=sys.stderr)
                 return True
 
         except Exception as e:

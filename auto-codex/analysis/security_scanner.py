@@ -27,6 +27,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from providers.codex_cli import get_gui_env
+
 # Import the existing secrets scanner
 try:
     from security.scan_secrets import SecretMatch, get_all_tracked_files, scan_files
@@ -314,6 +316,7 @@ class SecurityScanner:
                 capture_output=True,
                 text=True,
                 timeout=120,
+                env=get_gui_env(),
             )
 
             if proc.stdout:
@@ -368,6 +371,7 @@ class SecurityScanner:
                 capture_output=True,
                 text=True,
                 timeout=120,
+                env=get_gui_env(),
             )
 
             if proc.stdout:

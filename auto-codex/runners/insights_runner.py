@@ -24,6 +24,7 @@ if env_file.exists():
 
 from core.auth import get_auth_token
 from core.client import create_client
+from providers.codex_cli import find_codex_path, get_gui_env
 from debug import (
     debug,
     debug_detailed,
@@ -274,8 +275,9 @@ Assistant:"""
     try:
         # Use Codex CLI in non-interactive mode. The Electron UI expects plain text
         # on stdout (it does not parse Codex JSONL events).
+        codex_path = find_codex_path() or "codex"
         cmd = [
-            "codex",
+            codex_path,
             "exec",
             "--skip-git-repo-check",
             "-C",
@@ -291,6 +293,7 @@ Assistant:"""
             cwd=project_dir,
             timeout=120,
             input=full_prompt,
+            env=get_gui_env(),
         )
 
         if result.returncode == 0:

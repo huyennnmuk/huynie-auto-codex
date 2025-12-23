@@ -9,6 +9,108 @@ from typing import Any, AsyncIterator, Optional
 from core.auth import get_auth_token
 from core.protocols import EventType, LLMClientProtocol, LLMEvent
 
+# Valid reasoning effort levels
+VALID_REASONING_EFFORTS = ("low", "medium", "high", "xhigh")
+
+# Default model and reasoning effort from environment
+DEFAULT_MODEL = os.environ.get("AUTO_BUILD_MODEL", "gpt-5.2-codex")
+
+
+def normalize_reasoning_effort(value: str | None) -> str:
+    if not value:
+        return "medium"
+    normalized = value.strip().lower()
+    if normalized in VALID_REASONING_EFFORTS:
+        return normalized
+    return "medium"
+
+
+DEFAULT_REASONING_EFFORT = normalize_reasoning_effort(
+    os.environ.get("AUTO_BUILD_REASONING_EFFORT")
+)
+
+# Common codex installation paths (for GUI apps that don't inherit shell PATH)
+CODEX_SEARCH_PATHS = [
+    "/opt/homebrew/bin/codex",  # macOS ARM (Homebrew)
+    "/usr/local/bin/codex",     # macOS Intel (Homebrew) / Linux
+    "/usr/bin/codex",           # System-wide Linux
+    os.path.expanduser("~/.local/bin/codex"),  # User-local
+    os.path.expanduser("~/.npm-global/bin/codex"),  # npm global
+]
+
+# GUI apps launched from Finder don't inherit shell PATH, so we need to provide it
+GUI_PATH_ADDITIONS = [
+    "/opt/homebrew/bin",        # macOS ARM (Homebrew)
+    "/usr/local/bin",           # macOS Intel (Homebrew) / Linux
+    "/usr/bin",                 # System binaries
+    "/bin",                     # Core binaries
+    os.path.expanduser("~/.local/bin"),
+    os.path.expanduser("~/.npm-global/bin"),
+]
+
+
+def get_gui_env() -> dict[str, str]:
+    """
+    Get environment variables with PATH suitable for GUI apps.
+
+    GUI apps launched from Finder don't inherit the user's shell PATH,
+    so we need to explicitly add common binary locations.
+    """
+    env = os.environ.copy()
+    current_path = env.get("PATH", "")
+
+    # Add GUI path additions that aren't already in PATH
+    path_parts = current_path.split(os.pathsep) if current_path else []
+    for addition in GUI_PATH_ADDITIONS:
+        if addition not in path_parts and os.path.isdir(addition):
+            path_parts.insert(0, addition)
+
+    env["PATH"] = os.pathsep.join(path_parts)
+    return env
+
+
+def find_codex_path() -> str | None:
+    """
+    Find the codex CLI executable path.
+
+    First tries shutil.which (works in terminal), then falls back to
+    common installation paths (needed for GUI apps launched from Finder).
+    """
+    # Try PATH first (works in terminal)
+    codex_path = shutil.which("codex")
+    if codex_path:
+        return codex_path
+
+    # Fallback: check common installation paths
+    for path in CODEX_SEARCH_PATHS:
+        if os.path.isfile(path) and os.access(path, os.X_OK):
+            return path
+
+    return None
+
+
+def parse_model_string(model_str: str) -> tuple[str, str]:
+    """
+    Parse a model string that may include reasoning effort suffix.
+
+    Examples:
+        "gpt-5.2-codex-xhigh" -> ("gpt-5.2-codex", "xhigh")
+        "gpt-5.2-codex" -> ("gpt-5.2-codex", DEFAULT_REASONING_EFFORT)
+        "gpt-4o" -> ("gpt-4o", DEFAULT_REASONING_EFFORT)
+
+    Returns:
+        Tuple of (model_name, reasoning_effort)
+    """
+    # Check if the string ends with a valid reasoning effort suffix
+    for effort in VALID_REASONING_EFFORTS:
+        suffix = f"-{effort}"
+        if model_str.endswith(suffix):
+            base_model = model_str[:-len(suffix)]
+            return (base_model, effort)
+
+    # No reasoning effort suffix found, use default
+    return (model_str, DEFAULT_REASONING_EFFORT)
+
 
 @dataclass
 class CodexSession:
@@ -25,13 +127,22 @@ class CodexCliClient(LLMClientProtocol):
 
     def __init__(
         self,
-        model: str = "gpt-5.2-codex-xhigh",
+        model: str | None = None,
+        reasoning_effort: str | None = None,
         workdir: Optional[str] = None,
         timeout: int = 600,
         bypass_sandbox: bool = True,
         extra_args: Optional[list[str]] = None,
     ) -> None:
-        self.model = model
+        # Parse model string to extract base model and reasoning effort
+        raw_model = model or os.environ.get("AUTO_BUILD_MODEL", DEFAULT_MODEL)
+        parsed_model, parsed_effort = parse_model_string(raw_model)
+
+        self.model = parsed_model
+        if reasoning_effort:
+            self.reasoning_effort = normalize_reasoning_effort(reasoning_effort)
+        else:
+            self.reasoning_effort = parsed_effort
         self.workdir = workdir or os.getcwd()
         self.timeout = timeout
         self.bypass_sandbox = bypass_sandbox
@@ -47,7 +158,7 @@ class CodexCliClient(LLMClientProtocol):
         - CODEX_CODE_OAUTH_TOKEN
         - CODEX_CONFIG_DIR
         """
-        if not shutil.which("codex"):
+        if not find_codex_path():
             return False
 
         return bool(get_auth_token())
@@ -64,6 +175,7 @@ class CodexCliClient(LLMClientProtocol):
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
             cwd=workdir,
+            env=get_gui_env(),
         )
 
         if process.stdin:
@@ -78,12 +190,20 @@ class CodexCliClient(LLMClientProtocol):
 
     def _build_command(self, prompt: str, **kwargs) -> list[str]:
         """Build the codex CLI command."""
-        cmd = ["codex", "exec"]
+        # Use full path to codex (needed for GUI apps launched from Finder)
+        codex_path = find_codex_path() or "codex"
+        cmd = [codex_path, "exec"]
 
         if self.bypass_sandbox:
             cmd.append("--dangerously-bypass-approvals-and-sandbox")
 
+        # Model name (e.g., gpt-5.2-codex, gpt-4o)
         cmd.extend(["-m", self.model])
+
+        # Reasoning effort level (low, medium, high, xhigh)
+        if self.reasoning_effort:
+            cmd.extend(["-c", f"model_reasoning_effort={self.reasoning_effort}"])
+
         cmd.append("--json")
         cmd.extend(self.extra_args)
         cmd.append("-")
@@ -163,6 +283,7 @@ class CodexCliClient(LLMClientProtocol):
 
         event_type = data.get("type", "")
 
+        # Legacy event types
         if event_type == "message":
             return LLMEvent(type=EventType.TEXT, data={"content": data.get("content", "")})
         if event_type == "tool_use":
@@ -171,6 +292,25 @@ class CodexCliClient(LLMClientProtocol):
             return LLMEvent(type=EventType.TOOL_RESULT, data=data)
         if event_type == "error":
             return LLMEvent(type=EventType.ERROR, data=data)
+
+        # New Codex CLI event types (v0.77+)
+        if event_type == "item.completed":
+            item = data.get("item", {})
+            item_type = item.get("type", "")
+            text = item.get("text", "")
+            if item_type == "agent_message" and text:
+                return LLMEvent(type=EventType.TEXT, data={"content": text})
+            if item_type == "tool_use":
+                return LLMEvent(type=EventType.TOOL_START, data={"name": item.get("name", "tool"), "input": item.get("input")})
+            if item_type == "tool_result":
+                return LLMEvent(type=EventType.TOOL_RESULT, data={"content": item.get("output")})
+            # Skip reasoning items silently
+            return None
+
+        # Skip lifecycle events (thread.started, turn.started, turn.completed, item.started)
+        if event_type in ("thread.started", "turn.started", "turn.completed", "item.started"):
+            return None
+
         return LLMEvent(type=EventType.TEXT, data={"raw": line})
 
     async def close(self, session_id: str) -> None:

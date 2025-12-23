@@ -3,7 +3,10 @@ Formatted Output Helpers
 =========================
 
 High-level formatting functions for common output patterns.
+All output goes to stderr to avoid polluting stdout (which UI captures).
 """
+
+import sys
 
 from .boxes import box
 from .colors import bold, error, highlight, info, muted, success, warning
@@ -31,7 +34,7 @@ def print_header(
     if subtitle:
         content.append(muted(subtitle))
 
-    print(box(content, width=width, style="heavy"))
+    print(box(content, width=width, style="heavy"), file=sys.stderr)
 
 
 def print_section(
@@ -48,8 +51,8 @@ def print_section(
         width: Width of the box
     """
     icon_str = icon(icon_tuple) + " " if icon_tuple else ""
-    print()
-    print(box([bold(f"{icon_str}{title}")], width=width, style="light"))
+    print(file=sys.stderr)
+    print(box([bold(f"{icon_str}{title}")], width=width, style="light"), file=sys.stderr)
 
 
 def print_status(
@@ -84,7 +87,7 @@ def print_status(
         "progress": highlight,
     }.get(status, lambda x: x)
 
-    print(f"{icon(icon_tuple)} {color_fn(message)}")
+    print(f"{icon(icon_tuple)} {color_fn(message)}", file=sys.stderr)
 
 
 def print_key_value(key: str, value: str, indent: int = 2) -> None:
@@ -97,7 +100,7 @@ def print_key_value(key: str, value: str, indent: int = 2) -> None:
         indent: Number of spaces to indent
     """
     spaces = " " * indent
-    print(f"{spaces}{muted(key + ':')} {value}")
+    print(f"{spaces}{muted(key + ':')} {value}", file=sys.stderr)
 
 
 def print_phase_status(
@@ -129,4 +132,4 @@ def print_phase_status(
         "blocked": muted,
     }.get(status, lambda x: x)
 
-    print(f"  {icon(icon_tuple)} {color_fn(name)}: {completed}/{total}")
+    print(f"  {icon(icon_tuple)} {color_fn(name)}: {completed}/{total}", file=sys.stderr)

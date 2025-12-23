@@ -8,6 +8,7 @@ Coordinates stack detection, framework detection, and structure analysis.
 
 import hashlib
 import json
+import sys
 from datetime import datetime
 from pathlib import Path
 
@@ -180,10 +181,10 @@ class ProjectAnalyzer:
         # Check for existing profile
         existing = self.load_profile()
         if existing and not force and not self.should_reanalyze(existing):
-            print(f"Using cached security profile (hash: {existing.project_hash[:8]})")
+            print(f"Using cached security profile (hash: {existing.project_hash[:8]})", file=sys.stderr)
             return existing
 
-        print("Analyzing project structure for security profile...")
+        print("Analyzing project structure for security profile...", file=sys.stderr)
 
         # Start fresh
         self.profile = SecurityProfile()

@@ -41,7 +41,7 @@ class IdeationOrchestrator:
         include_roadmap_context: bool = True,
         include_kanban_context: bool = True,
         max_ideas_per_type: int = 5,
-        model: str = "gpt-5.2-codex-xhigh",
+        model: str | None = None,
         thinking_level: str = "medium",
         refresh: bool = False,
         append: bool = False,
@@ -55,7 +55,7 @@ class IdeationOrchestrator:
             include_roadmap_context: Include roadmap files in analysis
             include_kanban_context: Include kanban board in analysis
             max_ideas_per_type: Maximum ideas to generate per type
-            model: LLM model to use
+            model: LLM model to use (defaults to AUTO_BUILD_MODEL env var or gpt-5.2-codex)
             thinking_level: Thinking level for extended reasoning
             refresh: Force regeneration of existing files
             append: Preserve existing ideas when merging
@@ -130,7 +130,8 @@ class IdeationOrchestrator:
                 f"Types: {', '.join(self.enabled_types)}",
                 title="IDEATION GENERATOR",
                 style="heavy",
-            )
+            ),
+            file=sys.stderr
         )
 
         results = []
@@ -216,7 +217,7 @@ class IdeationOrchestrator:
                         "warning",
                     )
                     for err in result.errors:
-                        print(f"  {muted('Error:')} {err}")
+                        print(f"  {muted('Error:')} {err}", file=sys.stderr)
 
         # Final Phase: Merge
         print_section("PHASE 4: MERGE & FINALIZE", Icons.SUCCESS)
@@ -250,5 +251,6 @@ class IdeationOrchestrator:
                     + f"\n\nIdeation saved to: {ideation_file}",
                     title=f"{icon(Icons.SUCCESS)} IDEATION COMPLETE",
                     style="heavy",
-                )
+                ),
+                file=sys.stderr
             )

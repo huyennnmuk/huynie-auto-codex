@@ -7,16 +7,21 @@ Reads configuration from task_metadata.json and provides resolved model IDs.
 """
 
 import json
+import os
 from pathlib import Path
 from typing import Literal, TypedDict
 
+# Default model from environment or fallback to gpt-5.2-codex
+# Note: gpt-5.2-codex-xhigh requires Codex Pro subscription
+_DEFAULT_MODEL = os.environ.get("AUTO_BUILD_MODEL", "gpt-5.2-codex")
+
 # Model shorthand to full model ID mapping
 MODEL_ID_MAP: dict[str, str] = {
-    "codex": "gpt-5.2-codex-xhigh",
+    "codex": _DEFAULT_MODEL,
     # Legacy shorthands (kept for backward compatibility)
-    "opus": "gpt-5.2-codex-xhigh",
-    "sonnet": "gpt-5.2-codex-xhigh",
-    "haiku": "gpt-5.2-codex-xhigh",
+    "opus": _DEFAULT_MODEL,
+    "sonnet": _DEFAULT_MODEL,
+    "haiku": _DEFAULT_MODEL,
 }
 
 # Thinking level to budget tokens mapping (None = no extended thinking)

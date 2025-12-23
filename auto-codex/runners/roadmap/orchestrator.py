@@ -6,6 +6,8 @@ Coordinates all phases of the roadmap generation process.
 
 import asyncio
 import json
+import os
+import sys
 from pathlib import Path
 
 from core.client import create_client
@@ -19,7 +21,6 @@ from .executor import AgentExecutor, ScriptExecutor
 from .graph_integration import GraphHintsProvider
 from .phases import DiscoveryPhase, FeaturesPhase, ProjectIndexPhase
 
-
 class RoadmapOrchestrator:
     """Orchestrates the roadmap creation process."""
 
@@ -27,14 +28,14 @@ class RoadmapOrchestrator:
         self,
         project_dir: Path,
         output_dir: Path | None = None,
-        model: str = "gpt-5.2-codex-xhigh",
+        model: str | None = None,
         thinking_level: str = "medium",
         refresh: bool = False,
         enable_competitor_analysis: bool = False,
         refresh_competitor_analysis: bool = False,
     ):
         self.project_dir = Path(project_dir)
-        self.model = model
+        self.model = model or os.environ.get("AUTO_BUILD_MODEL", "gpt-5.2-codex")
         self.thinking_level = thinking_level
         self.thinking_budget = get_thinking_budget(thinking_level)
         self.refresh = refresh
@@ -111,7 +112,8 @@ class RoadmapOrchestrator:
                 f"Competitor Analysis: {'enabled' if self.enable_competitor_analysis else 'disabled'}",
                 title="ROADMAP GENERATOR",
                 style="heavy",
-            )
+            ),
+            file=sys.stderr
         )
         results = []
 
@@ -159,7 +161,7 @@ class RoadmapOrchestrator:
             )
             print_status("Discovery failed", "error")
             for err in result.errors:
-                print(f"  {muted('Error:')} {err}")
+                print(f"  {muted('Error:')} {err}", file=sys.stderr)
             return False
         debug_success("roadmap_orchestrator", "Phase 2 complete")
 
@@ -184,7 +186,7 @@ class RoadmapOrchestrator:
             )
             print_status("Feature generation failed", "error")
             for err in result.errors:
-                print(f"  {muted('Error:')} {err}")
+                print(f"  {muted('Error:')} {err}", file=sys.stderr)
             return False
         debug_success("roadmap_orchestrator", "Phase 3 complete")
 
@@ -231,5 +233,6 @@ class RoadmapOrchestrator:
                 + f"\n\nRoadmap saved to: {roadmap_file}",
                 title=f"{icon(Icons.SUCCESS)} ROADMAP GENERATED",
                 style="heavy",
-            )
+            ),
+            file=sys.stderr
         )

@@ -7,6 +7,7 @@ integration.
 """
 
 import json
+import sys
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
@@ -133,7 +134,7 @@ class StatusManager:
             with open(self.status_file, "w") as f:
                 json.dump(self._status.to_dict(), f, indent=2)
         except OSError as e:
-            print(warning(f"Could not write status file: {e}"))
+            print(warning(f"Could not write status file: {e}"), file=sys.stderr)
 
     def update(self, **kwargs) -> None:
         """Update specific status fields."""

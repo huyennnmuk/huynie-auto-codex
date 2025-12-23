@@ -94,8 +94,8 @@ def main():
     parser.add_argument(
         "--model",
         type=str,
-        default="gpt-5.2-codex-xhigh",
-        help="Model to use (default: gpt-5.2-codex-xhigh)",
+        default=None,  # Will use AUTO_BUILD_MODEL env var or gpt-5.2-codex
+        help="Model to use (default: AUTO_BUILD_MODEL env var or gpt-5.2-codex)",
     )
     parser.add_argument(
         "--thinking-level",
@@ -120,7 +120,7 @@ def main():
     # Validate project directory
     project_dir = args.project.resolve()
     if not project_dir.exists():
-        print(f"Error: Project directory does not exist: {project_dir}")
+        print(f"Error: Project directory does not exist: {project_dir}", file=sys.stderr)
         sys.exit(1)
 
     # Parse types
@@ -129,8 +129,8 @@ def main():
         enabled_types = [t.strip() for t in args.types.split(",")]
         invalid_types = [t for t in enabled_types if t not in IDEATION_TYPES]
         if invalid_types:
-            print(f"Error: Invalid ideation types: {invalid_types}")
-            print(f"Valid types: {IDEATION_TYPES}")
+            print(f"Error: Invalid ideation types: {invalid_types}", file=sys.stderr)
+            print(f"Valid types: {IDEATION_TYPES}", file=sys.stderr)
             sys.exit(1)
 
     orchestrator = IdeationOrchestrator(
@@ -150,7 +150,7 @@ def main():
         success = asyncio.run(orchestrator.run())
         sys.exit(0 if success else 1)
     except KeyboardInterrupt:
-        print("\n\nIdeation generation interrupted.")
+        print("\n\nIdeation generation interrupted.", file=sys.stderr)
         sys.exit(1)
 
 

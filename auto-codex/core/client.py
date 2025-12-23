@@ -127,7 +127,7 @@ def _extract_text(event: LLMEvent) -> str:
 def create_client(
     project_dir: Path | None,
     spec_dir: Path | None,
-    model: str,
+    model: str | None = None,
     agent_type: str = "coder",
     max_thinking_tokens: int | None = None,
 ) -> CodexClientAdapter:
@@ -137,7 +137,7 @@ def create_client(
     Args:
         project_dir: Root directory for the project (working directory)
         spec_dir: Directory containing the spec (for security profiling)
-        model: Codex model to use
+        model: Codex model to use (can include reasoning effort suffix like gpt-5.2-codex-xhigh)
         agent_type: Agent role (reserved for future routing)
         max_thinking_tokens: Reserved for future Codex settings
     """
@@ -155,8 +155,9 @@ def create_client(
     )
     codex_security_args = codex_security_config.to_codex_args()
 
+    # CodexCliClient will parse model string to extract base model and reasoning effort
     client = CodexCliClient(
-        model=model or "gpt-5.2-codex-xhigh",
+        model=model,  # Will use AUTO_BUILD_MODEL env var if None
         workdir=str(resolved_project_dir),
         timeout=600,
         bypass_sandbox=(os.environ.get("AUTO_CODEX_BYPASS_CODEX_SANDBOX", "1") != "0"),
@@ -174,7 +175,7 @@ def get_client(provider: str = "codex", **kwargs) -> LLMClientProtocol:
     project_dir = kwargs.get("project_dir")
     workdir = str(project_dir) if project_dir is not None else None
     return CodexCliClient(
-        model=kwargs.get("model", "gpt-5.2-codex-xhigh"),
+        model=kwargs.get("model"),  # Will use AUTO_BUILD_MODEL env var if None
         workdir=workdir,
         timeout=kwargs.get("timeout", 600),
         bypass_sandbox=kwargs.get("bypass_sandbox", True),

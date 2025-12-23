@@ -36,7 +36,10 @@ from ui import (
 )
 
 # Configuration
-DEFAULT_MODEL = "gpt-5.2-codex-xhigh"
+# Default model - can be overridden via AUTO_BUILD_MODEL environment variable
+# Note: gpt-5.2-codex-xhigh requires Codex Pro subscription
+# For non-Codex accounts, set AUTO_BUILD_MODEL to gpt-4o or another supported model
+DEFAULT_MODEL = os.environ.get("AUTO_BUILD_MODEL", "gpt-5.2-codex")
 
 
 def setup_environment() -> Path:

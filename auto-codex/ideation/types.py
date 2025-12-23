@@ -4,7 +4,8 @@ Type definitions for the ideation module.
 Contains dataclasses and type definitions used throughout ideation components.
 """
 
-from dataclasses import dataclass
+import os
+from dataclasses import dataclass, field
 from pathlib import Path
 
 
@@ -31,6 +32,6 @@ class IdeationConfig:
     include_roadmap_context: bool = True
     include_kanban_context: bool = True
     max_ideas_per_type: int = 5
-    model: str = "gpt-5.2-codex-xhigh"
+    model: str = field(default_factory=lambda: os.environ.get("AUTO_BUILD_MODEL", "gpt-5.2-codex"))
     refresh: bool = False
     append: bool = False  # If True, preserve existing ideas when merging
