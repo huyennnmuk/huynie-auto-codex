@@ -67,7 +67,7 @@ async def run_qa_agent_session(
 
     # Get task logger for streaming markers
     task_logger = get_task_logger(spec_dir)
-    current_tool = None
+    pending_tools: list[dict[str, str | None]] = []
     message_count = 0
     tool_count = 0
 
@@ -196,6 +196,9 @@ This is attempt {previous_error.get("consecutive_errors", 1) + 1}. If you fail t
                     elif block_type == "ToolUseBlock" and hasattr(block, "name"):
                         tool_name = block.name
                         tool_input = None
+                        tool_id = getattr(block, "id", None) or getattr(
+                            block, "tool_use_id", None
+                        )
                         tool_count += 1
 
                         # Extract tool input for display
@@ -215,6 +218,7 @@ This is attempt {previous_error.get("consecutive_errors", 1) + 1}. If you fail t
                             f"Tool call #{tool_count}: {tool_name}",
                             tool_input=tool_input,
                         )
+                        pending_tools.append({"id": tool_id, "name": tool_name})
 
                         # Log tool start (handles printing)
                         if task_logger:
@@ -233,15 +237,29 @@ This is attempt {previous_error.get("consecutive_errors", 1) + 1}. If you fail t
                                 print(f"   Input: {input_str[:300]}...", flush=True)
                             else:
                                 print(f"   Input: {input_str}", flush=True)
-                        current_tool = tool_name
 
             elif msg_type == "UserMessage" and hasattr(msg, "content"):
                 for block in msg.content:
                     block_type = type(block).__name__
 
                     if block_type == "ToolResultBlock":
+                        tool_id = getattr(block, "tool_use_id", None) or getattr(
+                            block, "id", None
+                        )
                         is_error = getattr(block, "is_error", False)
                         result_content = getattr(block, "content", "")
+                        current_tool = None
+
+                        if tool_id:
+                            for idx, pending in enumerate(pending_tools):
+                                if pending["id"] == tool_id:
+                                    current_tool = pending["name"]
+                                    pending_tools.pop(idx)
+                                    break
+                        if current_tool is None and pending_tools:
+                            current_tool = pending_tools.pop(0)["name"]
+                        if current_tool is None:
+                            current_tool = "unknown"
 
                         if is_error:
                             debug_error(
@@ -290,8 +308,6 @@ This is attempt {previous_error.get("consecutive_errors", 1) + 1}. If you fail t
                                     detail=detail_content,
                                     phase=LogPhase.VALIDATION,
                                 )
-
-                        current_tool = None
 
         print("\n" + "-" * 70 + "\n")
 

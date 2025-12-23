@@ -14,6 +14,7 @@ from core.protocols import LLMClientProtocol
 from debug import debug, debug_error, debug_section, debug_success, debug_warning
 from linear_updater import (
     LinearTaskState,
+    add_linear_comment,
     is_linear_enabled,
     linear_qa_approved,
     linear_qa_max_iterations,
@@ -397,7 +398,19 @@ async def run_qa_validation_loop(
                     "error",
                     [{"title": "Fixer error", "description": fix_response}],
                 )
-                break
+                if task_logger:
+                    task_logger.end_phase(
+                        LogPhase.VALIDATION,
+                        success=False,
+                        message=f"QA fixer error on iteration {qa_iteration}",
+                    )
+                if linear_task and linear_task.task_id:
+                    await add_linear_comment(
+                        spec_dir,
+                        f"QA fixer error on iteration {qa_iteration} - needs human intervention",
+                    )
+                    print("\nLinear: Fixer error logged for human intervention")
+                return False
 
             debug_success("qa_loop", "Fixes applied, re-running QA validation")
             print("\n✅ Fixes applied. Re-running QA validation...")
@@ -422,13 +435,16 @@ async def run_qa_validation_loop(
             )
 
             # Build error context for self-correction in next iteration
-            last_error_context = {
-                "error_type": "missing_implementation_plan_update",
-                "error_message": response,
-                "consecutive_errors": consecutive_errors,
-                "expected_action": "You MUST update implementation_plan.json with a qa_signoff object containing 'status': 'approved' or 'status': 'rejected'",
-                "file_path": str(spec_dir / "implementation_plan.json"),
-            }
+            if "implementation_plan.json" in response:
+                last_error_context = {
+                    "error_type": "missing_implementation_plan_update",
+                    "error_message": response,
+                    "consecutive_errors": consecutive_errors,
+                    "expected_action": "You MUST update implementation_plan.json with a qa_signoff object containing 'status': 'approved' or 'status': 'rejected'",
+                    "file_path": str(spec_dir / "implementation_plan.json"),
+                }
+            else:
+                last_error_context = None
 
             # Check if we've hit max consecutive errors
             if consecutive_errors >= MAX_CONSECUTIVE_ERRORS:
