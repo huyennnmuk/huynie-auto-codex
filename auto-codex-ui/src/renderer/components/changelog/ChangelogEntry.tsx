@@ -31,7 +31,7 @@ export function TaskCard({ task, isSelected, onToggle }: TaskCardProps) {
         <div className="flex-1 min-w-0">
           <h3 className="font-medium text-sm leading-tight">{task.title}</h3>
           {task.description && (
-            <p className="text-xs text-muted-foreground mt-2 line-clamp-2">
+            <p className="text-xs text-muted-foreground mt-2 line-clamp-2 break-all [overflow-wrap:anywhere]">
               {task.description}
             </p>
           )}
@@ -65,7 +65,7 @@ export function CommitCard({ commit }: CommitCardProps) {
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2">
-          <p className="text-sm font-medium leading-tight line-clamp-2">{commit.subject}</p>
+          <p className="text-sm font-medium leading-tight line-clamp-2 break-all [overflow-wrap:anywhere]">{commit.subject}</p>
           <code className="text-xs text-muted-foreground font-mono shrink-0">{commit.hash}</code>
         </div>
         <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">

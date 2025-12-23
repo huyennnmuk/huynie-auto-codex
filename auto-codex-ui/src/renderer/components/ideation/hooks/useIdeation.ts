@@ -15,7 +15,8 @@ import {
   setupIdeationListeners
 } from '../../../stores/ideation-store';
 import { loadTasks } from '../../../stores/task-store';
-import { useCodexTokenCheck } from '../../EnvConfigModal';
+// Token check disabled - backend handles authentication via .env
+// import { useCodexTokenCheck } from '../../EnvConfigModal';
 import type { Idea, IdeationType } from '../../../../shared/types';
 import { ALL_IDEATION_TYPES } from '../constants';
 
@@ -46,7 +47,10 @@ export function useIdeation(projectId: string, options: UseIdeationOptions = {})
   const [showAddMoreDialog, setShowAddMoreDialog] = useState(false);
   const [typesToAdd, setTypesToAdd] = useState<IdeationType[]>([]);
 
-  const { hasToken, isLoading: isCheckingToken, checkToken } = useCodexTokenCheck();
+  // Token check disabled - backend handles authentication via .env
+  // const { hasToken, isLoading: isCheckingToken, checkToken } = useCodexTokenCheck();
+  const hasToken = true;
+  const isCheckingToken = false;
 
   // Set up IPC listeners and load ideation on mount
   useEffect(() => {
@@ -82,7 +86,7 @@ export function useIdeation(projectId: string, options: UseIdeationOptions = {})
   };
 
   const handleEnvConfigured = () => {
-    checkToken();
+    // checkToken() removed - backend handles authentication
     if (pendingAction === 'generate') {
       generateIdeation(projectId);
     } else if (pendingAction === 'refresh') {

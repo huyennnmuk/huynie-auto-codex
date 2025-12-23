@@ -46,6 +46,46 @@ export function getDefaultPythonCommand(): string {
   return process.platform === 'win32' ? 'python' : 'python3';
 }
 
+function splitCommandLine(commandLine: string): string[] {
+  const args: string[] = [];
+  let current = '';
+  let quote: '"' | "'" | null = null;
+
+  for (let i = 0; i < commandLine.length; i += 1) {
+    const char = commandLine[i];
+
+    if (quote) {
+      if (char === quote) {
+        quote = null;
+      } else {
+        current += char;
+      }
+      continue;
+    }
+
+    if (char === '"' || char === "'") {
+      quote = char;
+      continue;
+    }
+
+    if (/\s/.test(char)) {
+      if (current) {
+        args.push(current);
+        current = '';
+      }
+      continue;
+    }
+
+    current += char;
+  }
+
+  if (current) {
+    args.push(current);
+  }
+
+  return args;
+}
+
 /**
  * Parse a Python command string into command and base arguments.
  * Handles space-separated commands like "py -3".
@@ -54,8 +94,23 @@ export function getDefaultPythonCommand(): string {
  * @returns Tuple of [command, baseArgs] ready for use with spawn()
  */
 export function parsePythonCommand(pythonPath: string): [string, string[]] {
-  const parts = pythonPath.split(' ');
-  const command = parts[0];
-  const baseArgs = parts.slice(1);
-  return [command, baseArgs];
+  const trimmed = pythonPath.trim();
+  if (!trimmed) {
+    return [pythonPath, []];
+  }
+
+  const isAbsolutePath = trimmed.startsWith('/') || /^[a-zA-Z]:/.test(trimmed);
+  const hasLeadingQuote = trimmed.startsWith('"') || trimmed.startsWith("'");
+
+  // If it's an absolute path with spaces and no quotes, keep it intact to avoid truncation.
+  if (isAbsolutePath && !hasLeadingQuote && trimmed.includes(' ')) {
+    return [trimmed, []];
+  }
+
+  const parts = splitCommandLine(trimmed);
+  if (parts.length === 0) {
+    return [pythonPath, []];
+  }
+
+  return [parts[0], parts.slice(1)];
 }

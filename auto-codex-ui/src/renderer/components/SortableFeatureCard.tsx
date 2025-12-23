@@ -154,7 +154,7 @@ export function SortableFeatureCard({
         </div>
 
         {/* Description */}
-        <p className="mt-1.5 text-xs text-muted-foreground line-clamp-2">
+        <p className="mt-1.5 text-xs text-muted-foreground line-clamp-2 break-all [overflow-wrap:anywhere]">
           {feature.description}
         </p>
 

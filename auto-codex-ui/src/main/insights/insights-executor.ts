@@ -148,11 +148,27 @@ export class InsightsExecutor extends EventEmitter {
           } else if (line.startsWith('__TOOL_END__:')) {
             this.handleToolEnd(projectId, line);
           } else if (line.trim()) {
-            fullResponse += line + '\n';
-            this.emit('stream-chunk', projectId, {
-              type: 'text',
-              content: line + '\n'
-            } as InsightsStreamChunk);
+            // Try to parse as Codex CLI JSONL output
+            const parsed = this.parseCodexJsonLine(line, toolsUsed);
+            if (parsed.text) {
+              fullResponse += parsed.text + '\n';
+              this.emit('stream-chunk', projectId, {
+                type: 'text',
+                content: parsed.text + '\n'
+              } as InsightsStreamChunk);
+            }
+            if (parsed.toolStart) {
+              this.emit('stream-chunk', projectId, {
+                type: 'tool_start',
+                tool: parsed.toolStart
+              } as InsightsStreamChunk);
+            }
+            if (parsed.toolEnd) {
+              this.emit('stream-chunk', projectId, {
+                type: 'tool_end',
+                tool: parsed.toolEnd
+              } as InsightsStreamChunk);
+            }
           }
         }
       });
@@ -310,6 +326,92 @@ export class InsightsExecutor extends EventEmitter {
         projectId
       });
       this.emit('sdk-rate-limit', rateLimitInfo);
+    }
+  }
+
+  private formatToolInput(input: unknown): string | undefined {
+    if (input === undefined || input === null) {
+      return undefined;
+    }
+    if (typeof input === 'string') {
+      return input;
+    }
+    try {
+      return JSON.stringify(input);
+    } catch {
+      return String(input);
+    }
+  }
+
+  /**
+   * Parse Codex CLI JSONL output line
+   * Handles new event types from Codex CLI v0.77+
+   */
+  private parseCodexJsonLine(
+    line: string,
+    toolsUsed: InsightsToolUsage[]
+  ): { text?: string; toolStart?: { name: string; input?: string }; toolEnd?: { name: string } } {
+    // Try to parse as JSON
+    try {
+      const data = JSON.parse(line);
+      const eventType = data.type;
+
+      // Handle item.completed events (Codex CLI v0.77+)
+      if (eventType === 'item.completed') {
+        const item = data.item || {};
+        const itemType = item.type;
+        const text = item.text || '';
+
+        if (itemType === 'agent_message' && text) {
+          return { text };
+        }
+        if (itemType === 'tool_use') {
+          const toolName = item.name || item.tool_name || 'tool';
+          const toolInputText = this.formatToolInput(item.input);
+          toolsUsed.push({
+            name: toolName,
+            input: toolInputText,
+            timestamp: new Date()
+          });
+          return { toolStart: { name: toolName, input: toolInputText } };
+        }
+        if (itemType === 'tool_result') {
+          const toolName = item.name || item.tool_name || 'tool';
+          return { toolEnd: { name: toolName } };
+        }
+        // Skip reasoning items silently
+        return {};
+      }
+
+      // Skip lifecycle events
+      if (eventType === 'thread.started' || eventType === 'turn.started' || eventType === 'turn.completed' || eventType === 'item.started') {
+        return {};
+      }
+
+      // Legacy event types
+      if (eventType === 'message') {
+        return { text: data.content || '' };
+      }
+      if (eventType === 'tool_use') {
+        const toolName = data.name || data.tool_name || 'tool';
+        const toolInputText = this.formatToolInput(data.input);
+        toolsUsed.push({
+          name: toolName,
+          input: toolInputText,
+          timestamp: new Date()
+        });
+        return { toolStart: { name: toolName, input: toolInputText } };
+      }
+      if (eventType === 'tool_result') {
+        const toolName = data.name || data.tool_name || 'tool';
+        return { toolEnd: { name: toolName } };
+      }
+
+      // Unknown JSON event - return raw line as text
+      return { text: line };
+    } catch {
+      // Not JSON - return as plain text
+      return { text: line };
     }
   }
 }

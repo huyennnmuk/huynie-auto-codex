@@ -283,10 +283,7 @@ export class AgentQueueManager {
       // Collect output for rate limit detection (keep last 10KB)
       allOutput = (allOutput + log).slice(-10000);
 
-      // Emit all log lines for the activity log
-      emitLogs(log);
-
-      // Check for streaming type completion signals
+      // Check for streaming type completion signals (before emitting logs)
       const typeCompleteMatch = log.match(/IDEATION_TYPE_COMPLETE:(\w+):(\d+)/);
       if (typeCompleteMatch) {
         const [, ideationType, ideasCount] = typeCompleteMatch;
@@ -301,6 +298,16 @@ export class AgentQueueManager {
 
         // Emit event for UI to load this type's ideas immediately
         this.emitter.emit('ideation-type-complete', projectId, ideationType, parseInt(ideasCount, 10));
+      }
+
+      // Filter out internal markers before emitting to activity log
+      const filteredLog = log
+        .split('\n')
+        .filter(line => !line.match(/^IDEATION_TYPE_(COMPLETE|FAILED):/))
+        .join('\n');
+
+      if (filteredLog.trim()) {
+        emitLogs(filteredLog);
       }
 
       const typeFailedMatch = log.match(/IDEATION_TYPE_FAILED:(\w+)/);

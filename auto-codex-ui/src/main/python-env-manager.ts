@@ -45,11 +45,53 @@ export class PythonEnvManager extends EventEmitter {
   }
 
   /**
-   * Check if venv exists
+   * Check if venv exists and is functional
    */
   private venvExists(): boolean {
     const venvPython = this.getVenvPythonPath();
     return venvPython ? existsSync(venvPython) : false;
+  }
+
+  /**
+   * Check if venv is corrupted (exists but doesn't work)
+   */
+  private isVenvCorrupted(): boolean {
+    const venvPython = this.getVenvPythonPath();
+    if (!venvPython || !existsSync(venvPython)) return false;
+
+    try {
+      execSync(`"${venvPython}" --version`, {
+        stdio: 'pipe',
+        timeout: 5000
+      });
+      return false;
+    } catch {
+      console.warn('[PythonEnvManager] Venv appears corrupted');
+      return true;
+    }
+  }
+
+  /**
+   * Remove corrupted venv directory
+   */
+  private async removeCorruptedVenv(): Promise<boolean> {
+    if (!this.autoBuildSourcePath) return false;
+
+    const venvPath = path.join(this.autoBuildSourcePath, '.venv');
+    if (!existsSync(venvPath)) return true;
+
+    this.emit('status', 'Removing corrupted virtual environment...');
+    console.warn('[PythonEnvManager] Removing corrupted venv at:', venvPath);
+
+    try {
+      const { rm } = await import('fs/promises');
+      await rm(venvPath, { recursive: true, force: true });
+      console.warn('[PythonEnvManager] Corrupted venv removed');
+      return true;
+    } catch (err) {
+      console.error('[PythonEnvManager] Failed to remove venv:', err);
+      return false;
+    }
   }
 
   /**
@@ -304,6 +346,24 @@ export class PythonEnvManager extends EventEmitter {
     console.warn('[PythonEnvManager] Initializing with path:', autoBuildSourcePath);
 
     try {
+      // Check if venv is corrupted and needs rebuild
+      if (this.venvExists() && this.isVenvCorrupted()) {
+        console.warn('[PythonEnvManager] Venv corrupted, rebuilding...');
+        this.emit('status', 'Detected corrupted environment, rebuilding...');
+        const removed = await this.removeCorruptedVenv();
+        if (!removed) {
+          this.emit('error', 'Failed to remove corrupted virtual environment');
+          this.isInitializing = false;
+          return {
+            ready: false,
+            pythonPath: null,
+            venvExists: this.venvExists(),
+            depsInstalled: false,
+            error: 'Failed to remove corrupted virtual environment'
+          };
+        }
+      }
+
       // Check if venv exists
       if (!this.venvExists()) {
         console.warn('[PythonEnvManager] Venv not found, creating...');
