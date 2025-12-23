@@ -25,8 +25,11 @@ def normalize_reasoning_effort(value: str | None) -> str:
     return "medium"
 
 
-DEFAULT_REASONING_EFFORT = normalize_reasoning_effort(
-    os.environ.get("AUTO_BUILD_REASONING_EFFORT")
+_ENV_REASONING_EFFORT = os.environ.get("AUTO_BUILD_REASONING_EFFORT")
+DEFAULT_REASONING_EFFORT = (
+    normalize_reasoning_effort(_ENV_REASONING_EFFORT)
+    if _ENV_REASONING_EFFORT
+    else None
 )
 
 # Common codex installation paths (for GUI apps that don't inherit shell PATH)
@@ -89,7 +92,7 @@ def find_codex_path() -> str | None:
     return None
 
 
-def parse_model_string(model_str: str) -> tuple[str, str]:
+def parse_model_string(model_str: str) -> tuple[str, str | None, bool]:
     """
     Parse a model string that may include reasoning effort suffix.
 
@@ -99,17 +102,17 @@ def parse_model_string(model_str: str) -> tuple[str, str]:
         "gpt-4o" -> ("gpt-4o", DEFAULT_REASONING_EFFORT)
 
     Returns:
-        Tuple of (model_name, reasoning_effort)
+        Tuple of (model_name, reasoning_effort, has_suffix)
     """
     # Check if the string ends with a valid reasoning effort suffix
     for effort in VALID_REASONING_EFFORTS:
         suffix = f"-{effort}"
         if model_str.endswith(suffix):
             base_model = model_str[:-len(suffix)]
-            return (base_model, effort)
+            return (base_model, effort, True)
 
     # No reasoning effort suffix found, use default
-    return (model_str, DEFAULT_REASONING_EFFORT)
+    return (model_str, DEFAULT_REASONING_EFFORT, False)
 
 
 @dataclass
@@ -136,13 +139,20 @@ class CodexCliClient(LLMClientProtocol):
     ) -> None:
         # Parse model string to extract base model and reasoning effort
         raw_model = model or os.environ.get("AUTO_BUILD_MODEL", DEFAULT_MODEL)
-        parsed_model, parsed_effort = parse_model_string(raw_model)
+        parsed_model, parsed_effort, has_suffix = parse_model_string(raw_model)
 
-        self.model = parsed_model
-        if reasoning_effort:
-            self.reasoning_effort = normalize_reasoning_effort(reasoning_effort)
+        explicit_effort = (
+            normalize_reasoning_effort(reasoning_effort)
+            if reasoning_effort
+            else DEFAULT_REASONING_EFFORT
+        )
+
+        if has_suffix and explicit_effort is None:
+            self.model = raw_model
+            self.reasoning_effort = None
         else:
-            self.reasoning_effort = parsed_effort
+            self.model = parsed_model
+            self.reasoning_effort = explicit_effort or parsed_effort
         self.workdir = workdir or os.getcwd()
         self.timeout = timeout
         self.bypass_sandbox = bypass_sandbox
