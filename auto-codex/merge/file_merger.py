@@ -19,6 +19,193 @@ from pathlib import Path
 from .types import ChangeType, SemanticChange, TaskSnapshot
 
 
+def _replace_once(content: str, old: str, new: str) -> str:
+    if not old or old == new:
+        return content
+    return content.replace(old, new, 1)
+
+
+def _remove_once(content: str, block: str) -> str:
+    if not block:
+        return content
+    updated = content.replace(block, "", 1)
+    if updated != content:
+        return updated
+    trimmed = block.strip("\n")
+    if trimmed and trimmed != block:
+        return content.replace(trimmed, "", 1)
+    return content
+
+
+def _remove_matching_lines(content: str, block: str) -> str:
+    targets = [line.strip() for line in block.splitlines() if line.strip()]
+    if not targets:
+        return content
+    lines = content.split("\n")
+    remaining_targets = set(targets)
+    new_lines = []
+    for line in lines:
+        stripped = line.strip()
+        if stripped in remaining_targets:
+            remaining_targets.discard(stripped)
+            continue
+        new_lines.append(line)
+    return "\n".join(new_lines)
+
+
+def _maybe_replace_in_location(
+    content: str,
+    location: str,
+    old: str,
+    new: str,
+) -> str | None:
+    if not location or ":" not in location:
+        return None
+    loc_type = location.split(":", 1)[0]
+    if loc_type not in {"function", "class"}:
+        return None
+    region = extract_location_content(content, location)
+    if not region or region == content:
+        return None
+    if old in region:
+        updated_region = region.replace(old, new, 1)
+        return content.replace(region, updated_region, 1)
+    if region == old:
+        return content.replace(region, new, 1)
+    return None
+
+
+def _maybe_remove_in_location(
+    content: str,
+    location: str,
+    old: str,
+) -> str | None:
+    if not location or ":" not in location:
+        return None
+    loc_type = location.split(":", 1)[0]
+    if loc_type not in {"function", "class"}:
+        return None
+    region = extract_location_content(content, location)
+    if not region or region == content:
+        return None
+    if old in region:
+        updated_region = region.replace(old, "", 1)
+        return content.replace(region, updated_region, 1)
+    if region == old:
+        return content.replace(region, "", 1)
+    return None
+
+
+def _insert_imports(content: str, imports: list[str], file_path: str) -> str:
+    if not imports:
+        return content
+    lines = content.split("\n")
+    import_end = find_import_end(lines, file_path)
+    existing = {line.strip() for line in lines[:import_end] if line.strip()}
+    new_imports: list[str] = []
+    for imp in imports:
+        stripped = imp.strip()
+        if not stripped or stripped in existing or stripped in new_imports:
+            continue
+        new_imports.append(imp.rstrip("\n"))
+    for imp in reversed(new_imports):
+        lines.insert(import_end, imp)
+    return "\n".join(lines)
+
+
+def _block_is_indented(block_lines: list[str], base_indent: int) -> bool:
+    for line in block_lines:
+        if line.strip():
+            return (len(line) - len(line.lstrip())) > base_indent
+    return True
+
+
+def _indent_block(block_lines: list[str], indent: int) -> list[str]:
+    prefix = " " * indent
+    return [prefix + line if line.strip() else line for line in block_lines]
+
+
+def _insert_into_python_class(content: str, class_name: str, block: str) -> str | None:
+    class_pattern = re.compile(rf"^(\s*)class\s+{re.escape(class_name)}\b")
+    lines = content.split("\n")
+    for idx, line in enumerate(lines):
+        match = class_pattern.match(line)
+        if not match:
+            continue
+        class_indent = len(match.group(1))
+        insert_at = idx + 1
+        while insert_at < len(lines):
+            candidate = lines[insert_at]
+            if candidate.strip() == "":
+                insert_at += 1
+                continue
+            indent = len(candidate) - len(candidate.lstrip())
+            if indent <= class_indent:
+                break
+            insert_at += 1
+        block_lines = block.rstrip("\n").split("\n")
+        if not block_lines:
+            return content
+        if not _block_is_indented(block_lines, class_indent):
+            block_lines = _indent_block(block_lines, class_indent + 4)
+        if insert_at > 0 and lines[insert_at - 1].strip() and block_lines[0].strip():
+            block_lines = [""] + block_lines
+        lines[insert_at:insert_at] = block_lines
+        return "\n".join(lines)
+    return None
+
+
+def _insert_into_js_class(content: str, class_name: str, block: str) -> str | None:
+    pattern = r"class\s+" + re.escape(class_name) + r"\b[^{]*\{"
+    match = re.search(pattern, content)
+    if not match:
+        return None
+    start = match.end()
+    depth = 1
+    idx = start
+    while idx < len(content):
+        char = content[idx]
+        if char == "{":
+            depth += 1
+        elif char == "}":
+            depth -= 1
+            if depth == 0:
+                break
+        idx += 1
+    if depth != 0:
+        return None
+    insert_pos = idx
+    insert_block = block.rstrip("\n")
+    if not insert_block:
+        return content
+    prefix = "\n" if not content[:insert_pos].endswith("\n") else ""
+    suffix = "\n" if not insert_block.endswith("\n") else ""
+    return content[:insert_pos] + prefix + insert_block + suffix + content[insert_pos:]
+
+
+def _insert_into_class(
+    content: str,
+    class_name: str,
+    block: str,
+    file_path: str,
+) -> str | None:
+    ext = Path(file_path).suffix.lower()
+    if ext == ".py":
+        return _insert_into_python_class(content, class_name, block)
+    if ext in {".js", ".jsx", ".ts", ".tsx"}:
+        return _insert_into_js_class(content, class_name, block)
+    return None
+
+
+def _get_class_name_from_location(location: str) -> str | None:
+    if ":" not in location:
+        return None
+    _, name = location.split(":", 1)
+    if "." not in name:
+        return None
+    return name.split(".", 1)[0]
+
+
 def apply_single_task_changes(
     baseline: str,
     snapshot: TaskSnapshot,
@@ -37,21 +224,63 @@ def apply_single_task_changes(
     """
     content = baseline
 
+    removals: list[SemanticChange] = []
+    modifications: list[SemanticChange] = []
+    additions: list[SemanticChange] = []
+
     for change in snapshot.semantic_changes:
         if change.content_before and change.content_after:
-            # Modification - replace
-            content = content.replace(change.content_before, change.content_after)
+            modifications.append(change)
+        elif change.content_before and not change.content_after:
+            removals.append(change)
         elif change.content_after and not change.content_before:
-            # Addition - need to determine where to add
-            if change.change_type == ChangeType.ADD_IMPORT:
-                # Add import at top
-                lines = content.split("\n")
-                import_end = find_import_end(lines, file_path)
-                lines.insert(import_end, change.content_after)
-                content = "\n".join(lines)
-            elif change.change_type == ChangeType.ADD_FUNCTION:
-                # Add function at end (before exports)
-                content += f"\n\n{change.content_after}"
+            additions.append(change)
+
+    for change in removals:
+        if change.change_type == ChangeType.REMOVE_IMPORT and change.content_before:
+            content = _remove_matching_lines(content, change.content_before)
+            continue
+        updated = None
+        if change.content_before:
+            updated = _maybe_remove_in_location(
+                content, change.location, change.content_before
+            )
+        if updated is None and change.content_before:
+            updated = _remove_once(content, change.content_before)
+        content = updated if updated is not None else content
+
+    for change in modifications:
+        if not (change.content_before and change.content_after):
+            continue
+        updated = _maybe_replace_in_location(
+            content, change.location, change.content_before, change.content_after
+        )
+        if updated is None:
+            updated = _replace_once(content, change.content_before, change.content_after)
+        content = updated
+
+    import_additions = [
+        change.content_after
+        for change in additions
+        if change.change_type == ChangeType.ADD_IMPORT and change.content_after
+    ]
+    content = _insert_imports(content, import_additions, file_path)
+
+    for change in additions:
+        if not change.content_after:
+            continue
+        if change.change_type == ChangeType.ADD_IMPORT:
+            continue
+        class_name = _get_class_name_from_location(change.location)
+        if change.change_type in {ChangeType.ADD_METHOD, ChangeType.ADD_FUNCTION} and class_name:
+            updated = _insert_into_class(
+                content, class_name, change.content_after, file_path
+            )
+            if updated is not None:
+                content = updated
+                continue
+        if change.content_after not in content:
+            content += f"\n\n{change.content_after}"
 
     return content
 
@@ -74,52 +303,62 @@ def combine_non_conflicting_changes(
     """
     content = baseline
 
-    # Group changes by type for proper ordering
-    imports: list[SemanticChange] = []
-    functions: list[SemanticChange] = []
+    removals: list[SemanticChange] = []
     modifications: list[SemanticChange] = []
-    other: list[SemanticChange] = []
+    additions: list[SemanticChange] = []
 
     for snapshot in snapshots:
         for change in snapshot.semantic_changes:
-            if change.change_type == ChangeType.ADD_IMPORT:
-                imports.append(change)
-            elif change.change_type == ChangeType.ADD_FUNCTION:
-                functions.append(change)
-            elif "MODIFY" in change.change_type.value:
+            if change.content_before and change.content_after:
                 modifications.append(change)
-            else:
-                other.append(change)
+            elif change.content_before and not change.content_after:
+                removals.append(change)
+            elif change.content_after and not change.content_before:
+                additions.append(change)
 
-    # Apply in order: imports, then modifications, then functions, then other
-    ext = Path(file_path).suffix.lower()
+    for change in removals:
+        if change.change_type == ChangeType.REMOVE_IMPORT and change.content_before:
+            content = _remove_matching_lines(content, change.content_before)
+            continue
+        updated = None
+        if change.content_before:
+            updated = _maybe_remove_in_location(
+                content, change.location, change.content_before
+            )
+        if updated is None and change.content_before:
+            updated = _remove_once(content, change.content_before)
+        content = updated if updated is not None else content
 
-    # Add imports
-    if imports:
-        lines = content.split("\n")
-        import_end = find_import_end(lines, file_path)
-        for imp in imports:
-            if imp.content_after and imp.content_after not in content:
-                lines.insert(import_end, imp.content_after)
-                import_end += 1
-        content = "\n".join(lines)
-
-    # Apply modifications
     for mod in modifications:
-        if mod.content_before and mod.content_after:
-            content = content.replace(mod.content_before, mod.content_after)
+        if not (mod.content_before and mod.content_after):
+            continue
+        updated = _maybe_replace_in_location(
+            content, mod.location, mod.content_before, mod.content_after
+        )
+        if updated is None:
+            updated = _replace_once(content, mod.content_before, mod.content_after)
+        content = updated
 
-    # Add functions
-    for func in functions:
-        if func.content_after:
-            content += f"\n\n{func.content_after}"
+    import_additions = [
+        change.content_after
+        for change in additions
+        if change.change_type == ChangeType.ADD_IMPORT and change.content_after
+    ]
+    content = _insert_imports(content, import_additions, file_path)
 
-    # Apply other changes
-    for change in other:
-        if change.content_after and not change.content_before:
-            content += f"\n{change.content_after}"
-        elif change.content_before and change.content_after:
-            content = content.replace(change.content_before, change.content_after)
+    for change in additions:
+        if not change.content_after or change.change_type == ChangeType.ADD_IMPORT:
+            continue
+        class_name = _get_class_name_from_location(change.location)
+        if change.change_type in {ChangeType.ADD_METHOD, ChangeType.ADD_FUNCTION} and class_name:
+            updated = _insert_into_class(
+                content, class_name, change.content_after, file_path
+            )
+            if updated is not None:
+                content = updated
+                continue
+        if change.content_after not in content:
+            content += f"\n\n{change.content_after}"
 
     return content
 
@@ -190,7 +429,7 @@ def extract_location_content(content: str, location: str) -> str:
 def apply_ai_merge(
     content: str,
     location: str,
-    merged_region: str,
+    merged_region: str | None,
 ) -> str:
     """
     Apply AI-merged content to the full file.
@@ -198,12 +437,12 @@ def apply_ai_merge(
     Args:
         content: Full file content
         location: Location where merge was performed
-        merged_region: The merged content from AI
+        merged_region: The merged content from AI (None to skip)
 
     Returns:
         Updated file content with AI merge applied
     """
-    if not merged_region:
+    if merged_region is None:
         return content
 
     # Find and replace the location content

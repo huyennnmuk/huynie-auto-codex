@@ -92,9 +92,10 @@ class ConflictResolver:
                 result = self.auto_merger.merge(context, conflict.merge_strategy)
 
                 if result.success:
-                    merged_content = result.merged_content or merged_content
-                    resolved.append(conflict)
-                    continue
+                    if result.merged_content is not None:
+                        merged_content = result.merged_content
+                        resolved.append(conflict)
+                        continue
 
             # Try AI resolver if enabled
             if (
@@ -120,12 +121,12 @@ class ConflictResolver:
                 ai_calls += ai_result.ai_calls_made
                 tokens_used += ai_result.tokens_used
 
-                if ai_result.success:
+                if ai_result.success and ai_result.merged_content is not None:
                     # Apply AI-merged content
                     merged_content = apply_ai_merge(
                         merged_content,
                         conflict.location,
-                        ai_result.merged_content or "",
+                        ai_result.merged_content,
                     )
                     resolved.append(conflict)
                     continue

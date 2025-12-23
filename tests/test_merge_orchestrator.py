@@ -18,6 +18,7 @@ Covers:
 
 import json
 import sys
+from datetime import datetime
 from pathlib import Path
 
 import pytest
@@ -27,7 +28,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "auto-codex"))
 # Add tests directory to path for test_fixtures
 sys.path.insert(0, str(Path(__file__).parent))
 
-from merge import MergeOrchestrator
+from merge import MergeDecision, MergeOrchestrator, MergeReport, MergeResult
 from merge.orchestrator import TaskMergeRequest
 
 from test_fixtures import (
@@ -223,6 +224,42 @@ class TestMergeStats:
 
         assert restored["tasks_merged"] == ["task-001"]
         assert restored["success"] is True
+
+
+class TestMergeOutputHandling:
+    """Tests for writing merged output."""
+
+    def test_write_merged_files_allows_empty_content(self, temp_project):
+        orchestrator = MergeOrchestrator(temp_project, dry_run=False)
+        report = MergeReport(started_at=datetime.now())
+        report.file_results["src/empty.txt"] = MergeResult(
+            decision=MergeDecision.AUTO_MERGED,
+            file_path="src/empty.txt",
+            merged_content="",
+        )
+
+        written = orchestrator.write_merged_files(report)
+        out_path = orchestrator.merge_output_dir / "src" / "empty.txt"
+
+        assert out_path in written
+        assert out_path.exists()
+        assert out_path.read_text() == ""
+
+    def test_apply_to_project_allows_empty_content(self, temp_project):
+        orchestrator = MergeOrchestrator(temp_project, dry_run=False)
+        report = MergeReport(started_at=datetime.now())
+        report.file_results["empty.txt"] = MergeResult(
+            decision=MergeDecision.AUTO_MERGED,
+            file_path="empty.txt",
+            merged_content="",
+        )
+
+        success = orchestrator.apply_to_project(report)
+
+        target_path = temp_project / "empty.txt"
+        assert success is True
+        assert target_path.exists()
+        assert target_path.read_text() == ""
 
 
 class TestErrorHandling:

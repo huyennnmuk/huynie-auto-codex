@@ -585,7 +585,7 @@ class MergeOrchestrator:
 
         written = []
         for file_path, result in report.file_results.items():
-            if result.merged_content:
+            if result.merged_content is not None:
                 out_path = output_dir / file_path
                 out_path.parent.mkdir(parents=True, exist_ok=True)
                 out_path.write_text(result.merged_content, encoding="utf-8")
@@ -614,7 +614,7 @@ class MergeOrchestrator:
 
         success = True
         for file_path, result in report.file_results.items():
-            if result.merged_content and result.success:
+            if result.merged_content is not None and result.success:
                 target_path = self.project_dir / file_path
                 target_path.parent.mkdir(parents=True, exist_ok=True)
                 try:
