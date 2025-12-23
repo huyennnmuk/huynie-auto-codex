@@ -51,8 +51,6 @@ const detectAutoBuildSourcePath = (): string | null => {
     possiblePaths.push(
       // electron-builder `extraResources` land inside `process.resourcesPath`
       path.join(process.resourcesPath, 'auto-codex'),
-      // Legacy name (pre-rename)
-      path.join(process.resourcesPath, 'auto-claude'),
       path.resolve(appPath, '..', 'auto-codex'),               // Sibling to app
       path.resolve(appPath, '..', '..', 'auto-codex'),         // Up 2 from app
       path.resolve(appPath, '..', '..', '..', 'auto-codex'),   // Up 3 from app
